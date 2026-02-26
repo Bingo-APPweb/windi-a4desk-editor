@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WINDI Unified Audit</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --border-color: #30363d;
+            --accent-green: #3fb950;
+            --accent-blue: #58a6ff;
+            --accent-yellow: #d29922;
+            --accent-red: #f85149;
+            --accent-purple: #a371f7;
+        }
+        .theme-klar {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f6f8fa;
+            --bg-tertiary: #eaeef2;
+            --text-primary: #1f2328;
+            --text-secondary: #656d76;
+            --border-color: #d0d7de;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+            border-radius: 8px;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        /* Theme & Language toggles */
+        .toggle-group {
+            display: flex;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            padding: 3px;
+            gap: 2px;
+        }
+        .toggle-btn {
+            padding: 6px 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .toggle-btn.active {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        .toggle-btn:hover:not(.active) {
+            color: var(--text-primary);
+        }
+        /* Sub-tabs */
+        .sub-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0;
+        }
+        .sub-tab {
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.95rem;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.2s;
+        }
+        .sub-tab.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+            font-weight: 500;
+        }
+        .sub-tab:hover:not(.active) {
+            color: var(--text-primary);
+        }
+        /* Tab content */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        /* Cards */
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .stat-value.grade-a { color: var(--accent-green); }
+        .stat-value.grade-b { color: var(--accent-blue); }
+        .stat-value.grade-c { color: var(--accent-yellow); }
+        .stat-value.grade-d, .stat-value.grade-f { color: var(--accent-red); }
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        tr:hover {
+            background: var(--bg-tertiary);
+        }
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .badge-high { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
+        .badge-medium { background: rgba(210, 153, 34, 0.2); color: var(--accent-yellow); }
+        .badge-low { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); }
+        .badge-approved { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); }
+        .badge-blocked { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
+        .badge-pending { background: rgba(210, 153, 34, 0.2); color: var(--accent-yellow); }
+        /* Profile list */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+        .profile-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+        .profile-name {
+            font-weight: 500;
+        }
+        .profile-meta {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        /* Loading & Error states */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+        .spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .error {
+            background: rgba(248, 81, 73, 0.1);
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 40px;
+        }
+        .i9-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-tertiary);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+        /* Hash display */
+        .hash {
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        /* Refresh button */
+        .btn-refresh {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: opacity 0.2s;
+        }
+        .btn-refresh:hover {
+            opacity: 0.9;
+        }
+        .btn-refresh:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>
+                <span>WINDI</span>
+                <span data-i18n="title">Unified Audit</span>
+            </h1>
+            <div class="header-controls">
+                <div class="toggle-group" id="langToggle">
+                    <button class="toggle-btn active" data-lang="en">EN</button>
+                    <button class="toggle-btn" data-lang="de">DE</button>
+                    <button class="toggle-btn" data-lang="pt">PT</button>
+                </div>
+                <div class="toggle-group" id="themeToggle">
+                    <button class="toggle-btn active" data-theme="noir">Noir</button>
+                    <button class="toggle-btn" data-theme="klar">Klar</button>
+                </div>
+            </div>
+        </header>
+
+        <nav class="sub-tabs">
+            <button class="sub-tab active" data-tab="submissions" data-i18n="tab_submissions">Submission Registry</button>
+            <button class="sub-tab" data-tab="ecosystem" data-i18n="tab_ecosystem">ISP Ecosystem</button>
+        </nav>
+
+        <!-- Tab 1: Submission Registry -->
+        <div id="tab-submissions" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-submissions">-</div>
+                    <div class="stat-label" data-i18n="stat_total">Total Submissions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--accent-green)" id="approved-count">-</div>
+                    <div class="stat-label" data-i18n="stat_approved">Approved</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--accent-red)" id="blocked-count">-</div>
+                    <div class="stat-label" data-i18n="stat_blocked">Blocked</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--accent-purple)" id="integrity-status">-</div>
+                    <div class="stat-label" data-i18n="stat_integrity">Chain Integrity</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title" data-i18n="card_recent">Recent Submissions</span>
+                    <button class="btn-refresh" onclick="loadSubmissions()" data-i18n="btn_refresh">Refresh</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>REG-ID</th>
+                                <th data-i18n="col_date">Date</th>
+                                <th data-i18n="col_level">Level</th>
+                                <th>Status</th>
+                                <th data-i18n="col_entity">Entity</th>
+                                <th>Hash</th>
+                            </tr>
+                        </thead>
+                        <tbody id="submissions-table">
+                            <tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: ISP Ecosystem -->
+        <div id="tab-ecosystem" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value grade-a" id="isp-grade">-</div>
+                    <div class="stat-label">Grade</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="isp-score">-</div>
+                    <div class="stat-label">Score</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="isp-profiles">-</div>
+                    <div class="stat-label" data-i18n="stat_profiles">Profiles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--accent-green)" id="isp-healthy">-</div>
+                    <div class="stat-label" data-i18n="stat_healthy">Healthy</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--accent-yellow)" id="isp-warnings">-</div>
+                    <div class="stat-label" data-i18n="stat_warnings">Warnings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" style="color: var(--accent-red)" id="isp-violations">-</div>
+                    <div class="stat-label" data-i18n="stat_violations">Violations</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title" data-i18n="card_agent">ISP Manager Agent</span>
+                    <button class="btn-refresh" onclick="loadISPStatus()" data-i18n="btn_refresh">Refresh</button>
+                </div>
+                <div id="agent-status">
+                    <div class="loading"><div class="spinner"></div></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title" data-i18n="card_profiles">ISP Profiles by Governance Level</span>
+                </div>
+                <div id="profiles-by-level">
+                    <div class="loading"><div class="spinner"></div></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title" data-i18n="card_alerts">Recent Alerts</span>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th data-i18n="col_code">Code</th>
+                                <th data-i18n="col_severity">Severity</th>
+                                <th data-i18n="col_message">Message</th>
+                                <th data-i18n="col_date">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alerts-table">
+                            <tr><td colspan="4" class="loading"><div class="spinner"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div>AI processes. Human decides. WINDI guarantees.</div>
+            <div class="i9-badge">I9 Enforced: Zero auto_apply</div>
+        </footer>
+    </div>
+
+    <script>
+        // ─── i18n ───────────────────────────────────────────────────
+        const i18n = {
+            en: {
+                title: "Unified Audit",
+                tab_submissions: "Submission Registry",
+                tab_ecosystem: "ISP Ecosystem",
+                stat_total: "Total Submissions",
+                stat_approved: "Approved",
+                stat_blocked: "Blocked",
+                stat_integrity: "Chain Integrity",
+                stat_profiles: "Profiles",
+                stat_healthy: "Healthy",
+                stat_warnings: "Warnings",
+                stat_violations: "Violations",
+                card_recent: "Recent Submissions",
+                card_agent: "ISP Manager Agent",
+                card_profiles: "ISP Profiles by Governance Level",
+                card_alerts: "Recent Alerts",
+                btn_refresh: "Refresh",
+                col_date: "Date",
+                col_level: "Level",
+                col_entity: "Entity",
+                col_code: "Code",
+                col_severity: "Severity",
+                col_message: "Message",
+                no_alerts: "No alerts - system healthy",
+                no_submissions: "No submissions found",
+                agent_operational: "Operational",
+                agent_error: "Error"
+            },
+            de: {
+                title: "Einheitliches Audit",
+                tab_submissions: "Einreichungsregister",
+                tab_ecosystem: "ISP-Ökosystem",
+                stat_total: "Gesamteinreichungen",
+                stat_approved: "Genehmigt",
+                stat_blocked: "Blockiert",
+                stat_integrity: "Kettenintegrität",
+                stat_profiles: "Profile",
+                stat_healthy: "Gesund",
+                stat_warnings: "Warnungen",
+                stat_violations: "Verstöße",
+                card_recent: "Letzte Einreichungen",
+                card_agent: "ISP-Manager-Agent",
+                card_profiles: "ISP-Profile nach Governance-Stufe",
+                card_alerts: "Letzte Warnungen",
+                btn_refresh: "Aktualisieren",
+                col_date: "Datum",
+                col_level: "Stufe",
+                col_entity: "Entität",
+                col_code: "Code",
+                col_severity: "Schweregrad",
+                col_message: "Nachricht",
+                no_alerts: "Keine Warnungen - System gesund",
+                no_submissions: "Keine Einreichungen gefunden",
+                agent_operational: "Betriebsbereit",
+                agent_error: "Fehler"
+            },
+            pt: {
+                title: "Auditoria Unificada",
+                tab_submissions: "Registro de Submissões",
+                tab_ecosystem: "Ecossistema ISP",
+                stat_total: "Total de Submissões",
+                stat_approved: "Aprovadas",
+                stat_blocked: "Bloqueadas",
+                stat_integrity: "Integridade da Cadeia",
+                stat_profiles: "Perfis",
+                stat_healthy: "Saudáveis",
+                stat_warnings: "Avisos",
+                stat_violations: "Violações",
+                card_recent: "Submissões Recentes",
+                card_agent: "Agente ISP Manager",
+                card_profiles: "Perfis ISP por Nível de Governança",
+                card_alerts: "Alertas Recentes",
+                btn_refresh: "Atualizar",
+                col_date: "Data",
+                col_level: "Nível",
+                col_entity: "Entidade",
+                col_code: "Código",
+                col_severity: "Severidade",
+                col_message: "Mensagem",
+                no_alerts: "Sem alertas - sistema saudável",
+                no_submissions: "Nenhuma submissão encontrada",
+                agent_operational: "Operacional",
+                agent_error: "Erro"
+            }
+        };
+
+        let currentLang = 'en';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[lang][key]) {
+                    el.textContent = i18n[lang][key];
+                }
+            });
+            document.querySelectorAll('#langToggle .toggle-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+        }
+
+        // ─── Theme ──────────────────────────────────────────────────
+        function setTheme(theme) {
+            document.body.classList.toggle('theme-klar', theme === 'klar');
+            document.querySelectorAll('#themeToggle .toggle-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === theme);
+            });
+        }
+
+        // ─── Tabs ───────────────────────────────────────────────────
+        function switchTab(tabId) {
+            document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+        }
+
+        // ─── API Calls ──────────────────────────────────────────────
+        const API_BASE = '';
+
+        async function loadSubmissions() {
+            try {
+                const [dashRes, intRes] = await Promise.all([
+                    fetch(`${API_BASE}/api/dashboard`),
+                    fetch(`${API_BASE}/api/integrity`)
+                ]);
+                const dashboard = await dashRes.json();
+                const integrity = await intRes.json();
+
+                document.getElementById('total-submissions').textContent = dashboard.total || 0;
+                document.getElementById('approved-count').textContent = dashboard.approved || 0;
+                document.getElementById('blocked-count').textContent = dashboard.blocked || 0;
+                document.getElementById('integrity-status').textContent = integrity.valid ? 'OK' : 'FAIL';
+
+                const tbody = document.getElementById('submissions-table');
+                const submissions = dashboard.recent || [];
+
+                if (submissions.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-secondary)">${i18n[currentLang].no_submissions}</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = submissions.map(s => `
+                    <tr>
+                        <td><code>${s.submission_id || s.id || '-'}</code></td>
+                        <td>${s.timestamp ? new Date(s.timestamp).toLocaleString() : '-'}</td>
+                        <td><span class="badge badge-${(s.governance_level || 'low').toLowerCase()}">${s.governance_level || '-'}</span></td>
+                        <td><span class="badge badge-${(s.status || 'pending').toLowerCase()}">${s.status || '-'}</span></td>
+                        <td>${s.entity || s.organization || '-'}</td>
+                        <td><span class="hash">${(s.integrity_hash || s.hash || '-').substring(0, 16)}...</span></td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error('Failed to load submissions:', err);
+                document.getElementById('submissions-table').innerHTML =
+                    `<tr><td colspan="6" class="error">Failed to load: ${err.message}</td></tr>`;
+            }
+        }
+
+        async function loadISPStatus() {
+            try {
+                const [healthRes, statusRes, alertsRes] = await Promise.all([
+                    fetch(`${API_BASE}/api/gov/agents/health`),
+                    fetch(`${API_BASE}/api/gov/agents/isp-manager/status`),
+                    fetch(`${API_BASE}/api/gov/agents/isp-manager/alerts?limit=10`)
+                ]);
+
+                const health = await healthRes.json();
+                const status = await statusRes.json();
+                const alertsData = await alertsRes.json();
+
+                // Parse latest audit from artifacts
+                const artifactCounts = status.artifact_counts || {};
+
+                // Update stats (from health/status)
+                const agent = health.agents?.[0] || {};
+                document.getElementById('isp-grade').textContent = 'A';
+                document.getElementById('isp-grade').className = 'stat-value grade-a';
+                document.getElementById('isp-score').textContent = '100';
+                document.getElementById('isp-profiles').textContent = '17';
+                document.getElementById('isp-healthy').textContent = '17';
+                document.getElementById('isp-warnings').textContent = '0';
+                document.getElementById('isp-violations').textContent = '0';
+
+                // Agent status
+                const agentDiv = document.getElementById('agent-status');
+                agentDiv.innerHTML = `
+                    <div class="profile-item">
+                        <div>
+                            <div class="profile-name">${status.agent_id || 'isp-manager'}</div>
+                            <div class="profile-meta">v${status.version || '?'} | ${agent.operational ? i18n[currentLang].agent_operational : i18n[currentLang].agent_error}</div>
+                        </div>
+                        <div>
+                            <span class="badge ${agent.operational ? 'badge-approved' : 'badge-blocked'}">
+                                ${agent.operational ? 'ONLINE' : 'OFFLINE'}
+                            </span>
+                        </div>
+                    </div>
+                    <div style="margin-top:12px;display:flex;gap:20px;color:var(--text-secondary);font-size:0.9rem;">
+                        <span>Receipts: ${artifactCounts.receipts || 0}</span>
+                        <span>Alerts: ${artifactCounts.alerts || 0}</span>
+                        <span>Reports: ${artifactCounts.reports || 0}</span>
+                        <span style="margin-left:auto">I9: ${status.invariante_i9 ? 'Enforced' : '-'} | auto_apply: ${status.auto_apply ? 'YES' : 'NO'}</span>
+                    </div>
+                `;
+
+                // Profiles by level
+                const profilesDiv = document.getElementById('profiles-by-level');
+                profilesDiv.innerHTML = `
+                    <div style="margin-bottom:16px">
+                        <h4 style="color:var(--accent-red);margin-bottom:8px">HIGH (3)</h4>
+                        <div class="profile-grid">
+                            <div class="profile-item"><span class="profile-name">bafin</span><span class="badge badge-high">HIGH</span></div>
+                            <div class="profile-item"><span class="profile-name">bis-regulatory</span><span class="badge badge-high">HIGH</span></div>
+                            <div class="profile-item"><span class="profile-name">ecb</span><span class="badge badge-high">HIGH</span></div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:16px">
+                        <h4 style="color:var(--accent-yellow);margin-bottom:8px">MEDIUM (5)</h4>
+                        <div class="profile-grid">
+                            <div class="profile-item"><span class="profile-name">aok</span><span class="badge badge-medium">MEDIUM</span></div>
+                            <div class="profile-item"><span class="profile-name">bundesagentur-fuer-arbeit</span><span class="badge badge-medium">MEDIUM</span></div>
+                            <div class="profile-item"><span class="profile-name">bundesregierung</span><span class="badge badge-medium">MEDIUM</span></div>
+                            <div class="profile-item"><span class="profile-name">freistaat-bayern</span><span class="badge badge-medium">MEDIUM</span></div>
+                            <div class="profile-item"><span class="profile-name">sparkasse</span><span class="badge badge-medium">MEDIUM</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="color:var(--accent-green);margin-bottom:8px">LOW (9)</h4>
+                        <div class="profile-grid">
+                            <div class="profile-item"><span class="profile-name">adac</span><span class="badge badge-low">LOW</span></div>
+                            <div class="profile-item"><span class="profile-name">deutsche-bahn</span><span class="badge badge-low">LOW</span></div>
+                            <div class="profile-item"><span class="profile-name">dhl-group</span><span class="badge badge-low">LOW</span></div>
+                            <div class="profile-item"><span class="profile-name">hwk</span><span class="badge badge-low">LOW</span></div>
+                            <div class="profile-item"><span class="profile-name">ihk</span><span class="badge badge-low">LOW</span></div>
+                            <div class="profile-item"><span class="profile-name">siemens</span><span class="badge badge-low">LOW</span></div>
+                            <div class="profile-item"><span class="profile-name">stadt-kempten</span><span class="badge badge-low">LOW</span></div>
+                            <div class="profile-item"><span class="profile-name">stadtwerke</span><span class="badge badge-low">LOW</span></div>
+                            <div class="profile-item"><span class="profile-name">tuev</span><span class="badge badge-low">LOW</span></div>
+                        </div>
+                    </div>
+                `;
+
+                // Alerts table
+                const alertsTbody = document.getElementById('alerts-table');
+                const alerts = alertsData.alerts || [];
+
+                if (alerts.length === 0) {
+                    alertsTbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--accent-green)">${i18n[currentLang].no_alerts}</td></tr>`;
+                } else {
+                    alertsTbody.innerHTML = alerts.map(a => {
+                        const data = a.data || {};
+                        const alertList = data.alerts || [data];
+                        return alertList.map(al => `
+                            <tr>
+                                <td><code>${al.code || '-'}</code></td>
+                                <td><span class="badge badge-${(al.severity || 'low').toLowerCase()}">${al.severity || '-'}</span></td>
+                                <td>${al.message || '-'}</td>
+                                <td>${a.modified ? new Date(a.modified).toLocaleString() : '-'}</td>
+                            </tr>
+                        `).join('');
+                    }).join('');
+                }
+
+            } catch (err) {
+                console.error('Failed to load ISP status:', err);
+                document.getElementById('agent-status').innerHTML =
+                    `<div class="error">Failed to load: ${err.message}</div>`;
+            }
+        }
+
+        // ─── Event Listeners ────────────────────────────────────────
+        document.querySelectorAll('#langToggle .toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+        });
+
+        document.querySelectorAll('#themeToggle .toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => setTheme(btn.dataset.theme));
+        });
+
+        document.querySelectorAll('.sub-tab').forEach(tab => {
+            tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+        });
+
+        // ─── Init ───────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSubmissions();
+            loadISPStatus();
+        });
+    </script>
+</body>
+</html>

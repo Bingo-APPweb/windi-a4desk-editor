@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>WINDI Governance — Tutorial</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1117;--card:#161b22;--card-alt:#1c2333;--text:#c9d1d9;--text-bright:#e6edf3;--border:#30363d;--accent:#3182ce;--low:#2ea043;--medium:#d29922;--high:#f85149;--glow-low:rgba(46,160,67,.15);--glow-med:rgba(210,153,34,.15);--glow-high:rgba(248,81,73,.15)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* Header */
+.hero{background:linear-gradient(135deg,#0d1117 0%,#161b22 40%,#1a1e2e 100%);border-bottom:1px solid var(--border);padding:40px 0 50px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;right:-20%;width:600px;height:600px;background:radial-gradient(circle,rgba(49,130,206,.06) 0%,transparent 70%);pointer-events:none}
+.hero-inner{max-width:900px;margin:0 auto;padding:0 24px;position:relative}
+.hero-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+.hero-logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--accent),#6366f1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.logo-label{font-weight:700;font-size:1.1rem;color:var(--text-bright)}
+.logo-label small{display:block;font-weight:400;font-size:.7rem;color:var(--text);opacity:.7;text-transform:uppercase;letter-spacing:1.5px}
+.hero-actions{display:flex;gap:8px}
+.btn-back{padding:8px 16px;background:var(--card-alt);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-size:.85rem;text-decoration:none;display:flex;align-items:center;gap:6px;font-family:inherit;transition:all .2s}
+.btn-back:hover{background:var(--border);color:var(--text-bright)}
+
+/* Language Switcher */
+.lang-switch{display:flex;gap:0;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.lang-btn{padding:8px 16px;background:transparent;border:none;color:var(--text);cursor:pointer;font-size:.85rem;font-family:inherit;font-weight:500;transition:all .2s;border-right:1px solid var(--border)}
+.lang-btn:last-child{border-right:none}
+.lang-btn:hover{background:var(--card-alt)}
+.lang-btn.active{background:var(--accent);color:#fff}
+
+.hero-title{font-size:2.2rem;font-weight:700;color:var(--text-bright);margin-bottom:8px;line-height:1.2}
+.hero-sub{font-size:1.05rem;color:var(--text);opacity:.7;max-width:600px;line-height:1.6}
+
+/* Content */
+.content{max-width:900px;margin:0 auto;padding:40px 24px 80px}
+
+/* Section */
+.section{margin-bottom:48px}
+.section-number{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--accent);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.section-number::after{content:'';flex:1;height:1px;background:var(--border)}
+.section-title{font-size:1.5rem;font-weight:700;color:var(--text-bright);margin-bottom:16px}
+.section-text{font-size:.95rem;line-height:1.8;color:var(--text);margin-bottom:16px}
+
+/* Level Cards */
+.level-showcase{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0}
+.level-show{border-radius:12px;padding:24px;position:relative;overflow:hidden}
+.level-show.lv-low{background:var(--glow-low);border:1px solid rgba(46,160,67,.25)}
+.level-show.lv-medium{background:var(--glow-med);border:1px solid rgba(210,153,34,.25)}
+.level-show.lv-high{background:var(--glow-high);border:1px solid rgba(248,81,73,.25)}
+.lv-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-weight:700;font-size:.8rem;margin-bottom:12px}
+.lv-low .lv-badge{background:rgba(46,160,67,.2);color:var(--low)}
+.lv-medium .lv-badge{background:rgba(210,153,34,.2);color:var(--medium)}
+.lv-high .lv-badge{background:rgba(248,81,73,.2);color:var(--high)}
+.lv-badge i{font-size:.5rem}
+.lv-name{font-weight:700;font-size:1.05rem;color:var(--text-bright);margin-bottom:4px}
+.lv-desc{font-size:.85rem;color:var(--text);opacity:.8;line-height:1.5}
+.lv-fields{margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--text);opacity:.6}
+
+/* Step Cards */
+.steps{display:flex;flex-direction:column;gap:16px;margin:20px 0}
+.step{display:flex;gap:16px;align-items:flex-start;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;transition:all .2s}
+.step:hover{border-color:var(--accent);transform:translateX(4px)}
+.step-num{width:36px;height:36px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0}
+.step-content h4{font-size:.95rem;color:var(--text-bright);margin-bottom:4px}
+.step-content p{font-size:.85rem;color:var(--text);opacity:.8;line-height:1.5}
+
+/* Code Block */
+.code-block{background:#0a0e14;border:1px solid var(--border);border-radius:8px;padding:16px;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:.8rem;color:#7fdbca;overflow-x:auto;line-height:1.6}
+.code-label{font-size:.7rem;color:var(--text);opacity:.5;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+
+/* Principle Box */
+.principle-box{background:linear-gradient(135deg,rgba(49,130,206,.08),rgba(99,102,241,.08));border:1px solid rgba(49,130,206,.2);border-radius:12px;padding:24px;text-align:center;margin:32px 0}
+.principle-box .icon{font-size:2rem;margin-bottom:8px}
+.principle-box .text{font-size:1.1rem;font-weight:600;color:var(--text-bright)}
+.principle-box .sub{font-size:.85rem;color:var(--text);opacity:.6;margin-top:4px}
+
+/* Tip Box */
+.tip-box{background:rgba(210,153,34,.08);border-left:3px solid var(--medium);border-radius:0 8px 8px 0;padding:16px 20px;margin:16px 0;font-size:.9rem;line-height:1.6}
+.tip-box strong{color:var(--medium)}
+
+/* Footer */
+.tutorial-footer{text-align:center;padding:32px;border-top:1px solid var(--border);color:var(--text);opacity:.4;font-size:.8rem}
+
+/* Responsive */
+@media(max-width:768px){
+  .level-showcase{grid-template-columns:1fr}
+  .hero-title{font-size:1.6rem}
+  .hero-nav{flex-direction:column;gap:12px;align-items:flex-start}
+}
+
+/* Language content */
+[data-lang]{display:none}
+[data-lang].visible{display:block}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-nav">
+      <div class="hero-logo">
+        <div class="logo-icon">🐉</div>
+        <div class="logo-label">WINDI<small>Pre-AI Governance Layer</small></div>
+      </div>
+      <div class="hero-actions">
+        <div class="lang-switch">
+          <button class="lang-btn active" onclick="setLang('de')">🇩🇪 DE</button>
+          <button class="lang-btn" onclick="setLang('en')">🇬🇧 EN</button>
+          <button class="lang-btn" onclick="setLang('pt')">🇧🇷 PT</button>
+        </div>
+        <a href="/governance" class="btn-back"><i class="fas fa-arrow-left"></i> Dashboard</a>
+        <a href="/" class="btn-back"><i class="fas fa-edit"></i> A4 Desk</a>
+      </div>
+    </div>
+
+    <!-- DE -->
+    <div data-lang="de" class="visible">
+      <h1 class="hero-title">Governance Dashboard — Anleitung</h1>
+      <p class="hero-sub">Erfahren Sie, wie Sie das WINDI-Governance-System nutzen, um Dokumente mit proportionalem Schutz zu erstellen, zu prüfen und zu verifizieren.</p>
+    </div>
+    <!-- EN -->
+    <div data-lang="en">
+      <h1 class="hero-title">Governance Dashboard — Tutorial</h1>
+      <p class="hero-sub">Learn how to use the WINDI governance system to create, audit and verify documents with proportional protection levels.</p>
+    </div>
+    <!-- PT -->
+    <div data-lang="pt">
+      <h1 class="hero-title">Dashboard de Governança — Tutorial</h1>
+      <p class="hero-sub">Aprenda a utilizar o sistema de governança WINDI para criar, auditar e verificar documentos com níveis proporcionais de proteção.</p>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- ===== SECTION 1: What is WINDI ===== -->
+  <div class="section">
+    <!-- DE -->
+    <div data-lang="de" class="visible">
+      <div class="section-number">01 — Grundprinzip</div>
+      <h2 class="section-title">Was ist WINDI-Governance?</h2>
+      <p class="section-text">WINDI ist eine Pre-AI Governance Layer — eine Schicht, die <strong>vor</strong> der KI-Verarbeitung greift. Bevor ein Dokument erstellt wird, prüft WINDI ob alle Governance-Anforderungen erfüllt sind. Fehlen Pflichtfelder, wird das Dokument blockiert.</p>
+      <div class="principle-box">
+        <div class="icon">🔒</div>
+        <div class="text">KI verarbeitet. Mensch entscheidet. WINDI garantiert.</div>
+        <div class="sub">Das Grundprinzip jeder WINDI-Entscheidung</div>
+      </div>
+      <p class="section-text">Das System unterstützt drei Governance-Stufen. Jede Stufe bietet proportionalen Schutz — vom täglichen Betrieb bis zur forensischen Regulierung.</p>
+    </div>
+    <!-- EN -->
+    <div data-lang="en">
+      <div class="section-number">01 — Core Principle</div>
+      <h2 class="section-title">What is WINDI Governance?</h2>
+      <p class="section-text">WINDI is a Pre-AI Governance Layer — a system that intervenes <strong>before</strong> AI processing. Before any document is generated, WINDI validates that all governance requirements are met. If mandatory fields are missing, the document is blocked.</p>
+      <div class="principle-box">
+        <div class="icon">🔒</div>
+        <div class="text">AI processes. Human decides. WINDI guarantees.</div>
+        <div class="sub">The foundational principle behind every WINDI decision</div>
+      </div>
+      <p class="section-text">The system supports three governance levels. Each level provides proportional protection — from daily operations to forensic regulatory compliance.</p>
+    </div>
+    <!-- PT -->
+    <div data-lang="pt">
+      <div class="section-number">01 — Princípio Fundamental</div>
+      <h2 class="section-title">O que é Governança WINDI?</h2>
+      <p class="section-text">WINDI é uma Camada de Governança Pré-IA — um sistema que intervém <strong>antes</strong> do processamento da IA. Antes de qualquer documento ser gerado, WINDI valida se todos os requisitos de governança estão cumpridos. Se campos obrigatórios estiverem faltando, o documento é bloqueado.</p>
+      <div class="principle-box">
+        <div class="icon">🔒</div>
+        <div class="text">IA processa. Humano decide. WINDI garante.</div>
+        <div class="sub">O princípio fundacional por trás de cada decisão WINDI</div>
+      </div>
+      <p class="section-text">O sistema suporta três níveis de governança. Cada nível oferece proteção proporcional — desde operações diárias até conformidade regulatória forense.</p>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 2: Three Levels ===== -->
+  <div class="section">
+    <!-- DE -->
+    <div data-lang="de" class="visible">
+      <div class="section-number">02 — Drei Stufen</div>
+      <h2 class="section-title">LOW — MEDIUM — HIGH</h2>
+      <p class="section-text">Governance muss proportional zum Dokumentrisiko sein. Ein internes Memo braucht keine forensische Versiegelung. Ein Regulierungsbericht braucht jede Sicherheitsebene.</p>
+    </div>
+    <div data-lang="en">
+      <div class="section-number">02 — Three Levels</div>
+      <h2 class="section-title">LOW — MEDIUM — HIGH</h2>
+      <p class="section-text">Governance must be proportional to document risk. An internal memo doesn't need forensic sealing. A regulatory report needs every security layer.</p>
+    </div>
+    <div data-lang="pt">
+      <div class="section-number">02 — Três Níveis</div>
+      <h2 class="section-title">LOW — MEDIUM — HIGH</h2>
+      <p class="section-text">Governança deve ser proporcional ao risco do documento. Um memorando interno não precisa de selagem forense. Um relatório regulatório precisa de cada camada de segurança.</p>
+    </div>
+
+    <div class="level-showcase">
+      <div class="level-show lv-low">
+        <div class="lv-badge"><i class="fas fa-circle"></i> LOW</div>
+        <!-- DE -->
+        <div data-lang="de" class="visible">
+          <div class="lv-name">Operational Standard</div>
+          <div class="lv-desc">Tägliche Betriebsdokumente. Keine Metadaten erforderlich. Governance unsichtbar im Arbeitsalltag.</div>
+          <div class="lv-fields">Profil: Deutsche Bahn</div>
+        </div>
+        <div data-lang="en">
+          <div class="lv-name">Operational Standard</div>
+          <div class="lv-desc">Day-to-day operational documents. No metadata required. Governance is invisible in daily workflow.</div>
+          <div class="lv-fields">Profile: Deutsche Bahn</div>
+        </div>
+        <div data-lang="pt">
+          <div class="lv-name">Padrão Operacional</div>
+          <div class="lv-desc">Documentos operacionais do dia a dia. Sem metadados obrigatórios. Governança invisível no fluxo de trabalho.</div>
+          <div class="lv-fields">Perfil: Deutsche Bahn</div>
+        </div>
+      </div>
+
+      <div class="level-show lv-medium">
+        <div class="lv-badge"><i class="fas fa-circle"></i> MEDIUM</div>
+        <div data-lang="de" class="visible">
+          <div class="lv-name">Institutional Standard</div>
+          <div class="lv-desc">Institutionelle Dokumente mit 7 Pflichtfeldern. Verantwortung dokumentiert, aber ohne forensische Versiegelung.</div>
+          <div class="lv-fields">Profil: Bundesregierung<br>7 Felder: Behörde, Abteilung, Zweck, Zeitraum, Vertraulichkeit, Eigentümer, Status</div>
+        </div>
+        <div data-lang="en">
+          <div class="lv-name">Institutional Standard</div>
+          <div class="lv-desc">Institutional documents with 7 mandatory fields. Responsibility documented, but without forensic sealing.</div>
+          <div class="lv-fields">Profile: Bundesregierung<br>7 fields: Authority, Department, Purpose, Period, Confidentiality, Owner, Status</div>
+        </div>
+        <div data-lang="pt">
+          <div class="lv-name">Padrão Institucional</div>
+          <div class="lv-desc">Documentos institucionais com 7 campos obrigatórios. Responsabilidade documentada, mas sem selagem forense.</div>
+          <div class="lv-fields">Perfil: Bundesregierung<br>7 campos: Autoridade, Departamento, Finalidade, Período, Confidencialidade, Proprietário, Status</div>
+        </div>
+      </div>
+
+      <div class="level-show lv-high">
+        <div class="lv-badge"><i class="fas fa-circle"></i> HIGH</div>
+        <div data-lang="de" class="visible">
+          <div class="lv-name">Forensic Regulatory</div>
+          <div class="lv-desc">Regulierungsdokumente mit 10 SDMX-Feldern, Submission-ID, kryptografischer Versiegelung und forensischem Register.</div>
+          <div class="lv-fields">Profil: BIS-Style<br>10 Felder + Hash + Submission-ID + Registry</div>
+        </div>
+        <div data-lang="en">
+          <div class="lv-name">Forensic Regulatory</div>
+          <div class="lv-desc">Regulatory documents with 10 SDMX-aligned fields, submission ID, cryptographic sealing and forensic registry.</div>
+          <div class="lv-fields">Profile: BIS-Style<br>10 fields + Hash + Submission ID + Registry</div>
+        </div>
+        <div data-lang="pt">
+          <div class="lv-name">Regulatório Forense</div>
+          <div class="lv-desc">Documentos regulatórios com 10 campos SDMX, ID de submissão, selagem criptográfica e registro forense.</div>
+          <div class="lv-fields">Perfil: BIS-Style<br>10 campos + Hash + Submission ID + Registry</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 3: Generate ===== -->
+  <div class="section">
+    <div data-lang="de" class="visible">
+      <div class="section-number">03 — Dokument erstellen</div>
+      <h2 class="section-title">Generate-Seite verwenden</h2>
+      <p class="section-text">So erstellen Sie ein governiertes Dokument in drei Schritten:</p>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-content"><h4>Stufe wählen</h4><p>Klicken Sie auf LOW, MEDIUM oder HIGH. Die Auswahl bestimmt, welche Metadaten erforderlich sind und welches Schutzprofil aktiviert wird.</p></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-content"><h4>Metadaten ausfüllen</h4><p>Bei MEDIUM erscheinen 7 institutionelle Felder. Bei HIGH erscheinen 10 regulatorische Felder. Alle Pflichtfelder müssen ausgefüllt sein. Bei LOW sind keine Metadaten nötig.</p></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-content"><h4>Generieren klicken</h4><p>Der grüne Button startet die Governance-Prüfung. Bei Erfolg: APPROVED mit Details. Bei fehlenden Daten: BLOCKED mit Fehlermeldung.</p></div></div>
+      </div>
+      <div class="tip-box"><strong>Tipp:</strong> Testen Sie zuerst LOW ohne Metadaten, dann MEDIUM mit allen 7 Feldern, und schließlich HIGH mit dem kompletten regulatorischen Datensatz.</div>
+    </div>
+
+    <div data-lang="en">
+      <div class="section-number">03 — Generate Documents</div>
+      <h2 class="section-title">Using the Generate Page</h2>
+      <p class="section-text">Create a governed document in three steps:</p>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-content"><h4>Select Level</h4><p>Click LOW, MEDIUM, or HIGH. The selection determines which metadata fields are required and which protection profile is activated.</p></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-content"><h4>Fill Metadata</h4><p>For MEDIUM, 7 institutional fields appear. For HIGH, 10 regulatory fields. All mandatory fields must be completed. LOW requires no metadata.</p></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-content"><h4>Click Generate</h4><p>The green button triggers the governance check. Success: APPROVED with full details. Missing data: BLOCKED with error message.</p></div></div>
+      </div>
+      <div class="tip-box"><strong>Tip:</strong> Test LOW first without metadata, then MEDIUM with all 7 fields, and finally HIGH with the complete regulatory dataset.</div>
+    </div>
+
+    <div data-lang="pt">
+      <div class="section-number">03 — Gerar Documentos</div>
+      <h2 class="section-title">Usando a Página de Geração</h2>
+      <p class="section-text">Crie um documento governado em três passos:</p>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-content"><h4>Selecionar Nível</h4><p>Clique em LOW, MEDIUM ou HIGH. A seleção determina quais metadados são obrigatórios e qual perfil de proteção é ativado.</p></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-content"><h4>Preencher Metadados</h4><p>Para MEDIUM, 7 campos institucionais aparecem. Para HIGH, 10 campos regulatórios. Todos os campos obrigatórios devem ser preenchidos. LOW não exige metadados.</p></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-content"><h4>Clicar em Gerar</h4><p>O botão verde dispara a verificação de governança. Sucesso: APPROVED com detalhes. Dados faltantes: BLOCKED com mensagem de erro.</p></div></div>
+      </div>
+      <div class="tip-box"><strong>Dica:</strong> Teste primeiro LOW sem metadados, depois MEDIUM com os 7 campos, e finalmente HIGH com o conjunto regulatório completo.</div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 4: Audit ===== -->
+  <div class="section">
+    <div data-lang="de" class="visible">
+      <div class="section-number">04 — Audit</div>
+      <h2 class="section-title">Audit-Dashboard lesen</h2>
+      <p class="section-text">Die Audit-Seite zeigt in Echtzeit den Zustand des Governance-Systems. Oben sehen Sie Statistiken: wie viele Submissions insgesamt existieren und wie sie sich auf LOW, MEDIUM und HIGH verteilen.</p>
+      <p class="section-text">Die <strong>Chain Integrity</strong>-Anzeige zeigt, ob alle HIGH-Submissions kryptografisch versiegelt sind. "COMPLETE" bedeutet: jede Submission hat einen Integritäts-Hash und ist im forensischen Register eingetragen.</p>
+      <p class="section-text">Darunter erscheint die <strong>Submission Registry</strong> — eine Tabelle aller versiegelten Dokumente mit ID, Entität, Stufe und Zeitstempel.</p>
+    </div>
+    <div data-lang="en">
+      <div class="section-number">04 — Audit</div>
+      <h2 class="section-title">Reading the Audit Dashboard</h2>
+      <p class="section-text">The Audit page shows real-time system state. At the top, you see statistics: total submissions and their distribution across LOW, MEDIUM, and HIGH levels.</p>
+      <p class="section-text">The <strong>Chain Integrity</strong> indicator shows whether all HIGH submissions are cryptographically sealed. "COMPLETE" means every submission has an integrity hash and is registered in the forensic registry.</p>
+      <p class="section-text">Below that, the <strong>Submission Registry</strong> table lists all sealed documents with their ID, entity, level, and timestamp.</p>
+    </div>
+    <div data-lang="pt">
+      <div class="section-number">04 — Auditoria</div>
+      <h2 class="section-title">Lendo o Dashboard de Auditoria</h2>
+      <p class="section-text">A página de Auditoria mostra o estado do sistema em tempo real. No topo, você vê estatísticas: total de submissões e sua distribuição entre LOW, MEDIUM e HIGH.</p>
+      <p class="section-text">O indicador de <strong>Integridade da Cadeia</strong> mostra se todas as submissões HIGH estão criptograficamente seladas. "COMPLETE" significa que cada submissão tem um hash de integridade e está registrada no registro forense.</p>
+      <p class="section-text">Abaixo, a tabela <strong>Registro de Submissões</strong> lista todos os documentos selados com ID, entidade, nível e timestamp.</p>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 5: Compliance ===== -->
+  <div class="section">
+    <div data-lang="de" class="visible">
+      <div class="section-number">05 — Compliance</div>
+      <h2 class="section-title">Neun Invarianten</h2>
+      <p class="section-text">Die Compliance-Seite zeigt die neun WINDI-Invarianten (I1-I9, inkl. I9 — UNWIDERRUFLICH) — Prinzipien, die niemals verletzt werden dürfen, unabhängig von der Governance-Stufe.</p>
+      <p class="section-text">Die <strong>Governance-Matrix</strong> vergleicht alle drei Stufen nach 10 Merkmalen: Metadaten, Policy-Version, Config-Hash, Submission-ID, Integritäts-Hash, Forensisches Register, Audit-Trail, Wasserzeichen, Generierungsblockierung und Manipulationsnachweis.</p>
+      <div class="tip-box"><strong>Hinweis:</strong> Die Invarianten I1-I9 gelten für ALLE Stufen. Soberania (I1) bedeutet: Der Mensch entscheidet immer — die KI empfiehlt nur.</div>
+    </div>
+    <div data-lang="en">
+      <div class="section-number">05 — Compliance</div>
+      <h2 class="section-title">Nine Invariants</h2>
+      <p class="section-text">The Compliance page shows the nine WINDI invariants (I1-I9, incl. I9 — IRREMEDIABLE) — principles that must never be violated, regardless of governance level.</p>
+      <p class="section-text">The <strong>Governance Matrix</strong> compares all three levels across 10 features: Metadata, Policy Version, Config Hash, Submission ID, Integrity Hash, Forensic Registry, Audit Trail, Watermark, Generation Blocking, and Tamper Evidence.</p>
+      <div class="tip-box"><strong>Note:</strong> Invariants I1-I9 apply to ALL levels. Soberania (I1) means: the human always decides — AI only recommends.</div>
+    </div>
+    <div data-lang="pt">
+      <div class="section-number">05 — Conformidade</div>
+      <h2 class="section-title">Nove Invariantes</h2>
+      <p class="section-text">A página de Conformidade mostra os nove invariantes WINDI (I1-I9, incl. I9 — IRREMEDIÁVEL) — princípios que nunca podem ser violados, independentemente do nível de governança.</p>
+      <p class="section-text">A <strong>Matriz de Governança</strong> compara os três níveis em 10 características: Metadados, Versão da Política, Hash de Configuração, ID de Submissão, Hash de Integridade, Registro Forense, Trilha de Auditoria, Marca d'água, Bloqueio de Geração e Evidência de Manipulação.</p>
+      <div class="tip-box"><strong>Nota:</strong> Os invariantes I1-I9 se aplicam a TODOS os níveis. Soberania (I1) significa: o humano sempre decide — a IA apenas recomenda.</div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 6: API Examples ===== -->
+  <div class="section">
+    <div data-lang="de" class="visible">
+      <div class="section-number">06 — API-Beispiele</div>
+      <h2 class="section-title">Direkte API-Nutzung</h2>
+      <p class="section-text">Das Dashboard kommuniziert mit der WINDI Governance API. Sie können die API auch direkt per curl aufrufen:</p>
+    </div>
+    <div data-lang="en">
+      <div class="section-number">06 — API Examples</div>
+      <h2 class="section-title">Direct API Usage</h2>
+      <p class="section-text">The dashboard communicates with the WINDI Governance API. You can also call the API directly via curl:</p>
+    </div>
+    <div data-lang="pt">
+      <div class="section-number">06 — Exemplos de API</div>
+      <h2 class="section-title">Uso Direto da API</h2>
+      <p class="section-text">O dashboard se comunica com a API de Governança WINDI. Você também pode chamar a API diretamente via curl:</p>
+    </div>
+
+    <div class="code-label">LOW — Approved instantly</div>
+    <div class="code-block">curl -X POST /api/governance/generate \
+  -H "Content-Type: application/json" \
+  -d '{"governance_level": "LOW"}'
+
+→ {"status": "APPROVED", "governance_level": "LOW"}</div>
+
+    <div class="code-label">MEDIUM — Requires 7 institutional fields</div>
+    <div class="code-block">curl -X POST /api/governance/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "governance_level": "MEDIUM",
+    "isp_profile": "bundesregierung",
+    "metadata": {
+      "issuing_authority": "Bundesregierung",
+      "issuing_department": "Stabsstelle",
+      "document_purpose": "abstimmung",
+      "reference_period": "2026-02",
+      "confidentiality_level": "restricted",
+      "document_owner": "Chief of Staff",
+      "validation_status": "provisional"
+    }
+  }'
+
+→ {"status": "APPROVED", "governance_level": "MEDIUM"}</div>
+
+    <div class="code-label">MEDIUM — Blocked without metadata</div>
+    <div class="code-block">curl -X POST /api/governance/generate \
+  -d '{"governance_level": "MEDIUM", "metadata": {}}'
+
+→ {"status": "BLOCKED", "error": "Metadata block 'institutional' required"}</div>
+  </div>
+
+  <!-- ===== SECTION 7: Architecture ===== -->
+  <div class="section">
+    <div data-lang="de" class="visible">
+      <div class="section-number">07 — Architektur</div>
+      <h2 class="section-title">Systemübersicht</h2>
+      <p class="section-text">WINDI besteht aus drei Hauptkomponenten: dem A4 Desk BABEL Editor (Port 8085), der Governance API Engine (Port 8080), und den ISP-Profilen (Institutional Style Profiles) für jeden Kunden.</p>
+    </div>
+    <div data-lang="en">
+      <div class="section-number">07 — Architecture</div>
+      <h2 class="section-title">System Overview</h2>
+      <p class="section-text">WINDI consists of three main components: the A4 Desk BABEL Editor (Port 8085), the Governance API Engine (Port 8080), and ISP profiles (Institutional Style Profiles) for each client.</p>
+    </div>
+    <div data-lang="pt">
+      <div class="section-number">07 — Arquitetura</div>
+      <h2 class="section-title">Visão Geral do Sistema</h2>
+      <p class="section-text">WINDI consiste em três componentes principais: o Editor A4 Desk BABEL (Porta 8085), o Engine da API de Governança (Porta 8080), e os perfis ISP (Institutional Style Profiles) para cada cliente.</p>
+    </div>
+
+    <div class="code-block" style="color:var(--text);text-align:center">
+┌──────────────────────────────────────────────┐
+│            A4 Desk BABEL (:8085)             │
+│     Editor + Chat + Export + Governance      │
+└──────────────┬───────────────────────────────┘
+               │
+               ▼
+┌──────────────────────────────────────────────┐
+│        WINDI Governance API (:8080)          │
+│   Validator → ISP Loader → Registry          │
+├──────────┬───────────┬───────────────────────┤
+│ 🟢 LOW   │ 🟠 MEDIUM │ 🔴 HIGH              │
+│ DB       │ BReg      │ BIS                   │
+│ 0 fields │ 7 fields  │ 10 fields + seal      │
+└──────────┴───────────┴───────────────────────┘
+               │
+               ▼
+┌──────────────────────────────────────────────┐
+│          ISP Profiles (/opt/windi/isp)       │
+│  deutsche-bahn │ bundesregierung │ bis-style │
+└──────────────────────────────────────────────┘</div>
+  </div>
+
+  <!-- Final Principle -->
+  <div class="principle-box">
+    <div class="icon">🐉</div>
+    <div data-lang="de" class="visible">
+      <div class="text">KI verarbeitet. Mensch entscheidet. WINDI garantiert.</div>
+      <div class="sub">WINDI SYSTEM — Kempten, Bavaria — EU AI Act Compliant</div>
+    </div>
+    <div data-lang="en">
+      <div class="text">AI processes. Human decides. WINDI guarantees.</div>
+      <div class="sub">WINDI SYSTEM — Kempten, Bavaria — EU AI Act Compliant</div>
+    </div>
+    <div data-lang="pt">
+      <div class="text">IA processa. Humano decide. WINDI garante.</div>
+      <div class="sub">WINDI SYSTEM — Kempten, Bavária — Conformidade EU AI Act</div>
+    </div>
+  </div>
+</div>
+
+<div class="tutorial-footer">
+  WINDI SYSTEM — Pre-AI Governance Layer v2.0 — Tutorial v1.0 — 01.02.2026
+</div>
+
+<script>
+function setLang(lang) {
+  document.querySelectorAll('[data-lang]').forEach(el => {
+    el.classList.toggle('visible', el.dataset.lang === lang);
+  });
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.includes(lang.toUpperCase()));
+  });
+  document.documentElement.lang = lang;
+}
+</script>
+</body>
+</html>

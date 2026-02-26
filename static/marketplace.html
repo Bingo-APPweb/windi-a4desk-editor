@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WINDI Marketplace — Module & Skills</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --card: #1a1a26;
+  --border: #2a2a3a;
+  --hover: #22222e;
+
+  --text: #f0efe8;
+  --text-sec: #7a7a72;
+  --text-dim: #4a4a44;
+
+  --gold: #c9a84c;
+  --gold-light: #e8d48b;
+  --gold-dim: #8a7535;
+
+  --green: #4ade80;
+  --green-bg: rgba(74,222,128,0.08);
+  --green-border: rgba(74,222,128,0.2);
+
+  --yellow: #facc15;
+  --yellow-bg: rgba(250,204,21,0.08);
+  --yellow-border: rgba(250,204,21,0.2);
+
+  --red: #f87171;
+  --red-bg: rgba(248,113,113,0.08);
+  --red-border: rgba(248,113,113,0.2);
+
+  --blue: #60a5fa;
+  --blue-bg: rgba(96,165,250,0.08);
+  --blue-border: rgba(96,165,250,0.2);
+
+  --radius: 12px;
+  --radius-lg: 16px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ══════ HEADER ══════ */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-mark {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Bricolage Grotesque', serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: #0a0a0f;
+}
+
+.logo-text {
+  font-family: 'Bricolage Grotesque', serif;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
+.header-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--gold);
+  padding: 6px 14px;
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 20px;
+}
+
+.lang-switch {
+  display: flex;
+  gap: 4px;
+}
+
+.lang-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-sec);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.lang-btn.active, .lang-btn:hover {
+  background: var(--gold);
+  color: #0a0a0f;
+  border-color: var(--gold);
+}
+
+/* ══════ HERO ══════ */
+.hero {
+  text-align: center;
+  padding: 60px 24px 40px;
+  background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+}
+
+.hero h1 {
+  font-family: 'Bricolage Grotesque', serif;
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.hero h1 span { color: var(--gold); }
+
+.hero p {
+  font-size: 16px;
+  color: var(--text-sec);
+  max-width: 600px;
+  margin: 0 auto 24px;
+  line-height: 1.6;
+}
+
+.stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-value {
+  font-family: 'Bricolage Grotesque', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+
+/* ══════ FILTER TABS ══════ */
+.filter-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px 24px;
+}
+
+.filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-sec);
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover { border-color: var(--text-sec); }
+
+.filter-btn.active {
+  background: var(--gold);
+  color: #0a0a0f;
+  border-color: var(--gold);
+}
+
+.filter-btn[data-tier="FREE"].active { background: var(--green); border-color: var(--green); }
+.filter-btn[data-tier="PROFESSIONAL"].active { background: var(--yellow); border-color: var(--yellow); }
+.filter-btn[data-tier="ENTERPRISE"].active { background: var(--red); border-color: var(--red); }
+
+/* ══════ MODULES GRID ══════ */
+.modules-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.section-title {
+  font-family: 'Bricolage Grotesque', serif;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-title .icon { font-size: 24px; }
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+/* ══════ MODULE CARD ══════ */
+.module-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.module-card:hover {
+  border-color: var(--gold-dim);
+  transform: translateY(-2px);
+}
+
+.module-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+
+.module-card.tier-FREE::before { background: var(--green); }
+.module-card.tier-PROFESSIONAL::before { background: var(--yellow); }
+.module-card.tier-ENTERPRISE::before { background: var(--red); }
+
+.card-header {
+  padding: 20px 20px 16px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.tier-FREE .card-icon { background: var(--green-bg); border: 1px solid var(--green-border); }
+.tier-PROFESSIONAL .card-icon { background: var(--yellow-bg); border: 1px solid var(--yellow-border); }
+.tier-ENTERPRISE .card-icon { background: var(--red-bg); border: 1px solid var(--red-border); }
+
+.card-meta {
+  flex: 1;
+}
+
+.card-title {
+  font-family: 'Bricolage Grotesque', serif;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.card-desc {
+  font-size: 12px;
+  color: var(--text-sec);
+  line-height: 1.5;
+}
+
+.status-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.status-LIVE {
+  background: var(--green-bg);
+  color: var(--green);
+  border: 1px solid var(--green-border);
+}
+
+.status-READY {
+  background: var(--blue-bg);
+  color: var(--blue);
+  border: 1px solid var(--blue-border);
+}
+
+.status-COMING_SOON {
+  background: var(--yellow-bg);
+  color: var(--yellow);
+  border: 1px solid var(--yellow-border);
+}
+
+.card-body {
+  padding: 0 20px 16px;
+}
+
+.features-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.features-list li {
+  font-size: 12px;
+  color: var(--text-sec);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.features-list li::before {
+  content: '✓';
+  font-size: 10px;
+  color: var(--gold);
+}
+
+.card-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0,0,0,0.2);
+}
+
+.tier-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.tier-FREE .tier-badge { background: var(--green-bg); color: var(--green); }
+.tier-PROFESSIONAL .tier-badge { background: var(--yellow-bg); color: var(--yellow); }
+.tier-ENTERPRISE .tier-badge { background: var(--red-bg); color: var(--red); }
+
+.port-info {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.lines-info {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+/* ══════ AGENTS SECTION ══════ */
+.agents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.agent-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.2s;
+}
+
+.agent-card:hover {
+  border-color: var(--gold-dim);
+}
+
+.agent-icon {
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  background: rgba(201,168,76,0.1);
+  border: 1px solid rgba(201,168,76,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.agent-info h4 {
+  font-family: 'Bricolage Grotesque', serif;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.agent-info p {
+  font-size: 11px;
+  color: var(--text-sec);
+}
+
+/* ══════ FOOTER ══════ */
+.footer {
+  text-align: center;
+  padding: 40px 24px;
+  border-top: 1px solid var(--border);
+  margin-top: 60px;
+}
+
+.footer-brand {
+  font-family: 'Bricolage Grotesque', serif;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.footer-brand span { color: var(--gold); }
+
+.footer-tagline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+/* ══════ RESPONSIVE ══════ */
+@media (max-width: 700px) {
+  .modules-grid { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 28px; }
+  .stats-row { gap: 24px; }
+}
+
+/* ══════ ANIMATIONS ══════ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.module-card {
+  animation: fadeIn 0.4s ease both;
+}
+
+.module-card:nth-child(1) { animation-delay: 0.05s; }
+.module-card:nth-child(2) { animation-delay: 0.1s; }
+.module-card:nth-child(3) { animation-delay: 0.15s; }
+.module-card:nth-child(4) { animation-delay: 0.2s; }
+.module-card:nth-child(5) { animation-delay: 0.25s; }
+.module-card:nth-child(6) { animation-delay: 0.3s; }
+</style>
+</head>
+<body>
+
+<!-- ══════ HEADER ══════ -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-mark">W</div>
+    <span class="logo-text">WINDI</span>
+  </div>
+  <div class="header-tag">MARKETPLACE</div>
+  <div class="lang-switch">
+    <button class="lang-btn active" data-lang="de">DE</button>
+    <button class="lang-btn" data-lang="en">EN</button>
+    <button class="lang-btn" data-lang="pt">PT</button>
+  </div>
+</header>
+
+<!-- ══════ HERO ══════ -->
+<section class="hero">
+  <h1 data-de="Module & <span>Skills</span>"
+      data-en="Modules & <span>Skills</span>"
+      data-pt="Módulos & <span>Skills</span>">Module & <span>Skills</span></h1>
+  <p data-de="Erweitern Sie Ihre Governance-Fähigkeiten. Gleicher Flieger, gleiche Sicherheit — die Flughöhe bestimmt Ihre Werkzeuge."
+     data-en="Extend your governance capabilities. Same aircraft, same security — altitude determines your tools."
+     data-pt="Expanda suas capacidades de governança. Mesmo avião, mesma segurança — a altitude determina suas ferramentas.">
+    Erweitern Sie Ihre Governance-Fähigkeiten. Gleicher Flieger, gleiche Sicherheit — die Flughöhe bestimmt Ihre Werkzeuge.
+  </p>
+
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-value">14</div>
+      <div class="stat-label" data-de="Module" data-en="Modules" data-pt="Módulos">Module</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">6</div>
+      <div class="stat-label" data-de="Agenten" data-en="Agents" data-pt="Agentes">Agenten</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">17</div>
+      <div class="stat-label" data-de="ISP Profile" data-en="ISP Profiles" data-pt="Perfis ISP">ISP Profile</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">12.5k</div>
+      <div class="stat-label" data-de="Zeilen Code" data-en="Lines of Code" data-pt="Linhas de Código">Zeilen Code</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ FILTERS ══════ -->
+<section class="filter-section">
+  <div class="filter-row">
+    <button class="filter-btn active" data-filter="all"
+            data-de="Alle" data-en="All" data-pt="Todos">Alle</button>
+    <button class="filter-btn" data-filter="LIVE"
+            data-de="Live" data-en="Live" data-pt="Live">Live</button>
+    <button class="filter-btn" data-filter="COMING_SOON"
+            data-de="Bald Verfügbar" data-en="Coming Soon" data-pt="Em Breve">Bald Verfügbar</button>
+    <button class="filter-btn" data-tier="FREE"
+            data-de="🟢 Onboard" data-en="🟢 Onboard" data-pt="🟢 Onboard">🟢 Onboard</button>
+    <button class="filter-btn" data-tier="PROFESSIONAL"
+            data-de="🟡 Sala VIP" data-en="🟡 VIP Lounge" data-pt="🟡 Sala VIP">🟡 Sala VIP</button>
+    <button class="filter-btn" data-tier="ENTERPRISE"
+            data-de="🔴 Cockpit" data-en="🔴 Cockpit" data-pt="🔴 Cockpit">🔴 Cockpit</button>
+  </div>
+</section>
+
+<!-- ══════ MODULES ══════ -->
+<section class="modules-section">
+  <h2 class="section-title">
+    <span class="icon">📦</span>
+    <span data-de="Governance Module" data-en="Governance Modules" data-pt="Módulos de Governança">Governance Module</span>
+  </h2>
+
+  <div class="modules-grid" id="modulesGrid">
+
+    <!-- BABEL EDITOR -->
+    <div class="module-card tier-FREE" data-tier="FREE" data-status="LIVE">
+      <div class="card-header">
+        <div class="card-icon">📝</div>
+        <div class="card-meta">
+          <h3 class="card-title">W-a4Desk BABEL Editor</h3>
+          <p class="card-desc"
+             data-de="Tiptap-basierter Governance-Editor mit SGE 6-Layer Analyse"
+             data-en="Tiptap-based Governance Editor with SGE 6-Layer Analysis"
+             data-pt="Editor de Governança baseado em Tiptap com Análise SGE 6-Layer">
+            Tiptap-basierter Governance-Editor mit SGE 6-Layer Analyse
+          </p>
+        </div>
+        <span class="status-badge status-LIVE">LIVE</span>
+      </div>
+      <div class="card-body">
+        <ul class="features-list">
+          <li data-de="PDF/DOCX/Bilder Upload" data-en="PDF/DOCX/Image upload" data-pt="Upload PDF/DOCX/Imagens">PDF/DOCX/Bilder Upload</li>
+          <li data-de="SGE 6-Layer Analyse" data-en="SGE 6-Layer Analysis" data-pt="Análise SGE 6-Layer">SGE 6-Layer Analyse</li>
+          <li data-de="Risikostufe R0–R5" data-en="Risk level R0–R5" data-pt="Nível de risco R0–R5">Risikostufe R0–R5</li>
+          <li data-de="Trilingual DE/EN/PT" data-en="Trilingual DE/EN/PT" data-pt="Trilíngue DE/EN/PT">Trilingual DE/EN/PT</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="tier-badge">🟢 ONBOARD</span>
+        <span class="port-info">:8085</span>
+        <span class="lines-info">1,410 LOC</span>
+      </div>
+    </div>
+
+    <!-- SGE ENGINE -->
+    <div class="module-card tier-FREE" data-tier="FREE" data-status="LIVE">
+      <div class="card-header">
+        <div class="card-icon">🔬</div>
+        <div class="card-meta">
+          <h3 class="card-title">SGE — Semantic Governance</h3>
+          <p class="card-desc"
+             data-de="6-Schichten semantische Analyse: Lexical → Institutional"
+             data-en="6-Layer semantic analysis: Lexical → Institutional"
+             data-pt="Análise semântica de 6 camadas: Lexical → Institutional">
+            6-Schichten semantische Analyse: Lexical → Institutional
+          </p>
+        </div>
+        <span class="status-badge status-LIVE">LIVE</span>
+      </div>
+      <div class="card-body">
+        <ul class="features-list">
+          <li>Lexical · Syntactic · Semantic</li>
+          <li>Pragmatic · Regulatory · Institutional</li>
+          <li data-de="Persona-Modus" data-en="Persona mode" data-pt="Modo Persona">Persona-Modus</li>
+          <li data-de="9 Invarianten (I1–I9)" data-en="9 Invariants (I1–I9)" data-pt="9 Invariantes (I1–I9)">9 Invarianten (I1–I9)</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="tier-badge">🟢 ONBOARD</span>
+        <span class="port-info">—</span>
+        <span class="lines-info">890 LOC</span>
+      </div>
+    </div>
+
+    <!-- ISP HUB -->
+    <div class="module-card tier-PROFESSIONAL" data-tier="PROFESSIONAL" data-status="LIVE">
+      <div class="card-header">
+        <div class="card-icon">🏗️</div>
+        <div class="card-meta">
+          <h3 class="card-title">ISP Hub — Institutional Profiles</h3>
+          <p class="card-desc"
+             data-de="17 vorgefertigte institutionelle Profile + Custom"
+             data-en="17 pre-built institutional profiles + Custom"
+             data-pt="17 perfis institucionais pré-construídos + Custom">
+            17 vorgefertigte institutionelle Profile + Custom
+          </p>
+        </div>
+        <span class="status-badge status-LIVE">LIVE</span>
+      </div>
+      <div class="card-body">
+        <ul class="features-list">
+          <li data-de="Deutsche Bahn, ECB, BaFin..." data-en="Deutsche Bahn, ECB, BaFin..." data-pt="Deutsche Bahn, ECB, BaFin...">Deutsche Bahn, ECB, BaFin...</li>
+          <li data-de="3 Governance-Stufen je ISP" data-en="3 Governance levels per ISP" data-pt="3 níveis de Governança por ISP">3 Governance-Stufen je ISP</li>
+          <li data-de="Identity License Management" data-en="Identity License Management" data-pt="Gerenciamento de Licença de Identidade">Identity License Management</li>
+          <li data-de="Branding & Templates" data-en="Branding & Templates" data-pt="Branding & Templates">Branding & Templates</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="tier-badge">🟡 SALA VIP</span>
+        <span class="port-info">—</span>
+        <span class="lines-info">17 profiles</span>
+      </div>
+    </div>
+
+    <!-- PIXWINDI -->
+    <div class="module-card tier-PROFESSIONAL" data-tier="PROFESSIONAL" data-status="LIVE">
+      <div class="card-header">
+        <div class="card-icon">📸</div>
+        <div class="card-meta">
+          <h3 class="card-title">PixWindi — Anti-Deep Fake</h3>
+          <p class="card-desc"
+             data-de="Forensische Bildanalyse mit PRNU Sensor-DNA"
+             data-en="Forensic image analysis with PRNU Sensor-DNA"
+             data-pt="Análise forense de imagem com Sensor-DNA PRNU">
+            Forensische Bildanalyse mit PRNU Sensor-DNA
+          </p>
+        </div>
+        <span class="status-badge status-LIVE">LIVE</span>
+      </div>
+      <div class="card-body">
+        <ul class="features-list">
+          <li data-de="PRNU Sensor-DNA Extraktion" data-en="PRNU Sensor-DNA extraction" data-pt="Extração de Sensor-DNA PRNU">PRNU Sensor-DNA Extraktion</li>
+          <li data-de="Deep Fake Erkennung" data-en="Deep Fake detection" data-pt="Detecção de Deep Fake">Deep Fake Erkennung</li>
+          <li data-de="Semiotische Signatur" data-en="Semiotic Signature" data-pt="Assinatura Semiótica">Semiotische Signatur</li>
+          <li data-de="Forensisches PDF" data-en="Forensic PDF" data-pt="PDF Forense">Forensisches PDF</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="tier-badge">🟡 SALA VIP</span>
+        <span class="port-info">—</span>
+        <span class="lines-info">3,430 LOC</span>
+      </div>
+    </div>
+
+    <!-- COMMITGUARD -->
+    <div class="module-card tier-PROFESSIONAL" data-tier="PROFESSIONAL" data-status="LIVE">
+      <div class="card-header">
+        <div class="card-icon">🛡️</div>
+        <div class="card-meta">
+          <h3 class="card-title">CommitGuard — Settlement</h3>
+          <p class="card-desc"
+             data-de="Handschriftliche Zusagen → Finanzielle Liquidation"
+             data-en="Handwritten commitments → Financial liquidation"
+             data-pt="Compromissos manuscritos → Liquidação financeira">
+            Handschriftliche Zusagen → Finanzielle Liquidation
+          </p>
+        </div>
+        <span class="status-badge status-LIVE">LIVE</span>
+      </div>
+      <div class="card-body">
+        <ul class="features-list">
+          <li data-de="Multilingual Parsing DE/EN/PT/ES" data-en="Multilingual parsing DE/EN/PT/ES" data-pt="Parsing multilíngue DE/EN/PT/ES">Multilingual Parsing DE/EN/PT/ES</li>
+          <li data-de="Verbo + Ação Verknüpfung" data-en="Verbo + Ação linking" data-pt="Ligação Verbo + Ação">Verbo + Ação Verknüpfung</li>
+          <li data-de="Dual-Proof Hash" data-en="Dual-Proof Hash" data-pt="Hash Dual-Proof">Dual-Proof Hash</li>
+          <li data-de="Bank-Adapter Interface" data-en="Bank Adapter interface" data-pt="Interface Bank Adapter">Bank-Adapter Interface</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="tier-badge">🟡 SALA VIP</span>
+        <span class="port-info">—</span>
+        <span class="lines-info">2,017 LOC</span>
+      </div>
+    </div>
+
+    <!-- TABELIAO DIGITAL -->
+    <div class="module-card tier-ENTERPRISE" data-tier="ENTERPRISE" data-status="LIVE">
+      <div class="card-header">
+        <div class="card-icon">⚖️</div>
+        <div class="card-meta">
+          <h3 class="card-title">Tabelião Digital v2</h3>
+          <p class="card-desc"
+             data-de="Digitaler Notar mit VirtueReceipt & SGE Risk"
+             data-en="Digital Notary with VirtueReceipt & SGE Risk"
+             data-pt="Tabelião Digital com VirtueReceipt & SGE Risk">
+            Digitaler Notar mit VirtueReceipt & SGE Risk
+          </p>
+        </div>
+        <span class="status-badge status-LIVE">LIVE</span>
+      </div>
+      <div class="card-body">
+        <ul class="features-list">
+          <li data-de="VirtueReceipt (Zero-Knowledge)" data-en="VirtueReceipt (Zero-Knowledge)" data-pt="VirtueReceipt (Zero-Knowledge)">VirtueReceipt (Zero-Knowledge)</li>
+          <li data-de="SGE Risk Classification R0–R5" data-en="SGE Risk Classification R0–R5" data-pt="Classificação de Risco SGE R0–R5">SGE Risk Classification R0–R5</li>
+          <li data-de="I9GovernanceGate (&lt;85% → human)" data-en="I9GovernanceGate (&lt;85% → human)" data-pt="I9GovernanceGate (&lt;85% → humano)">I9GovernanceGate (&lt;85% → human)</li>
+          <li data-de="Forensic Chain Hash" data-en="Forensic Chain Hash" data-pt="Hash de Cadeia Forense">Forensic Chain Hash</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="tier-badge">🔴 COCKPIT</span>
+        <span class="port-info">:8091</span>
+        <span class="lines-info">818 LOC</span>
+      </div>
+    </div>
+
+    <!-- WSG HUB -->
+    <div class="module-card tier-ENTERPRISE" data-tier="ENTERPRISE" data-status="LIVE">
+      <div class="card-header">
+        <div class="card-icon">🛡️</div>
+        <div class="card-meta">
+          <h3 class="card-title">WSG — Surface Guard</h3>
+          <p class="card-desc"
+             data-de="Infrastructure Healer: Observar. Registrar. Curar."
+             data-en="Infrastructure Healer: Observe. Record. Heal."
+             data-pt="Infrastructure Healer: Observar. Registrar. Curar.">
+            Infrastructure Healer: Observar. Registrar. Curar.
+          </p>
+        </div>
+        <span class="status-badge status-LIVE">LIVE</span>
+      </div>
+      <div class="card-body">
+        <ul class="features-list">
+          <li data-de="Service Auto-Restart" data-en="Service Auto-Restart" data-pt="Auto-Restart de Serviços">Service Auto-Restart</li>
+          <li data-de="Link Integrity Scanning" data-en="Link Integrity Scanning" data-pt="Varredura de Integridade de Links">Link Integrity Scanning</li>
+          <li data-de="CSS Drift Enforcement" data-en="CSS Drift Enforcement" data-pt="Enforcement de CSS Drift">CSS Drift Enforcement</li>
+          <li data-de="WSG-HEAL Receipts" data-en="WSG-HEAL Receipts" data-pt="Receipts WSG-HEAL">WSG-HEAL Receipts</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="tier-badge">🔴 COCKPIT</span>
+        <span class="port-info">:8094</span>
+        <span class="lines-info">2,895 LOC</span>
+      </div>
+    </div>
+
+    <!-- TWIN DIGITAL (COMING SOON) -->
+    <div class="module-card tier-PROFESSIONAL" data-tier="PROFESSIONAL" data-status="COMING_SOON">
+      <div class="card-header">
+        <div class="card-icon">🔮</div>
+        <div class="card-meta">
+          <h3 class="card-title">Twin Digital</h3>
+          <p class="card-desc"
+             data-de="\"Was wäre wenn?\" — Szenario-Simulation"
+             data-en="\"What if?\" — Scenario simulation"
+             data-pt="\"E se?\" — Simulação de cenários">
+            "Was wäre wenn?" — Szenario-Simulation
+          </p>
+        </div>
+        <span class="status-badge status-COMING_SOON">Q2 2026</span>
+      </div>
+      <div class="card-body">
+        <ul class="features-list">
+          <li data-de="Szenario-Simulation" data-en="Scenario simulation" data-pt="Simulação de cenários">Szenario-Simulation</li>
+          <li data-de="Risiko-Prognose bei Änderungen" data-en="Risk prognosis on changes" data-pt="Prognóstico de risco em mudanças">Risiko-Prognose bei Änderungen</li>
+          <li data-de="Ist vs. Soll Vergleich" data-en="Current vs. Target comparison" data-pt="Comparação Real vs. Esperado">Ist vs. Soll Vergleich</li>
+          <li data-de="SGE Score Preview" data-en="SGE Score Preview" data-pt="Preview de Score SGE">SGE Score Preview</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="tier-badge">🟡 SALA VIP</span>
+        <span class="port-info">—</span>
+        <span class="lines-info">—</span>
+      </div>
+    </div>
+
+    <!-- PULSEWATCH (COMING SOON) -->
+    <div class="module-card tier-ENTERPRISE" data-tier="ENTERPRISE" data-status="COMING_SOON">
+      <div class="card-header">
+        <div class="card-icon">💓</div>
+        <div class="card-meta">
+          <h3 class="card-title">PulseWatch</h3>
+          <p class="card-desc"
+             data-de="Dokumenten-Arrhythmie-Erkennung in Echtzeit"
+             data-en="Document arrhythmia detection in realtime"
+             data-pt="Detecção de arritmia documental em tempo real">
+            Dokumenten-Arrhythmie-Erkennung in Echtzeit
+          </p>
+        </div>
+        <span class="status-badge status-COMING_SOON">Q2 2026</span>
+      </div>
+      <div class="card-body">
+        <ul class="features-list">
+          <li data-de="Governance Flow Anomalie-Erkennung" data-en="Governance flow anomaly detection" data-pt="Detecção de anomalias no fluxo de Governança">Governance Flow Anomalie-Erkennung</li>
+          <li data-de="System Puls-Rate Metriken" data-en="System pulse rate metrics" data-pt="Métricas de taxa de pulso do sistema">System Puls-Rate Metriken</li>
+          <li data-de="R4/R5 Alerting & Eskalation" data-en="R4/R5 alerting & escalation" data-pt="Alertas e escalação R4/R5">R4/R5 Alerting & Eskalation</li>
+          <li data-de="Historische Trend-Analyse" data-en="Historical trend analysis" data-pt="Análise de tendências históricas">Historische Trend-Analyse</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="tier-badge">🔴 COCKPIT</span>
+        <span class="port-info">:8095</span>
+        <span class="lines-info">—</span>
+      </div>
+    </div>
+
+    <!-- COMPLIANCE AGENT (COMING SOON) -->
+    <div class="module-card tier-ENTERPRISE" data-tier="ENTERPRISE" data-status="COMING_SOON">
+      <div class="card-header">
+        <div class="card-icon">📜</div>
+        <div class="card-meta">
+          <h3 class="card-title">Compliance Agent</h3>
+          <p class="card-desc"
+             data-de="Automatische EU AI Act, DSGVO, BSI C5 Prüfung"
+             data-en="Automatic EU AI Act, GDPR, BSI C5 check"
+             data-pt="Verificação automática EU AI Act, LGPD, BSI C5">
+            Automatische EU AI Act, DSGVO, BSI C5 Prüfung
+          </p>
+        </div>
+        <span class="status-badge status-COMING_SOON">Q2 2026</span>
+      </div>
+      <div class="card-body">
+        <ul class="features-list">
+          <li>EU AI Act Article Mapping</li>
+          <li data-de="DSGVO/GDPR Compliance Check" data-en="GDPR Compliance Check" data-pt="Verificação de Conformidade LGPD/GDPR">DSGVO/GDPR Compliance Check</li>
+          <li>BSI C5 + ISO 27001</li>
+          <li data-de="Audit-Ready Reports" data-en="Audit-Ready Reports" data-pt="Relatórios Prontos para Auditoria">Audit-Ready Reports</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="tier-badge">🔴 COCKPIT</span>
+        <span class="port-info">—</span>
+        <span class="lines-info">—</span>
+      </div>
+    </div>
+
+    <!-- FORENSIC LEDGER (COMING SOON) -->
+    <div class="module-card tier-ENTERPRISE" data-tier="ENTERPRISE" data-status="COMING_SOON">
+      <div class="card-header">
+        <div class="card-icon">🔐</div>
+        <div class="card-meta">
+          <h3 class="card-title">Forensic Ledger — Merkle</h3>
+          <p class="card-desc"
+             data-de="Kryptographische Beweiskette für jede Entscheidung"
+             data-en="Cryptographic proof chain for every decision"
+             data-pt="Cadeia criptográfica de provas para cada decisão">
+            Kryptographische Beweiskette für jede Entscheidung
+          </p>
+        </div>
+        <span class="status-badge status-COMING_SOON">Q3 2026</span>
+      </div>
+      <div class="card-body">
+        <ul class="features-list">
+          <li data-de="Vollständiger Merkle Tree" data-en="Full Merkle Tree" data-pt="Merkle Tree completo">Vollständiger Merkle Tree</li>
+          <li data-de="Forensic Virtue Receipts" data-en="Forensic Virtue Receipts" data-pt="Virtue Receipts Forenses">Forensic Virtue Receipts</li>
+          <li data-de="Git Integration" data-en="Git Integration" data-pt="Integração Git">Git Integration</li>
+          <li data-de="Proof-of-Decision" data-en="Proof-of-Decision" data-pt="Proof-of-Decision">Proof-of-Decision</li>
+        </ul>
+      </div>
+      <div class="card-footer">
+        <span class="tier-badge">🔴 COCKPIT</span>
+        <span class="port-info">—</span>
+        <span class="lines-info">—</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════ AGENTS SECTION ══════ -->
+<section class="modules-section">
+  <h2 class="section-title">
+    <span class="icon">🤖</span>
+    <span data-de="Governance Agenten" data-en="Governance Agents" data-pt="Agentes de Governança">Governance Agenten</span>
+  </h2>
+
+  <div class="agents-grid">
+    <div class="agent-card">
+      <div class="agent-icon">⚖️</div>
+      <div class="agent-info">
+        <h4>Constitutional Agent</h4>
+        <p data-de="I1–I9 Invarianten-Durchsetzung" data-en="I1–I9 invariant enforcement" data-pt="Enforcement de invariantes I1–I9">I1–I9 Invarianten-Durchsetzung</p>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon">🎭</div>
+      <div class="agent-info">
+        <h4>Maestro Agent</h4>
+        <p data-de="Multi-Agent Orchestrierung" data-en="Multi-agent orchestration" data-pt="Orquestração multi-agente">Multi-Agent Orchestrierung</p>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon">🏢</div>
+      <div class="agent-info">
+        <h4>ISP Manager Agent</h4>
+        <p data-de="Institutionelle Profile verwalten" data-en="Manage institutional profiles" data-pt="Gerenciar perfis institucionais">Institutionelle Profile verwalten</p>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon">👁️</div>
+      <div class="agent-info">
+        <h4>Sentinela Agent</h4>
+        <p data-de="Sicherheitsüberwachung" data-en="Security monitoring" data-pt="Monitoramento de segurança">Sicherheitsüberwachung</p>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon">💓</div>
+      <div class="agent-info">
+        <h4>Pulse Agent</h4>
+        <p data-de="Health Monitoring & Heartbeat" data-en="Health monitoring & heartbeat" data-pt="Monitoramento de saúde & heartbeat">Health Monitoring & Heartbeat</p>
+      </div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-icon">🚀</div>
+      <div class="agent-info">
+        <h4>Onboarding Agent</h4>
+        <p data-de="Neue Benutzer einführen" data-en="Onboard new users" data-pt="Integrar novos usuários">Neue Benutzer einführen</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ FOOTER ══════ -->
+<footer class="footer">
+  <div class="footer-brand">
+    <span>WINDI</span> WINDI SYSTEM · Kempten, Bavaria
+  </div>
+  <div class="footer-tagline">
+    Three Dragons Protocol — Guardian · Architect · Witness — I1–I9 ACTIVE
+  </div>
+</footer>
+
+<script>
+// ══════ i18n Switching ══════
+const langBtns = document.querySelectorAll('.lang-btn');
+let currentLang = 'de';
+
+function switchLang(lang) {
+  currentLang = lang;
+
+  // Update active button
+  langBtns.forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`[data-lang="${lang}"]`).classList.add('active');
+
+  // Update all translatable elements
+  document.querySelectorAll('[data-de]').forEach(el => {
+    const text = el.getAttribute(`data-${lang}`);
+    if (text) el.innerHTML = text;
+  });
+}
+
+langBtns.forEach(btn => {
+  btn.addEventListener('click', () => switchLang(btn.dataset.lang));
+});
+
+// ══════ Filter Functionality ══════
+const filterBtns = document.querySelectorAll('.filter-btn');
+const moduleCards = document.querySelectorAll('.module-card');
+
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    // Update active state
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const filter = btn.dataset.filter;
+    const tier = btn.dataset.tier;
+
+    moduleCards.forEach(card => {
+      let show = true;
+
+      if (filter && filter !== 'all') {
+        show = card.dataset.status === filter;
+      }
+
+      if (tier) {
+        show = card.dataset.tier === tier;
+      }
+
+      card.style.display = show ? 'block' : 'none';
+    });
+  });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WINDI — Document Governance</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Klar Theme (Light) */
+    --bg: #fafaf7;
+    --bg-card: #ffffff;
+    --text: #1a1a1a;
+    --text-sec: #6b6b6b;
+    --border: #e8e8e2;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+
+    /* WINDI Gold System */
+    --gold: #c9a84c;
+    --gold-bright: #e0be5a;
+    --gold-dim: #a08838;
+    --gold-glow: rgba(201,168,76,0.15);
+
+    /* Noir Theme (Dark sections) */
+    --noir: #111111;
+    --noir-card: #1a1a1a;
+    --noir-card-hover: #222222;
+    --noir-border: #2a2a2a;
+    --noir-text: #f0efe8;
+    --noir-text-sec: #8a8a82;
+
+    /* Altitude Colors */
+    --low-color: #6bcf6b;
+    --low-bg: rgba(107,207,107,0.08);
+    --med-color: #e0be5a;
+    --med-bg: rgba(224,190,90,0.08);
+    --high-color: #ff6b6b;
+    --high-bg: rgba(255,107,107,0.08);
+
+    /* Status */
+    --free-green: #2d8a4e;
+    --free-bg: rgba(45,138,78,0.08);
+    --vip-gold: var(--gold);
+
+    --radius: 12px;
+    --radius-lg: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══════════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════════ */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-mark {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 800; font-size: 13px; color: #1a1a1a;
+  }
+
+  .logo-name {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700; font-size: 17px; letter-spacing: 1px;
+  }
+
+  .header-right {
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .lang-pills {
+    display: flex; gap: 3px;
+  }
+
+  .lang-pill {
+    padding: 3px 9px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: transparent;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; cursor: pointer;
+    color: var(--text-sec);
+    transition: all 0.2s;
+  }
+
+  .lang-pill.on {
+    background: var(--text);
+    color: var(--bg-card);
+    border-color: var(--text);
+  }
+
+  /* ═══════════════════════════════════════════
+     HERO — "Willkommen bei WINDI"
+     ═══════════════════════════════════════════ */
+  .hero {
+    text-align: center;
+    padding: 48px 24px 32px;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .hero h1 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700; font-size: 30px;
+    margin-bottom: 10px;
+  }
+
+  .hero p {
+    font-size: 15px;
+    color: var(--text-sec);
+    line-height: 1.6;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ═══════════════════════════════════════════
+     PERSONA GRID — 6 Cards (identical to live)
+     ═══════════════════════════════════════════ */
+  .persona-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    max-width: 680px;
+    margin: 0 auto 16px;
+    padding: 0 24px;
+  }
+
+  .p-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 14px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .p-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--gold);
+  }
+
+  .p-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+    font-size: 20px;
+  }
+
+  .p-card h3 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 600; font-size: 13px;
+    margin-bottom: 3px;
+  }
+
+  .p-card span {
+    font-size: 11px; color: var(--text-sec); line-height: 1.4;
+  }
+
+  .ic1 { background: #e8f5e9; } .ic2 { background: #fce4ec; }
+  .ic3 { background: #fff3e0; } .ic4 { background: #e8eaf6; }
+  .ic5 { background: #e0f2f1; } .ic6 { background: #f3e5f5; }
+
+  /* ═══════════════════════════════════════════
+     PRINCIPLE LINE
+     ═══════════════════════════════════════════ */
+  .principle {
+    text-align: center;
+    padding: 14px 24px 36px;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+  }
+
+  .g { color: var(--gold); font-weight: 600; }
+  .d { color: var(--text); }
+  .gr { color: var(--free-green); font-weight: 600; }
+
+  /* ═══════════════════════════════════════════
+     BOARDING PASS — FREE TIER
+     ═══════════════════════════════════════════ */
+  .boarding-section {
+    max-width: 780px;
+    margin: 0 auto 0;
+    padding: 0 24px;
+  }
+
+  .boarding-pass {
+    background: var(--bg-card);
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Perforated edge effect */
+  .boarding-pass::before,
+  .boarding-pass::after {
+    content: '';
+    position: absolute;
+    width: 24px; height: 24px;
+    background: var(--bg);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+  }
+  .boarding-pass::before { left: -12px; }
+  .boarding-pass::after { right: -12px; }
+
+  .bp-top {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 2px dashed var(--border);
+  }
+
+  .bp-main {
+    flex: 1;
+    padding: 28px 32px;
+  }
+
+  .bp-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-sec);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .bp-value {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700;
+    font-size: 22px;
+    margin-bottom: 2px;
+  }
+
+  .bp-sub {
+    font-size: 13px;
+    color: var(--text-sec);
+    line-height: 1.5;
+  }
+
+  .bp-side {
+    width: 200px;
+    border-left: 2px dashed var(--border);
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: var(--free-bg);
+  }
+
+  .bp-tier-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  .tier-free {
+    background: var(--free-bg);
+    color: var(--free-green);
+    border: 1px solid rgba(45,138,78,0.2);
+  }
+
+  .bp-tier-desc {
+    font-size: 11px;
+    color: var(--text-sec);
+    line-height: 1.4;
+  }
+
+  .bp-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 32px;
+    background: rgba(0,0,0,0.015);
+  }
+
+  .bp-features {
+    display: flex;
+    gap: 20px;
+  }
+
+  .bp-feat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-sec);
+  }
+
+  .bp-feat .check {
+    color: var(--free-green);
+    font-weight: 700;
+  }
+
+  .bp-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-sec);
+    letter-spacing: 1px;
+    opacity: 0.6;
+  }
+
+  /* ═══════════════════════════════════════════
+     TRANSITION TO NOIR — THE RUNWAY
+     ═══════════════════════════════════════════ */
+  .runway {
+    height: 80px;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--noir) 100%);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 40px;
+  }
+
+  .runway-line {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+  }
+
+  .runway-dash {
+    width: 24px; height: 3px;
+    background: var(--gold);
+    border-radius: 2px;
+    opacity: 0.4;
+    animation: runway-pulse 1.5s ease infinite;
+  }
+
+  .runway-dash:nth-child(2) { animation-delay: 0.15s; opacity: 0.5; }
+  .runway-dash:nth-child(3) { animation-delay: 0.3s; opacity: 0.6; }
+  .runway-dash:nth-child(4) { animation-delay: 0.45s; opacity: 0.7; }
+  .runway-dash:nth-child(5) { animation-delay: 0.6s; opacity: 0.8; }
+  .runway-dash:nth-child(6) { animation-delay: 0.75s; opacity: 0.9; }
+  .runway-dash:nth-child(7) { animation-delay: 0.9s; opacity: 1; }
+
+  @keyframes runway-pulse {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 1; }
+  }
+
+  /* ═══════════════════════════════════════════
+     FLYING SECTION — Noir Theme
+     ═══════════════════════════════════════════ */
+  .flying-section {
+    background: var(--noir);
+    padding: 48px 24px 64px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Subtle altitude lines */
+  .flying-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 79px,
+        rgba(201,168,76,0.03) 79px,
+        rgba(201,168,76,0.03) 80px
+      );
+    pointer-events: none;
+  }
+
+  .flying-header {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 44px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .flying-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 16px;
+    border-radius: 20px;
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.18);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+  }
+
+  .flying-tag .plane {
+    font-size: 14px;
+    animation: fly-wobble 3s ease-in-out infinite;
+  }
+
+  @keyframes fly-wobble {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-2px) rotate(-2deg); }
+    75% { transform: translateY(1px) rotate(1deg); }
+  }
+
+  .flying-header h2 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--noir-text);
+    margin-bottom: 10px;
+  }
+
+  .flying-header p {
+    font-size: 14px;
+    color: var(--noir-text-sec);
+    line-height: 1.6;
+  }
+
+  /* ═══════════════════════════════════════════
+     ALTITUDE TIERS — LOW / MEDIUM / HIGH
+     ═══════════════════════════════════════════ */
+  .altitude-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 880px;
+    margin: 0 auto 48px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .alt-card {
+    background: var(--noir-card);
+    border: 1px solid var(--noir-border);
+    border-radius: var(--radius-lg);
+    padding: 0;
+    overflow: hidden;
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .alt-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold);
+    box-shadow: 0 8px 32px rgba(201,168,76,0.1);
+  }
+
+  .alt-bar {
+    height: 4px;
+    width: 100%;
+  }
+
+  .alt-bar-low { background: linear-gradient(90deg, transparent, var(--low-color), transparent); }
+  .alt-bar-med { background: linear-gradient(90deg, transparent, var(--med-color), transparent); }
+  .alt-bar-high { background: linear-gradient(90deg, transparent, var(--high-color), transparent); }
+
+  .alt-body {
+    padding: 28px 24px 24px;
+  }
+
+  .alt-altitude {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .alt-altitude-low { color: var(--low-color); }
+  .alt-altitude-med { color: var(--med-color); }
+  .alt-altitude-high { color: var(--high-color); }
+
+  .alt-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+
+  .dot-low { background: var(--low-color); }
+  .dot-med { background: var(--med-color); }
+  .dot-high { background: var(--high-color); animation: pulse-dot 1.5s infinite; }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 0.5; box-shadow: none; }
+    50% { opacity: 1; box-shadow: 0 0 8px currentColor; }
+  }
+
+  .alt-card h3 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--noir-text);
+    margin-bottom: 4px;
+  }
+
+  .alt-card .alt-subtitle {
+    font-size: 13px;
+    color: var(--noir-text-sec);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .alt-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .alt-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--noir-text-sec);
+    line-height: 1.4;
+  }
+
+  .alt-features li .icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-size: 14px;
+  }
+
+  .alt-price {
+    padding-top: 16px;
+    border-top: 1px solid var(--noir-border);
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+
+  .alt-price .amount {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--noir-text);
+  }
+
+  .alt-price .unit {
+    font-size: 13px;
+    color: var(--noir-text-sec);
+  }
+
+  .alt-price .free-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--free-green);
+    letter-spacing: 2px;
+  }
+
+  .alt-cta {
+    margin-top: 16px;
+    width: 100%;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .cta-onboard {
+    background: var(--free-green);
+    color: white;
+  }
+  .cta-onboard:hover { background: #248b42; }
+
+  .cta-vip {
+    background: transparent;
+    border: 1px solid var(--gold) !important;
+    color: var(--gold);
+  }
+  .cta-vip:hover {
+    background: rgba(201,168,76,0.1);
+  }
+
+  .cta-concierge {
+    background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+    color: #1a1a1a;
+  }
+  .cta-concierge:hover {
+    background: linear-gradient(135deg, var(--gold), var(--gold-bright));
+  }
+
+  /* Popular badge */
+  .popular-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: var(--gold);
+    color: #1a1a1a;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+  }
+
+  /* ═══════════════════════════════════════════
+     VIP LOUNGE — Module Showcase
+     ═══════════════════════════════════════════ */
+  .vip-lounge {
+    max-width: 880px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .vip-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-left: 4px;
+  }
+
+  .vip-icon {
+    font-size: 18px;
+  }
+
+  .vip-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--gold);
+  }
+
+  .vip-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold-dim), transparent);
+  }
+
+  .modules-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .mod-card {
+    background: var(--noir-card);
+    border: 1px solid var(--noir-border);
+    border-radius: var(--radius);
+    padding: 20px 16px 16px;
+    transition: all 0.25s;
+    cursor: pointer;
+  }
+
+  .mod-card:hover {
+    border-color: rgba(201,168,76,0.4);
+    background: var(--noir-card-hover);
+  }
+
+  .mod-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .mi1 { background: rgba(201,168,76,0.12); }
+  .mi2 { background: rgba(77,124,196,0.12); }
+  .mi3 { background: rgba(139,94,196,0.12); }
+  .mi4 { background: rgba(255,107,107,0.12); }
+  .mi5 { background: rgba(38,166,154,0.12); }
+  .mi6 { background: rgba(255,167,38,0.12); }
+
+  .mod-card h4 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--noir-text);
+    margin-bottom: 4px;
+  }
+
+  .mod-card .mod-desc {
+    font-size: 11px;
+    color: var(--noir-text-sec);
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+
+  .mod-tier {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .tier-low {
+    background: var(--low-bg);
+    color: var(--low-color);
+    border: 1px solid rgba(107,207,107,0.15);
+  }
+
+  .tier-med {
+    background: var(--med-bg);
+    color: var(--med-color);
+    border: 1px solid rgba(224,190,90,0.15);
+  }
+
+  .tier-high {
+    background: var(--high-bg);
+    color: var(--high-color);
+    border: 1px solid rgba(255,107,107,0.15);
+  }
+
+  /* ═══════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════ */
+  .footer {
+    background: var(--noir);
+    border-top: 1px solid var(--noir-border);
+    padding: 20px 24px;
+    text-align: center;
+  }
+
+  .footer-line {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--noir-text-sec);
+    letter-spacing: 0.5px;
+  }
+
+  .footer-line .fg { color: var(--gold); }
+
+  /* ═══════════════════════════════════════════
+     RESPONSIVE
+     ═══════════════════════════════════════════ */
+  @media (max-width: 768px) {
+    .persona-grid { grid-template-columns: repeat(2, 1fr); }
+    .altitude-grid { grid-template-columns: 1fr; max-width: 380px; }
+    .modules-row { grid-template-columns: repeat(2, 1fr); }
+    .bp-top { flex-direction: column; }
+    .bp-side { width: 100%; border-left: none; border-top: 2px dashed var(--border); padding: 20px; }
+    .bp-features { flex-wrap: wrap; gap: 12px; }
+  }
+
+  @media (max-width: 480px) {
+    .modules-row { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 24px; }
+  }
+
+  /* ═══════════════════════════════════════════
+     ANIMATIONS
+     ═══════════════════════════════════════════ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .p-card, .alt-card, .mod-card {
+    animation: fadeUp 0.45s ease both;
+  }
+
+  .p-card:nth-child(1) { animation-delay: 0.03s; }
+  .p-card:nth-child(2) { animation-delay: 0.06s; }
+  .p-card:nth-child(3) { animation-delay: 0.09s; }
+  .p-card:nth-child(4) { animation-delay: 0.12s; }
+  .p-card:nth-child(5) { animation-delay: 0.15s; }
+  .p-card:nth-child(6) { animation-delay: 0.18s; }
+
+  .alt-card:nth-child(1) { animation-delay: 0.1s; }
+  .alt-card:nth-child(2) { animation-delay: 0.2s; }
+  .alt-card:nth-child(3) { animation-delay: 0.3s; }
+
+  .mod-card:nth-child(1) { animation-delay: 0.05s; }
+  .mod-card:nth-child(2) { animation-delay: 0.1s; }
+  .mod-card:nth-child(3) { animation-delay: 0.15s; }
+  .mod-card:nth-child(4) { animation-delay: 0.2s; }
+  .mod-card:nth-child(5) { animation-delay: 0.25s; }
+  .mod-card:nth-child(6) { animation-delay: 0.3s; }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══════════════════════════════════ -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo-mark">W</div>
+    <span class="logo-name">WINDI</span>
+  </div>
+  <div class="header-right">
+    <div class="lang-pills">
+      <button class="lang-pill on">DE</button>
+      <button class="lang-pill">EN</button>
+      <button class="lang-pill">PT</button>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ HERO ═════════════════════════════════════ -->
+<section class="hero">
+  <h1>Willkommen bei WINDI</h1>
+  <p>Laden Sie ein Dokument hoch und erfahren Sie sofort, ob es sicher, konform und fair ist.</p>
+</section>
+
+<!-- ═══ PERSONA GRID ════════════════════════════ -->
+<div class="persona-grid">
+  <div class="p-card">
+    <div class="p-icon ic1">🏢</div>
+    <h3>Unternehmerin</h3>
+    <span>Verträge, Lieferanten, Compliance</span>
+  </div>
+  <div class="p-card">
+    <div class="p-icon ic2">💼</div>
+    <h3>Freiberuflerin</h3>
+    <span>NDAs, Aufträge, AGBs</span>
+  </div>
+  <div class="p-card">
+    <div class="p-icon ic3">⚖️</div>
+    <h3>Compliance / DPO</h3>
+    <span>DSGVO, AVV, Audits</span>
+  </div>
+  <div class="p-card">
+    <div class="p-icon ic4">👤</div>
+    <h3>Privatperson</h3>
+    <span>Mietvertrag, Versicherung</span>
+  </div>
+  <div class="p-card">
+    <div class="p-icon ic5">📊</div>
+    <h3>Controller</h3>
+    <span>Risikomanagement, Reporting</span>
+  </div>
+  <div class="p-card">
+    <div class="p-icon ic6">🏛️</div>
+    <h3>Geschäftsführung</h3>
+    <span>Überblick, Entscheidungen</span>
+  </div>
+</div>
+
+<!-- ═══ PRINCIPLE ════════════════════════════════ -->
+<div class="principle">
+  <span class="g">KI verarbeitet.</span>
+  <span class="d"> Mensch entscheidet.</span>
+  <span class="gr"> WINDI garantiert.</span>
+</div>
+
+<!-- ═══ BOARDING PASS — FREE ════════════════════ -->
+<div class="boarding-section">
+  <div class="boarding-pass">
+    <div class="bp-top">
+      <div class="bp-main">
+        <div class="bp-label">BOARDING PASS</div>
+        <div class="bp-value">W-a4Desk · ONBOARD</div>
+        <div class="bp-sub">Vollständiger Zugang zum WINDI Document Editor. Dokumente hochladen, SGE-Analyse, Governance-Prüfung — alles inklusive. Keine Einschränkungen beim Fliegen.</div>
+      </div>
+      <div class="bp-side">
+        <div class="bp-tier-badge tier-free">✓ FREE</div>
+        <div class="bp-tier-desc">3 Benutzer · Unbegrenzte<br>Dokumente · SGE Basic</div>
+      </div>
+    </div>
+    <div class="bp-bottom">
+      <div class="bp-features">
+        <div class="bp-feat"><span class="check">✓</span> Upload & Analyse</div>
+        <div class="bp-feat"><span class="check">✓</span> SGE 6-Layer</div>
+        <div class="bp-feat"><span class="check">✓</span> Trilingual DE/EN/PT</div>
+        <div class="bp-feat"><span class="check">✓</span> Governance Receipt</div>
+      </div>
+      <div class="bp-code">WINDI-ONBOARD-2026</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ RUNWAY TRANSITION ═══════════════════════ -->
+<div class="runway">
+  <div class="runway-line">
+    <div class="runway-dash"></div>
+    <div class="runway-dash"></div>
+    <div class="runway-dash"></div>
+    <div class="runway-dash"></div>
+    <div class="runway-dash"></div>
+    <div class="runway-dash"></div>
+    <div class="runway-dash"></div>
+  </div>
+</div>
+
+<!-- ═══ FLYING SECTION (NOIR) ═══════════════════ -->
+<section class="flying-section">
+
+  <div class="flying-header">
+    <div class="flying-tag">
+      <span class="plane">✈</span>
+      FLYING ALTITUDE
+    </div>
+    <h2>Wählen Sie Ihre Flughöhe</h2>
+    <p>Gleicher Flieger. Gleiche Sicherheit. Mehr Höhe bedeutet mehr Sicht, mehr Kontrolle, mehr Schutz.</p>
+  </div>
+
+  <!-- ── ALTITUDE TIERS ──────────────────────── -->
+  <div class="altitude-grid">
+
+    <!-- LOW -->
+    <div class="alt-card">
+      <div class="alt-bar alt-bar-low"></div>
+      <div class="alt-body">
+        <div class="alt-altitude alt-altitude-low">
+          <span class="alt-dot dot-low"></span>
+          FLYING LOW
+        </div>
+        <h3>Onboard</h3>
+        <div class="alt-subtitle">Der komplette Flieger. Alles was Sie brauchen, um sicher zu fliegen.</div>
+        <ul class="alt-features">
+          <li><span class="icon">📄</span> W-a4Desk Editor — Vollzugang</li>
+          <li><span class="icon">🔬</span> SGE 6-Layer Analyse</li>
+          <li><span class="icon">📋</span> Governance Receipt (Basic)</li>
+          <li><span class="icon">🌐</span> Trilingual DE / EN / PT</li>
+          <li><span class="icon">👥</span> Bis zu 3 Benutzer</li>
+        </ul>
+        <div class="alt-price">
+          <span class="free-label">FREE</span>
+        </div>
+        <button class="alt-cta cta-onboard">Jetzt einsteigen</button>
+      </div>
+    </div>
+
+    <!-- MEDIUM -->
+    <div class="alt-card" style="border-color: var(--noir-border);">
+      <span class="popular-badge">POPULAR</span>
+      <div class="alt-bar alt-bar-med"></div>
+      <div class="alt-body">
+        <div class="alt-altitude alt-altitude-med">
+          <span class="alt-dot dot-med"></span>
+          FLYING MEDIUM
+        </div>
+        <h3>Sala VIP</h3>
+        <div class="alt-subtitle">Volle Sicht. Priority Boarding. Erweiterte Module.</div>
+        <ul class="alt-features">
+          <li><span class="icon">✈️</span> Alles aus Onboard</li>
+          <li><span class="icon">🛡️</span> CommitGuard — Handschrift-Auth</li>
+          <li><span class="icon">🔮</span> Twin Digital — "Was wäre wenn?"</li>
+          <li><span class="icon">📊</span> Controller Dashboard</li>
+          <li><span class="icon">🏗️</span> ISP Hub — 17 Profile</li>
+          <li><span class="icon">👥</span> Bis zu 25 Benutzer</li>
+        </ul>
+        <div class="alt-price">
+          <span class="amount">€25</span>
+          <span class="unit">/ Benutzer · Monat</span>
+        </div>
+        <button class="alt-cta cta-vip">VIP Lounge betreten</button>
+      </div>
+    </div>
+
+    <!-- HIGH -->
+    <div class="alt-card">
+      <div class="alt-bar alt-bar-high"></div>
+      <div class="alt-body">
+        <div class="alt-altitude alt-altitude-high">
+          <span class="alt-dot dot-high"></span>
+          FLYING HIGH
+        </div>
+        <h3>Cockpit</h3>
+        <div class="alt-subtitle">Maximale Höhe. Volle Kontrolle. Zero Turbulenz.</div>
+        <ul class="alt-features">
+          <li><span class="icon">✈️</span> Alles aus Sala VIP</li>
+          <li><span class="icon">💓</span> PulseWatch — Echtzeit-Monitoring</li>
+          <li><span class="icon">📜</span> Compliance Agent — EU AI Act</li>
+          <li><span class="icon">🔐</span> Forensic Ledger — Merkle Tree</li>
+          <li><span class="icon">🏛️</span> Multi-ISP Custom Profiles</li>
+          <li><span class="icon">♾️</span> Unbegrenzte Benutzer</li>
+        </ul>
+        <div class="alt-price">
+          <span class="amount">€80</span>
+          <span class="unit">/ Benutzer · Monat</span>
+        </div>
+        <button class="alt-cta cta-concierge">Cockpit öffnen</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── VIP LOUNGE — Module Details ─────────── -->
+  <div class="vip-lounge">
+    <div class="vip-header">
+      <span class="vip-icon">🏰</span>
+      <span class="vip-title">VIP LOUNGE — AVAILABLE MODULES</span>
+      <div class="vip-line"></div>
+    </div>
+
+    <div class="modules-row">
+      <div class="mod-card">
+        <div class="mod-icon mi1">🛡️</div>
+        <h4>CommitGuard</h4>
+        <div class="mod-desc">Handschriftliche Zusagen authentifizieren. PRNU Anti-Deepfake & Liquidation.</div>
+        <span class="mod-tier tier-med">✈ MEDIUM+</span>
+      </div>
+      <div class="mod-card">
+        <div class="mod-icon mi2">🔬</div>
+        <h4>PixWindi</h4>
+        <div class="mod-desc">Sensor-DNA Analyse. Forensische Bildvalidierung & Deepfake-Erkennung.</div>
+        <span class="mod-tier tier-med">✈ MEDIUM+</span>
+      </div>
+      <div class="mod-card">
+        <div class="mod-icon mi3">🔮</div>
+        <h4>Twin Digital</h4>
+        <div class="mod-desc">"Was wäre wenn?" — Entscheidungen simulieren, bevor sie real werden.</div>
+        <span class="mod-tier tier-med">✈ MEDIUM+</span>
+      </div>
+      <div class="mod-card">
+        <div class="mod-icon mi4">💓</div>
+        <h4>PulseWatch</h4>
+        <div class="mod-desc">Dokumenten-Arrhythmie. Echtzeit-Puls des Governance-Flows erkennen.</div>
+        <span class="mod-tier tier-high">✈ HIGH</span>
+      </div>
+      <div class="mod-card">
+        <div class="mod-icon mi5">🏗️</div>
+        <h4>ISP Hub</h4>
+        <div class="mod-desc">17 institutionelle Stilprofile. Deutsche Bahn, Bundesregierung & mehr.</div>
+        <span class="mod-tier tier-low">✈ LOW+</span>
+      </div>
+      <div class="mod-card">
+        <div class="mod-icon mi6">📜</div>
+        <h4>Compliance Agent</h4>
+        <div class="mod-desc">EU AI Act, DSGVO, BSI C5 — automatisierte Compliance-Prüfung.</div>
+        <span class="mod-tier tier-high">✈ HIGH</span>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══ FOOTER ═══════════════════════════════════ -->
+<footer class="footer">
+  <div class="footer-line">
+    Three Dragons Protocol — <span class="fg">Guardian</span> · Architect · Witness — Invariants I1-I9 ACTIVE
+  </div>
+</footer>
+
+</body>
+</html>

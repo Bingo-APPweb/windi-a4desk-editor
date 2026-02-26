@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="klar" data-lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WINDI — Document Governance</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   WINDI DESIGN SYSTEM — Klar + Noir
+   ═══════════════════════════════════════════ */
+
+[data-theme="klar"] {
+  --bg: #f8f7f4; --surface: #ffffff; --card: #ffffff; --card-alt: #fafaf8;
+  --border: #e4e2dc; --border-hover: #ccc9c0; --border-focus: #b8941f;
+  --text: #1a1a18; --text-dim: #6b6960; --text-muted: #9b978e;
+  --gold: #b8941f; --gold-light: #d4af37; --gold-bg: rgba(184,148,31,0.06);
+  --gold-glow: rgba(184,148,31,0.12);
+  --btn-bg: #1a1a18; --btn-text: #fff;
+  --green: #16a34a; --green-bg: #f0fdf4; --green-bd: #bbf7d0;
+  --yellow: #ca8a04; --yellow-bg: #fefce8; --yellow-bd: #fde68a;
+  --orange: #ea580c; --orange-bg: #fff7ed; --orange-bd: #fed7aa;
+  --red: #dc2626; --red-bg: #fef2f2; --red-bd: #fecaca;
+  --crit-bg: #1a1a18; --crit-text: #fff;
+  --track: #e4e2dc; --thumb: #fff;
+  --sh-sm: 0 1px 3px rgba(0,0,0,0.04); --sh-md: 0 4px 14px rgba(0,0,0,0.06);
+}
+
+[data-theme="noir"] {
+  --bg: #08080a; --surface: #111114; --card: #18181e; --card-alt: #1e1e26;
+  --border: #28282f; --border-hover: #38383f; --border-focus: #d4af37;
+  --text: #eae8e2; --text-dim: #8a8880; --text-muted: #5a5850;
+  --gold: #d4af37; --gold-light: #f0d060; --gold-bg: rgba(212,175,55,0.08);
+  --gold-glow: rgba(212,175,55,0.15);
+  --btn-bg: #d4af37; --btn-text: #08080a;
+  --green: #4ade80; --green-bg: rgba(34,197,94,0.1); --green-bd: rgba(34,197,94,0.25);
+  --yellow: #facc15; --yellow-bg: rgba(250,204,21,0.08); --yellow-bd: rgba(250,204,21,0.25);
+  --orange: #fb923c; --orange-bg: rgba(249,115,22,0.08); --orange-bd: rgba(249,115,22,0.25);
+  --red: #f87171; --red-bg: rgba(239,68,68,0.08); --red-bd: rgba(239,68,68,0.25);
+  --crit-bg: rgba(255,255,255,0.06); --crit-text: #fff;
+  --track: #28282f; --thumb: #d4af37;
+  --sh-sm: 0 1px 3px rgba(0,0,0,0.3); --sh-md: 0 4px 14px rgba(0,0,0,0.4);
+}
+
+:root { --fd: 'Bricolage Grotesque', sans-serif; --fb: 'Outfit', sans-serif; --fm: 'JetBrains Mono', monospace; --r: 14px; --rs: 10px; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:var(--fb); line-height:1.6; min-height:100vh; transition:background .3s,color .3s; }
+
+/* ═══ HEADER ═══ */
+.hdr { background:var(--surface); border-bottom:1px solid var(--border); padding:12px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; transition:background .3s; }
+.hdr-l { display:flex; align-items:center; gap:10px; }
+.logo { width:32px; height:32px; background:var(--btn-bg); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:15px; transition:background .3s; }
+.logo-t { font-family:var(--fd); font-weight:800; font-size:18px; letter-spacing:-.5px; }
+.hdr-r { display:flex; align-items:center; gap:6px; }
+
+/* Lang pills */
+.lp { display:flex; background:var(--bg); border-radius:7px; border:1px solid var(--border); overflow:hidden; }
+.lb { padding:4px 9px; font-family:var(--fm); font-size:10px; font-weight:500; border:none; background:transparent; color:var(--text-muted); cursor:pointer; transition:all .2s; }
+.lb:hover { color:var(--text); }
+.lb.on { background:var(--gold-bg); color:var(--gold); font-weight:600; }
+
+/* Theme toggle */
+.tt { width:48px; height:26px; background:var(--track); border-radius:13px; border:1px solid var(--border); position:relative; cursor:pointer; transition:all .3s; flex-shrink:0; }
+.tt::before { content:'☀️'; position:absolute; top:2px; left:4px; font-size:11px; line-height:20px; transition:opacity .3s; }
+.tt::after { content:''; position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:var(--thumb); transition:all .3s; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+[data-theme="noir"] .tt::before { content:'🌙'; left:auto; right:4px; }
+[data-theme="noir"] .tt::after { left:24px; }
+
+/* User chip */
+.uc { display:none; align-items:center; gap:5px; padding:4px 11px; background:var(--gold-bg); border-radius:14px; font-size:11px; color:var(--gold); font-weight:500; cursor:pointer; border:1px solid transparent; transition:all .2s; }
+.uc:hover { border-color:var(--gold); }
+.uc.on { display:flex; }
+
+/* ═══ MAIN ═══ */
+.mn { max-width:840px; margin:0 auto; padding:28px 20px; }
+
+/* ═══ ONBOARDING ═══ */
+.ob { text-align:center; padding:44px 16px; }
+.ob h2 { font-family:var(--fd); font-weight:800; font-size:26px; letter-spacing:-.5px; margin-bottom:8px; }
+.ob p { color:var(--text-dim); font-size:15px; margin-bottom:32px; max-width:500px; margin-left:auto; margin-right:auto; }
+.rg { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; max-width:580px; margin:0 auto; }
+.rc { background:var(--card); border:2px solid var(--border); border-radius:var(--r); padding:20px 12px; cursor:pointer; transition:all .2s; text-align:center; }
+.rc:hover { border-color:var(--gold); box-shadow:var(--sh-md); transform:translateY(-2px); }
+.ri { font-size:26px; margin-bottom:6px; }
+.rn { font-family:var(--fd); font-weight:700; font-size:13px; margin-bottom:2px; }
+.rd { font-size:11px; color:var(--text-dim); line-height:1.4; }
+
+/* ═══ WORKSPACE ═══ */
+.ws { display:none; }
+.ws.on { display:block; animation:fu .4s ease; }
+@keyframes fu { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+.wb { margin-bottom:22px; }
+.wb h2 { font-family:var(--fd); font-weight:700; font-size:20px; }
+.wb p { color:var(--text-dim); font-size:13px; margin-top:2px; }
+
+/* Drop zone */
+.dz { background:var(--card); border:2px dashed var(--border); border-radius:var(--r); padding:40px 20px; text-align:center; cursor:pointer; transition:all .25s; margin-bottom:14px; }
+.dz:hover,.dz.dg { border-color:var(--gold); background:var(--gold-bg); }
+.dz-i { font-size:32px; margin-bottom:8px; opacity:.7; }
+.dz-t { font-family:var(--fd); font-weight:700; font-size:15px; margin-bottom:3px; }
+.dz-s { font-size:12px; color:var(--text-muted); }
+.dz-s a { color:var(--gold); text-decoration:underline; cursor:pointer; }
+input[type="file"] { display:none; }
+
+/* Text input */
+.tg { display:inline-flex; align-items:center; gap:5px; font-size:12px; color:var(--text-dim); cursor:pointer; margin-bottom:8px; }
+.tg:hover { color:var(--gold); }
+.tw { display:none; }
+.tw.op { display:block; }
+.tw textarea { width:100%; min-height:140px; background:var(--bg); border:1px solid var(--border); border-radius:var(--rs); padding:12px; font-family:var(--fb); font-size:13px; color:var(--text); resize:vertical; transition:border-color .2s; }
+.tw textarea:focus { outline:none; border-color:var(--border-focus); box-shadow:0 0 0 3px var(--gold-glow); }
+.tw textarea::placeholder { color:var(--text-muted); }
+
+/* Buttons */
+.sa { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+.bt { padding:10px 20px; border-radius:var(--rs); border:none; font-family:var(--fd); font-weight:600; font-size:13px; cursor:pointer; transition:all .2s; display:inline-flex; align-items:center; gap:6px; }
+.bt-p { background:var(--btn-bg); color:var(--btn-text); }
+.bt-p:hover { transform:translateY(-1px); box-shadow:var(--sh-md); }
+.bt:disabled { opacity:.4; cursor:wait; }
+.bt-g { background:transparent; color:var(--text-dim); border:1px solid var(--border); }
+.bt-g:hover { border-color:var(--border-hover); color:var(--text); }
+.sp { display:inline-block; width:15px; height:15px; border:2px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin .6s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* ═══ RESULT ═══ */
+.rcard { display:none; background:var(--card); border-radius:var(--r); border:1px solid var(--border); overflow:hidden; margin-top:22px; box-shadow:var(--sh-md); transition:background .3s; }
+.rcard.vis { display:block; animation:fu .4s ease; }
+
+.rh { padding:24px 24px 20px; display:flex; align-items:flex-start; gap:16px; }
+.tl { width:54px; height:54px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0; }
+.tl-g { background:var(--green-bg); } .tl-y { background:var(--yellow-bg); } .tl-o { background:var(--orange-bg); } .tl-r { background:var(--red-bg); } .tl-c { background:var(--crit-bg); }
+.r-hl { font-family:var(--fd); font-weight:800; font-size:19px; margin-bottom:4px; }
+.r-sm { font-size:13px; color:var(--text-dim); line-height:1.5; }
+
+/* Findings */
+.fds { padding:0 24px 20px; }
+.fd { padding:12px 14px; border-radius:var(--rs); margin-bottom:7px; display:flex; gap:10px; align-items:flex-start; }
+.fd.ok { background:var(--green-bg); border:1px solid var(--green-bd); }
+.fd.wr { background:var(--yellow-bg); border:1px solid var(--yellow-bd); }
+.fd.al { background:var(--orange-bg); border:1px solid var(--orange-bd); }
+.fd.dg { background:var(--red-bg); border:1px solid var(--red-bd); }
+.fd-i { font-size:15px; flex-shrink:0; margin-top:1px; }
+.fd-t { font-family:var(--fd); font-weight:700; font-size:12px; margin-bottom:1px; }
+.fd-d { font-size:11px; color:var(--text-dim); line-height:1.5; }
+.fd-a { font-size:11px; color:var(--gold); font-weight:500; margin-top:4px; }
+
+/* Score bars */
+.scs { padding:0 24px 20px; }
+.sb { margin-bottom:8px; }
+.sb-l { display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); margin-bottom:4px; font-family:var(--fm); }
+.sb-tr { height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
+.sb-fl { height:100%; border-radius:3px; transition:width .8s ease; }
+
+/* Receipt footer */
+.rf { padding:12px 24px; background:var(--bg); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; font-size:10px; color:var(--text-muted); font-family:var(--fm); flex-wrap:wrap; gap:6px; }
+.rf .rt { color:var(--gold); }
+
+/* Principle */
+.pr { text-align:center; padding:24px; font-size:11px; color:var(--text-muted); font-family:var(--fd); letter-spacing:.4px; }
+.pr em { color:var(--gold); font-style:normal; }
+
+@media(max-width:600px) {
+  .mn { padding:16px 12px; }
+  .ob h2 { font-size:21px; }
+  .rg { grid-template-columns:1fr 1fr; }
+  .rh { flex-direction:column; align-items:center; text-align:center; }
+  .sa { flex-direction:column; }
+  .rf { flex-direction:column; text-align:center; }
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-l">
+    <div class="logo">🛡️</div>
+    <div class="logo-t">WINDI</div>
+  </div>
+  <div class="hdr-r">
+    <div class="lp">
+      <button class="lb on" onclick="setLang('de')">DE</button>
+      <button class="lb" onclick="setLang('en')">EN</button>
+      <button class="lb" onclick="setLang('pt')">PT</button>
+    </div>
+    <div class="tt" onclick="toggleTheme()"></div>
+    <div class="uc" id="chip" onclick="resetProfile()">
+      <span id="cI">👤</span><span id="cN">—</span>
+    </div>
+  </div>
+</header>
+
+<main class="mn">
+  <div id="ob" class="ob">
+    <h2 id="obT"></h2>
+    <p id="obD"></p>
+    <div class="rg">
+      <div class="rc" onclick="pick('biz')"><div class="ri">🏢</div><div class="rn" id="rn_biz"></div><div class="rd" id="rd_biz"></div></div>
+      <div class="rc" onclick="pick('free')"><div class="ri">💼</div><div class="rn" id="rn_free"></div><div class="rd" id="rd_free"></div></div>
+      <div class="rc" onclick="pick('comp')"><div class="ri">⚖️</div><div class="rn" id="rn_comp"></div><div class="rd" id="rd_comp"></div></div>
+      <div class="rc" onclick="pick('priv')"><div class="ri">👤</div><div class="rn" id="rn_priv"></div><div class="rd" id="rd_priv"></div></div>
+      <div class="rc" onclick="pick('ctrl')"><div class="ri">📊</div><div class="rn" id="rn_ctrl"></div><div class="rd" id="rd_ctrl"></div></div>
+      <div class="rc" onclick="pick('exec')"><div class="ri">🏛️</div><div class="rn" id="rn_exec"></div><div class="rd" id="rd_exec"></div></div>
+    </div>
+  </div>
+
+  <div id="ws" class="ws">
+    <div class="wb"><h2 id="wT"></h2><p id="wS"></p></div>
+    <div class="dz" id="dz" onclick="document.getElementById('fi').click()">
+      <div class="dz-i">📄</div><div class="dz-t" id="dzT"></div><div class="dz-s" id="dzS"></div>
+    </div>
+    <input type="file" id="fi" accept=".pdf,.docx,.doc,.txt,.rtf" onchange="hFile(this.files[0])">
+    <div>
+      <div class="tg" onclick="tTxt()"><span>✏️</span><span id="tgL"></span></div>
+      <div class="tw" id="tw">
+        <textarea id="dt" placeholder=""></textarea>
+        <div class="sa">
+          <button class="bt bt-p" id="bA" onclick="scan()">🔬 <span id="bAL"></span></button>
+          <button class="bt bt-g" onclick="clr()"><span id="bRL"></span></button>
+        </div>
+      </div>
+    </div>
+    <div class="rcard" id="rc"></div>
+  </div>
+
+  <div class="pr"><em id="p1"></em><span id="p2"></span><em id="p3"></em></div>
+</main>
+
+<script>
+// ═══════════════════════════════════════════
+//  WINDI TRILINGUAL ENGINE
+// ═══════════════════════════════════════════
+
+const T = {
+de: {
+  obT:'Willkommen bei WINDI', obD:'Laden Sie ein Dokument hoch und erfahren Sie sofort, ob es sicher, konform und fair ist.',
+  biz:'Unternehmer:in', biz_d:'Verträge, Lieferanten, Compliance',
+  free:'Freiberufler:in', free_d:'NDAs, Aufträge, AGBs',
+  comp:'Compliance / DPO', comp_d:'DSGVO, AVV, Audits',
+  priv:'Privatperson', priv_d:'Mietvertrag, Versicherung',
+  ctrl:'Controller', ctrl_d:'Risikomanagement, Reporting',
+  exec:'Geschäftsführung', exec_d:'Überblick, Entscheidungen',
+  dzT:'Dokument hierher ziehen', dzS:'oder <a>Datei auswählen</a> — PDF, DOCX, TXT',
+  tg:'Oder Text direkt einfügen', ph:'Vertragstext hier einfügen...',
+  bA:'Analysieren', bR:'Zurücksetzen',
+  p1:'KI verarbeitet.', p2:' Mensch entscheidet.', p3:' WINDI garantiert.',
+  rcpt:'Prüfnachweis', fail:'Analyse fehlgeschlagen', empty:'Bitte Dokumententext einfügen.',
+  off_t:'Server nicht erreichbar', off_d:'WINDI-Analyse momentan nicht verfügbar.',
+  cok:'Regulatorische Compliance', cok_d:'Datenschutzrechtliche Anforderungen erfüllt.',
+  wel: {
+    biz:['Ihr Geschäft, Ihre Verträge','Vertrag oder Angebot hochladen — WINDI prüft Risiken und Fairness.'],
+    free:['Ihr Schutz bei jedem Auftrag','NDAs, Werkverträge, AGBs — sofort erfahren, worauf zu achten ist.'],
+    comp:['DSGVO-Compliance auf Knopfdruck','AVV prüfen, Art. 28 Checkliste — mit Prüfnachweis.'],
+    priv:['Verstehen Sie, was Sie unterschreiben','Mietvertrag, Versicherung, AGB — einfach erklärt.'],
+    ctrl:['Risiken erkennen, bevor sie kosten','6-Schichten-Governance mit Prüfnachweis.'],
+    exec:['Entscheiden Sie informiert','Schnelle Risikobewertung auf einen Blick.'],
+  },
+  risk: {
+    plain: {
+      0:'Alles in Ordnung ✅|Keine auffälligen Probleme gefunden.',
+      1:'Weitgehend okay|Kleine Hinweise, kein Grund zur Sorge.',
+      2:'Genauer hinschauen|Einige Stellen vor der Unterschrift prüfen.',
+      3:'Vorsicht geboten ⚠️|Enthält Punkte, die nachteilig sein könnten.',
+      4:'Achtung — Risiken! 🔴|Ernsthafte Probleme. Lassen Sie sich beraten.',
+      5:'Nicht unterschreiben ⛔|Schwerwiegende Mängel. Professionelle Beratung nötig.',
+    },
+    expert: {
+      0:'R0 — Kein Risiko|Compliance exzellent. Alle Anforderungen erfüllt.',
+      1:'R1 — Minimal|Informativ. Keine Maßnahmen erforderlich.',
+      2:'R2 — Niedrig|Aufmerksamkeit empfohlen. Einzelne Lücken.',
+      3:'R3 — Mittel ⚠️|Review erforderlich. DSGVO-relevante Defizite.',
+      4:'R4 — Hoch 🔴|Maßnahmen erforderlich. Signifikante Non-Compliance.',
+      5:'R5 — Kritisch ⛔|Blockierung empfohlen. Schwerwiegende Verstöße.',
+    },
+    business: {
+      0:'Vertrag konform ✅|Keine Compliance-Risiken. Freigabe möglich.',
+      1:'Geringe Hinweise|Marginale Auffälligkeiten. Fortfahren.',
+      2:'Prüfung empfohlen|Klauseln vor Freigabe beachten.',
+      3:'Review erforderlich ⚠️|Compliance-Lücken. Rechtsabteilung einschalten.',
+      4:'Eskalation empfohlen 🔴|Signifikante Risiken. Freigabe aussetzen.',
+      5:'Vertrag blockiert ⛔|Kritische Mängel. Nicht unterzeichnen.',
+    },
+    executive: {
+      0:'Freigabe möglich ✅|Keine Risiken.',
+      1:'Freigabe möglich|Kein Handlungsbedarf.',
+      2:'Prüfung einleiten|Kleinere Punkte klären.',
+      3:'Entscheidung nötig ⚠️|Ihre Einschätzung ist gefragt.',
+      4:'Nicht freigeben 🔴|Nachverhandlung erforderlich.',
+      5:'Sofort stoppen ⛔|Darf nicht unterzeichnet werden.',
+    },
+  },
+  flags: {
+    unlimited_liability:['Unbegrenzte Haftung','Haftung ohne Obergrenze — ungewöhnlich und riskant.'],
+    unilateral_termination:['Einseitige Kündigung','Nur eine Seite kann kündigen.'],
+    data_export_risk:['Daten ins Ausland','Übertragung in weniger geschützte Länder möglich.'],
+    missing_essentials:['Fehlende Angaben','Wichtige Informationen fehlen (Platzhalter/TBD).'],
+    automatic_renewal:['Automatische Verlängerung','Vertrag verlängert sich ohne Benachrichtigung.'],
+    waiver_of_rights:['Rechteverzicht','Verzicht auf wichtige Rechte (z.B. Gewährleistung).'],
+    penalty_disproportionate:['Hohe Vertragsstrafe','Vertragsstrafe erscheint unverhältnismäßig.'],
+  },
+  sem: {
+    vague_language:['Vage Formulierungen','Unpräzise Ausdrücke — Missverständnisse möglich.'],
+    asymmetric_obligations:['Unausgewogene Pflichten','Eine Seite trägt deutlich mehr Last.'],
+    escalation_triggers:['Eskalationsmechanismen','Automatisch härtere Konsequenzen.'],
+    scope_creep_risk:['Offener Leistungsumfang','Umfang nicht klar begrenzt.'],
+  },
+  layers: { lexical:'Begriffe & Werte', syntactic:'Vollständigkeit', semantic:'Bedeutung & Fairness', pragmatic:'Kontext & Druck', regulatory:'Gesetzeskonformität', institutional:'Standards' },
+},
+
+en: {
+  obT:'Welcome to WINDI', obD:'Upload a document and instantly learn whether it is safe, compliant, and fair.',
+  biz:'Business Owner', biz_d:'Contracts, Suppliers, Compliance',
+  free:'Freelancer', free_d:'NDAs, Agreements, T&Cs',
+  comp:'Compliance / DPO', comp_d:'GDPR, DPA, Audits',
+  priv:'Individual', priv_d:'Lease, Insurance, T&Cs',
+  ctrl:'Controller', ctrl_d:'Risk Management, Reporting',
+  exec:'Executive Board', exec_d:'Overview, Decisions',
+  dzT:'Drop your document here', dzS:'or <a>choose a file</a> — PDF, DOCX, TXT',
+  tg:'Or paste text directly', ph:'Paste contract text here...',
+  bA:'Analyze', bR:'Reset',
+  p1:'AI processes.', p2:' Human decides.', p3:' WINDI guarantees.',
+  rcpt:'Audit receipt', fail:'Analysis failed', empty:'Please paste document text first.',
+  off_t:'Server unreachable', off_d:'WINDI analysis is currently unavailable.',
+  cok:'Regulatory Compliance', cok_d:'Key data protection requirements are met.',
+  wel: {
+    biz:['Your business, your contracts','Upload a contract or proposal — WINDI checks risks and fairness.'],
+    free:['Your protection on every job','NDAs, agreements, T&Cs — instantly know what to watch for.'],
+    comp:['GDPR compliance at a click','Check DPAs, Art. 28 checklist — with audit receipt.'],
+    priv:['Understand what you sign','Lease, insurance, T&Cs — WINDI explains it simply.'],
+    ctrl:['Spot risks before they cost','6-layer governance with audit receipt.'],
+    exec:['Decide informed','Quick risk assessment at a glance.'],
+  },
+  risk: {
+    plain: {
+      0:'All clear ✅|No notable issues found.',
+      1:'Mostly fine|Minor notes, no cause for concern.',
+      2:'Take a closer look|Some points to check before signing.',
+      3:'Caution advised ⚠️|Contains potentially unfavorable clauses.',
+      4:'Warning — Risks found 🔴|Serious issues. Seek professional advice.',
+      5:'Do not sign ⛔|Critical flaws. Get counsel first.',
+    },
+    expert: {
+      0:'R0 — No risk|Compliance excellent. All requirements met.',
+      1:'R1 — Minimal|Informational. No action needed.',
+      2:'R2 — Low|Attention recommended. Minor gaps.',
+      3:'R3 — Medium ⚠️|Review required. GDPR-relevant deficits.',
+      4:'R4 — High 🔴|Action required. Significant non-compliance.',
+      5:'R5 — Critical ⛔|Blocking recommended. Severe violations.',
+    },
+    business: {
+      0:'Contract compliant ✅|No compliance risks. Ready for approval.',
+      1:'Minor notes|Marginal findings. Continue.',
+      2:'Review recommended|Some clauses need attention.',
+      3:'Review required ⚠️|Compliance gaps. Involve legal team.',
+      4:'Escalation recommended 🔴|Significant risks. Hold approval.',
+      5:'Contract blocked ⛔|Critical deficiencies. Do not sign.',
+    },
+    executive: {
+      0:'Approve ✅|No risks.',
+      1:'Approve|No action needed.',
+      2:'Initiate review|Minor points to clarify.',
+      3:'Decision needed ⚠️|Your judgment required.',
+      4:'Do not approve 🔴|Renegotiation needed.',
+      5:'Stop immediately ⛔|Must not be signed.',
+    },
+  },
+  flags: {
+    unlimited_liability:['Unlimited Liability','No liability cap — unusual and risky.'],
+    unilateral_termination:['Unilateral Termination','Only one party can terminate.'],
+    data_export_risk:['Data Export Risk','Data may go to countries with weaker protection.'],
+    missing_essentials:['Missing Information','Essential details marked as placeholder/TBD.'],
+    automatic_renewal:['Automatic Renewal','Contract renews automatically without notice.'],
+    waiver_of_rights:['Waiver of Rights','You would waive important rights.'],
+    penalty_disproportionate:['Disproportionate Penalty','Penalty clause appears excessive.'],
+  },
+  sem: {
+    vague_language:['Vague Language','Imprecise wording — misunderstandings possible.'],
+    asymmetric_obligations:['Asymmetric Obligations','One party bears much more burden.'],
+    escalation_triggers:['Escalation Triggers','Automatically impose harsher consequences.'],
+    scope_creep_risk:['Open Scope','Scope of services not clearly defined.'],
+  },
+  layers: { lexical:'Terms & Values', syntactic:'Completeness', semantic:'Meaning & Fairness', pragmatic:'Context & Pressure', regulatory:'Legal Compliance', institutional:'Standards' },
+},
+
+pt: {
+  obT:'Bem-vindo ao WINDI', obD:'Carregue um documento e descubra se ele é seguro, conforme e justo.',
+  biz:'Empresário(a)', biz_d:'Contratos, Fornecedores, Compliance',
+  free:'Autônomo(a)', free_d:'NDAs, Contratos, Termos',
+  comp:'Compliance / DPO', comp_d:'LGPD, DSGVO, Auditorias',
+  priv:'Pessoa Física', priv_d:'Aluguel, Seguro, Termos',
+  ctrl:'Controlador(a)', ctrl_d:'Gestão de Riscos',
+  exec:'Diretoria', exec_d:'Visão geral, Decisões',
+  dzT:'Arraste o documento aqui', dzS:'ou <a>escolha um arquivo</a> — PDF, DOCX, TXT',
+  tg:'Ou cole o texto diretamente', ph:'Cole o texto do contrato aqui...',
+  bA:'Analisar', bR:'Limpar',
+  p1:'IA processa.', p2:' Humano decide.', p3:' WINDI garante.',
+  rcpt:'Comprovante', fail:'Análise falhou', empty:'Cole o texto do documento primeiro.',
+  off_t:'Servidor indisponível', off_d:'Análise WINDI indisponível no momento.',
+  cok:'Conformidade Regulatória', cok_d:'Requisitos de proteção de dados atendidos.',
+  wel: {
+    biz:['Seu negócio, seus contratos','Carregue um contrato — WINDI verifica riscos e equidade.'],
+    free:['Sua proteção em cada trabalho','NDAs, contratos, termos — saiba o que observar.'],
+    comp:['Compliance com um clique','Verificar AVV, checklist Art. 28 — com comprovante.'],
+    priv:['Entenda o que você assina','Aluguel, seguro, termos — explicado de forma simples.'],
+    ctrl:['Identifique riscos antes que custem','Governança de 6 camadas com comprovante.'],
+    exec:['Decida com informação','Avaliação rápida de risco.'],
+  },
+  risk: {
+    plain: {
+      0:'Tudo certo ✅|Nenhum problema identificado.',
+      1:'Quase perfeito|Pequenos detalhes, sem preocupação.',
+      2:'Vale conferir|Alguns pontos merecem atenção.',
+      3:'Cuidado ⚠️|Cláusulas que podem ser desfavoráveis.',
+      4:'Atenção — Riscos! 🔴|Problemas sérios. Busque orientação.',
+      5:'Não assine ⛔|Falhas graves. Consulte um profissional.',
+    },
+    expert: {
+      0:'R0 — Sem risco|Compliance excelente.',
+      1:'R1 — Mínimo|Apenas informativo.',
+      2:'R2 — Baixo|Atenção recomendada.',
+      3:'R3 — Médio ⚠️|Revisão necessária. Déficits LGPD/DSGVO.',
+      4:'R4 — Alto 🔴|Ação necessária. Non-compliance significativa.',
+      5:'R5 — Crítico ⛔|Bloqueio recomendado. Violações graves.',
+    },
+    business: {
+      0:'Contrato conforme ✅|Sem riscos. Pode ser aprovado.',
+      1:'Observações menores|Detalhes marginais.',
+      2:'Revisão recomendada|Cláusulas precisam de atenção.',
+      3:'Revisão necessária ⚠️|Lacunas de compliance.',
+      4:'Escalação recomendada 🔴|Riscos significativos.',
+      5:'Contrato bloqueado ⛔|Deficiências críticas.',
+    },
+    executive: {
+      0:'Aprovar ✅|Sem riscos.',
+      1:'Aprovar|Sem ação necessária.',
+      2:'Iniciar revisão|Pontos a esclarecer.',
+      3:'Decisão necessária ⚠️|Sua avaliação é necessária.',
+      4:'Não aprovar 🔴|Renegociação necessária.',
+      5:'Parar imediatamente ⛔|Não pode ser assinado.',
+    },
+  },
+  flags: {
+    unlimited_liability:['Responsabilidade Ilimitada','Sem teto de responsabilidade — incomum e arriscado.'],
+    unilateral_termination:['Rescisão Unilateral','Apenas uma parte pode rescindir.'],
+    data_export_risk:['Exportação de Dados','Dados podem ir para países com menor proteção.'],
+    missing_essentials:['Informações Faltantes','Detalhes essenciais marcados como pendentes.'],
+    automatic_renewal:['Renovação Automática','Contrato se renova sem aviso.'],
+    waiver_of_rights:['Renúncia de Direitos','Renunciaria a direitos importantes.'],
+    penalty_disproportionate:['Multa Desproporcional','Cláusula penal parece excessiva.'],
+  },
+  sem: {
+    vague_language:['Linguagem Vaga','Termos imprecisos — mal-entendidos possíveis.'],
+    asymmetric_obligations:['Obrigações Assimétricas','Uma parte carrega mais ônus.'],
+    escalation_triggers:['Gatilhos de Escalação','Consequências mais severas automaticamente.'],
+    scope_creep_risk:['Escopo Aberto','Escopo não claramente definido.'],
+  },
+  layers: { lexical:'Termos & Valores', syntactic:'Completude', semantic:'Significado & Equidade', pragmatic:'Contexto & Pressão', regulatory:'Conformidade Legal', institutional:'Padrões' },
+},
+};
+
+// ═══ STATE ═══
+let L='de', R=null, TH='klar';
+const API = window.location.origin+'/api/sanctuary';
+const RMAP = { biz:'business', free:'plain', comp:'expert', priv:'plain', ctrl:'expert', exec:'executive' };
+const ICONS = { biz:'🏢', free:'💼', comp:'⚖️', priv:'👤', ctrl:'📊', exec:'🏛️' };
+
+// ═══ i18n APPLY ═══
+function apply() {
+  const t=T[L];
+  document.getElementById('obT').textContent=t.obT;
+  document.getElementById('obD').textContent=t.obD;
+  ['biz','free','comp','priv','ctrl','exec'].forEach(k=>{
+    document.getElementById('rn_'+k).textContent=t[k];
+    document.getElementById('rd_'+k).textContent=t[k+'_d'];
+  });
+  document.getElementById('dzT').textContent=t.dzT;
+  document.getElementById('dzS').innerHTML=t.dzS;
+  document.getElementById('tgL').textContent=t.tg;
+  document.getElementById('dt').placeholder=t.ph;
+  document.getElementById('bAL').textContent=t.bA;
+  document.getElementById('bRL').textContent=t.bR;
+  document.getElementById('p1').textContent=t.p1;
+  document.getElementById('p2').textContent=t.p2;
+  document.getElementById('p3').textContent=t.p3;
+  if(R){
+    const w=t.wel[R];
+    document.getElementById('wT').textContent=w[0];
+    document.getElementById('wS').textContent=w[1];
+    document.getElementById('cN').textContent=t[R];
+  }
+}
+
+// ═══ LANG ═══
+function setLang(l) {
+  L=l;
+  document.documentElement.setAttribute('data-lang',l);
+  document.querySelectorAll('.lb').forEach(b=>b.classList.toggle('on',b.textContent.trim().toLowerCase()===l));
+  apply();
+}
+
+// ═══ THEME ═══
+function toggleTheme() {
+  TH=TH==='klar'?'noir':'klar';
+  document.documentElement.setAttribute('data-theme',TH);
+}
+
+// ═══ ROLE ═══
+function pick(r) {
+  R=r;
+  const t=T[L], w=t.wel[r];
+  document.getElementById('ob').style.display='none';
+  document.getElementById('ws').classList.add('on');
+  document.getElementById('wT').textContent=w[0];
+  document.getElementById('wS').textContent=w[1];
+  const c=document.getElementById('chip'); c.classList.add('on');
+  document.getElementById('cI').textContent=ICONS[r];
+  document.getElementById('cN').textContent=t[r];
+}
+
+function resetProfile() {
+  R=null;
+  document.getElementById('ob').style.display='block';
+  document.getElementById('ws').classList.remove('on');
+  document.getElementById('chip').classList.remove('on');
+  document.getElementById('rc').classList.remove('vis');
+}
+
+// ═══ DROP ═══
+const dz=document.getElementById('dz');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dg')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('dg'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dg');if(e.dataTransfer.files.length)hFile(e.dataTransfer.files[0])});
+
+async function hFile(f){
+  if(!f)return;
+  var dt=document.getElementById('dt');
+  var tw=document.getElementById('tw');
+  tw.classList.add('op');
+  if(f.name.endsWith('.txt')||f.name.endsWith('.md')){
+    dt.value=await f.text();scan();
+  }else if(f.name.endsWith('.pdf')||f.name.endsWith('.docx')||f.name.endsWith('.doc')){
+    dt.value='⏳ Dokument wird analysiert...';dt.disabled=true;
+    try{
+      var fd=new FormData();fd.append('file',f);
+      var res=await fetch('/api/extract',{method:'POST',body:fd});
+      var data=await res.json();
+      if(data.success&&data.text){dt.value=data.text;dt.disabled=false;scan();}
+      else{dt.value='';dt.disabled=false;dt.placeholder=data.error||'Extraktion fehlgeschlagen';dt.focus();}
+    }catch(e){dt.value='';dt.disabled=false;dt.placeholder='Server nicht erreichbar';dt.focus();}
+  }else{dt.focus();}
+}
+
+function tTxt(){document.getElementById('tw').classList.toggle('op')}
+function clr(){document.getElementById('dt').value='';document.getElementById('rc').classList.remove('vis')}
+
+// ═══ SCAN ═══
+async function scan(){
+  const c=document.getElementById('dt').value.trim();
+  if(!c){alert(T[L].empty);return}
+  const b=document.getElementById('bA');
+  b.disabled=true; b.innerHTML='<span class="sp"></span>';
+  try{
+    const r=await fetch(API+'/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:c,document_type:'contract',scan_mode:'full',agent_id:'user-'+(R||'pub')})});
+    render(await r.json());
+  }catch(e){renderOff()}
+  finally{ b.disabled=false; b.innerHTML='🔬 <span>'+T[L].bA+'</span>'; }
+}
+
+// ═══ RENDER ═══
+function render(data){
+  const card=document.getElementById('rc');
+  card.classList.add('vis');
+  const t=T[L];
+
+  if(!data.success){
+    card.innerHTML=`<div class="rh"><div class="tl tl-r">❌</div><div><div class="r-hl">${t.fail}</div><div class="r-sm">${data.result||data.error||'Error'}</div></div></div>`;
+    card.scrollIntoView({behavior:'smooth'}); return;
+  }
+
+  const rp=data.result, rk=rp.risk, rn=parseInt(rk.risk_level.replace('R',''));
+  const rl=RMAP[R]||'plain';
+  const riskD=t.risk[rl]||t.risk.plain;
+  const rt=(riskD[rn]||riskD[3]).split('|');
+
+  const tc=rn<=1?'tl-g':rn===2?'tl-y':rn===3?'tl-o':rn===4?'tl-r':'tl-c';
+  const te=rn<=1?'✅':rn===2?'🟡':rn===3?'🟠':rn===4?'🔴':'⛔';
+
+  // Findings
+  let fH='';
+  const rf=rp.layers?.lexical?.red_flags||{};
+  Object.entries(rf).forEach(([k,v])=>{
+    const f=t.flags[k]||[k,v.length+' patterns'];
+    const s=['unlimited_liability','data_export_risk','penalty_disproportionate'].includes(k)?'dg':'al';
+    fH+=`<div class="fd ${s}"><div class="fd-i">${s==='dg'?'🔴':'🟠'}</div><div><div class="fd-t">${f[0]}</div><div class="fd-d">${f[1]}</div></div></div>`;
+  });
+
+  const sr=rp.layers?.semantic?.risk_indicators||{};
+  Object.entries(sr).forEach(([k])=>{
+    const s=t.sem[k]||[k,''];
+    fH+=`<div class="fd wr"><div class="fd-i">⚠️</div><div><div class="fd-t">${s[0]}</div><div class="fd-d">${s[1]}</div></div></div>`;
+  });
+
+  if((rk.layer_scores?.regulatory||0)>=0.8){
+    fH+=`<div class="fd ok"><div class="fd-i">✅</div><div><div class="fd-t">${t.cok}</div><div class="fd-d">${t.cok_d}</div></div></div>`;
+  }
+
+  // Bars
+  const ln=t.layers;
+  function bc(s){return s>=.75?'var(--green)':s>=.5?'var(--yellow)':s>=.25?'var(--orange)':'var(--red)'}
+  const bars=Object.entries(rk.layer_scores||{}).map(([k,s])=>
+    `<div class="sb"><div class="sb-l"><span>${ln[k]||k}</span><span>${Math.round(s*100)}%</span></div><div class="sb-tr"><div class="sb-fl" style="width:${Math.round(s*100)}%;background:${bc(s)}"></div></div></div>`
+  ).join('');
+
+  const loc=L==='pt'?'pt-BR':L==='en'?'en-GB':'de-DE';
+  card.innerHTML=`
+    <div class="rh"><div class="tl ${tc}">${te}</div><div><div class="r-hl">${rt[0]}</div><div class="r-sm">${rt[1]}</div></div></div>
+    ${fH?`<div class="fds">${fH}</div>`:''}
+    <div class="scs">${bars}</div>
+    <div class="rf"><span class="rt">${t.rcpt}: ${data.receipt?.receipt_id||'—'}</span><span>SGE ${rk.composite_score?.toFixed(4)} · ${new Date().toLocaleString(loc)}</span></div>
+  `;
+  card.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function renderOff(){
+  const card=document.getElementById('rc');
+  card.classList.add('vis');
+  card.innerHTML=`<div class="rh"><div class="tl tl-y">📡</div><div><div class="r-hl">${T[L].off_t}</div><div class="r-sm">${T[L].off_d}</div></div></div>`;
+}
+
+// ═══ INIT ═══
+apply();
+</script>
+</body>
+</html>

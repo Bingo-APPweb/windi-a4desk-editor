@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>WINDI Governance Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{--primary:#1a365d;--accent:#3182ce;--success:#38a169;--warning:#d69e2e;--danger:#e53e3e;--bg:#0d1117;--card:#161b22;--card-hover:#1c2333;--text:#c9d1d9;--text-bright:#e6edf3;--border:#30363d;--low-green:#2ea043;--low-green-bg:rgba(46,160,67,.1);--medium-amber:#d29922;--medium-amber-bg:rgba(210,153,34,.1);--high-red:#f85149;--high-red-bg:rgba(248,81,73,.1)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* Top Bar */
+.top-bar{background:var(--card);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.top-bar-left{display:flex;align-items:center;gap:16px}
+.logo-mark{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),#6366f1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-text{font-weight:700;font-size:1rem;color:var(--text-bright)}
+.logo-text small{display:block;font-size:.7rem;font-weight:400;color:var(--text);text-transform:uppercase;letter-spacing:1px}
+.nav-tabs{display:flex;gap:4px;background:var(--bg);border-radius:8px;padding:3px}
+.nav-tab{padding:8px 18px;border-radius:6px;border:none;background:transparent;color:var(--text);cursor:pointer;font-size:.85rem;font-weight:500;display:flex;align-items:center;gap:6px;transition:all .2s}
+.nav-tab:hover{background:var(--card-hover);color:var(--text-bright)}
+.nav-tab.active{background:var(--accent);color:#fff}
+.top-bar-right{display:flex;align-items:center;gap:12px}
+.engine-status{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.engine-online{background:rgba(46,160,67,.15);color:var(--low-green);border:1px solid rgba(46,160,67,.3)}
+.engine-offline{background:rgba(248,81,73,.15);color:var(--high-red);border:1px solid rgba(248,81,73,.3)}
+.version-badge{font-size:.75rem;color:var(--text);opacity:.6}
+.btn-back{padding:8px 16px;background:var(--card-hover);border:1px solid var(--border);border-radius:6px;color:var(--text);cursor:pointer;font-size:.8rem;text-decoration:none;display:flex;align-items:center;gap:6px}
+.btn-back:hover{background:var(--border);color:var(--text-bright)}
+
+/* Principle Bar */
+.principle-bar{background:var(--card);border-bottom:1px solid var(--border);padding:8px 24px;display:flex;align-items:center;justify-content:space-between;font-size:.8rem}
+.principle-text{color:var(--text);opacity:.7;font-style:italic}
+.principle-meta{display:flex;gap:16px;font-size:.75rem;color:var(--text);opacity:.5}
+.principle-meta span{display:flex;align-items:center;gap:4px}
+
+/* Main Content */
+.main{max-width:1200px;margin:0 auto;padding:24px}
+
+/* Page: Generate */
+.page{display:none}
+.page.active{display:block}
+
+.page-title{font-size:1.3rem;font-weight:700;color:var(--text-bright);margin-bottom:6px}
+.page-desc{font-size:.9rem;color:var(--text);opacity:.7;margin-bottom:24px}
+
+/* Level Selector */
+.level-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.level-card{background:var(--card);border:2px solid var(--border);border-radius:10px;padding:20px;cursor:pointer;transition:all .2s;position:relative}
+.level-card:hover{border-color:var(--accent);transform:translateY(-1px)}
+.level-card.selected{transform:translateY(-2px)}
+.level-card.selected.level-low{border-color:var(--low-green);box-shadow:0 0 20px rgba(46,160,67,.2)}
+.level-card.selected.level-medium{border-color:var(--medium-amber);box-shadow:0 0 20px rgba(210,153,34,.2)}
+.level-card.selected.level-high{border-color:var(--high-red);box-shadow:0 0 20px rgba(248,81,73,.2)}
+.level-indicator{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.level-dot{width:10px;height:10px;border-radius:50%}
+.level-low .level-dot{background:var(--low-green)}
+.level-medium .level-dot{background:var(--medium-amber)}
+.level-high .level-dot{background:var(--high-red)}
+.level-name{font-weight:700;font-size:1rem}
+.level-low .level-name{color:var(--low-green)}
+.level-medium .level-name{color:var(--medium-amber)}
+.level-high .level-name{color:var(--high-red)}
+.level-title{font-weight:600;color:var(--text-bright);font-size:.95rem;margin-bottom:4px}
+.level-desc{font-size:.8rem;color:var(--text);opacity:.7}
+
+/* Metadata Form */
+.metadata-form{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:24px;display:none}
+.metadata-form.show{display:block}
+.form-title{font-size:1rem;font-weight:600;color:var(--text-bright);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-field{display:flex;flex-direction:column;gap:4px}
+.form-field label{font-size:.8rem;font-weight:600;color:var(--text);text-transform:uppercase;letter-spacing:.5px}
+.form-field input,.form-field select{padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text-bright);font-size:.9rem}
+.form-field input:focus,.form-field select:focus{outline:none;border-color:var(--accent)}
+.form-field select option{background:var(--card);color:var(--text)}
+
+/* Generate Button */
+.btn-generate{width:100%;padding:16px;border:none;border-radius:10px;font-size:1.05rem;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-generate.level-low{background:var(--low-green);color:#fff}
+.btn-generate.level-medium{background:var(--medium-amber);color:#fff}
+.btn-generate.level-high{background:var(--high-red);color:#fff}
+.btn-generate:hover{transform:translateY(-1px);filter:brightness(1.1)}
+.btn-generate:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* Result */
+.result-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:24px;margin-top:20px;display:none}
+.result-box.show{display:block}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.result-status{padding:6px 14px;border-radius:6px;font-weight:700;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px}
+.result-approved{background:rgba(46,160,67,.15);color:var(--low-green);border:1px solid rgba(46,160,67,.3)}
+.result-blocked{background:rgba(248,81,73,.15);color:var(--high-red);border:1px solid rgba(248,81,73,.3)}
+.result-details{font-family:'JetBrains Mono',monospace;font-size:.8rem;background:var(--bg);border-radius:6px;padding:16px;overflow-x:auto;white-space:pre-wrap;color:var(--text);line-height:1.6}
+
+/* Page: Audit */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center}
+.stat-value{font-size:2rem;font-weight:700;color:var(--text-bright)}
+.stat-label{font-size:.8rem;color:var(--text);opacity:.7;margin-top:4px}
+.stat-card.stat-low .stat-value{color:var(--low-green)}
+.stat-card.stat-medium .stat-value{color:var(--medium-amber)}
+.stat-card.stat-high .stat-value{color:var(--high-red)}
+
+.registry-table{width:100%;background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.registry-table th{background:var(--bg);padding:12px 16px;text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text);font-weight:600;border-bottom:1px solid var(--border)}
+.registry-table td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:.85rem}
+.registry-table tr:last-child td{border-bottom:none}
+.registry-table tr:hover td{background:var(--card-hover)}
+
+.chain-status{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:4px;font-size:.75rem;font-weight:600}
+.chain-complete{background:rgba(46,160,67,.15);color:var(--low-green)}
+.chain-incomplete{background:rgba(248,81,73,.15);color:var(--high-red)}
+
+/* Page: Compliance */
+.invariant-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
+.invariant-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;display:flex;align-items:flex-start;gap:12px}
+.invariant-check{width:24px;height:24px;border-radius:50%;background:rgba(46,160,67,.15);color:var(--low-green);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.8rem}
+.invariant-info h4{font-size:.9rem;color:var(--text-bright);margin-bottom:2px}
+.invariant-info p{font-size:.8rem;color:var(--text);opacity:.7}
+
+.compliance-matrix{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.compliance-matrix th{background:var(--bg);padding:10px 14px;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text)}
+.compliance-matrix td{padding:10px 14px;text-align:center;border-bottom:1px solid var(--border);font-size:.85rem}
+.compliance-matrix td:first-child{text-align:left;font-weight:600;color:var(--text-bright)}
+.cm-yes{color:var(--low-green)}
+.cm-no{color:var(--text);opacity:.3}
+.cm-partial{color:var(--medium-amber)}
+
+/* Footer */
+.footer{text-align:center;padding:24px;color:var(--text);opacity:.4;font-size:.8rem;border-top:1px solid var(--border);margin-top:40px}
+
+/* Loading */
+.loading{text-align:center;padding:40px;color:var(--text);opacity:.5}
+.loading i{font-size:2rem;margin-bottom:10px}
+
+/* Responsive */
+@media(max-width:768px){
+  .level-grid,.stats-grid{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .invariant-grid{grid-template-columns:1fr}
+  .nav-tabs{display:none}
+  .principle-bar{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+  <div class="top-bar-left">
+    <div class="logo-mark">🐉</div>
+    <div class="logo-text">WINDI<small>Pre-AI Governance Layer</small></div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showPage('generate')"><i class="fas fa-file-alt"></i> Generate</button>
+      <button class="nav-tab" onclick="showPage('audit')"><i class="fas fa-search"></i> Audit</button>
+      <button class="nav-tab" onclick="showPage('compliance')"><i class="fas fa-shield-alt"></i> Compliance</button>
+    </div>
+  </div>
+  <div class="top-bar-right">
+    <div class="engine-status engine-offline" id="engineStatus"><i class="fas fa-circle"></i> ENGINE OFFLINE</div>
+    <span class="version-badge" id="versionBadge">v2.0.0</span>
+    <a href="/governance/tutorial" class="btn-back"><i class="fas fa-book"></i> Tutorial</a>
+    <a href="/" class="btn-back"><i class="fas fa-arrow-left"></i> A4 Desk BABEL</a>
+  </div>
+</div>
+
+<!-- Principle Bar -->
+<div class="principle-bar">
+  <span class="principle-text">AI processes. Human decides. WINDI guarantees.</span>
+  <div class="principle-meta">
+    <span><i class="fas fa-flag"></i> EU AI Act</span>
+    <span><i class="fas fa-server"></i> Strato DE</span>
+    <span id="apiEndpoint"><i class="fas fa-plug"></i> API :8080</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- PAGE: Generate -->
+  <div class="page active" id="pageGenerate">
+    <h2 class="page-title">Document Generation</h2>
+    <p class="page-desc">Select governance level and generate governed documents with proportional protection.</p>
+
+    <div class="level-grid">
+      <div class="level-card level-low selected" onclick="selectLevel('LOW')">
+        <div class="level-indicator"><span class="level-dot"></span><span class="level-name">LOW</span></div>
+        <div class="level-title">Operational Standard</div>
+        <div class="level-desc">Day-to-day operational documents</div>
+      </div>
+      <div class="level-card level-medium" onclick="selectLevel('MEDIUM')">
+        <div class="level-indicator"><span class="level-dot"></span><span class="level-name">MEDIUM</span></div>
+        <div class="level-title">Institutional Standard</div>
+        <div class="level-desc">Institutional compliance documents</div>
+      </div>
+      <div class="level-card level-high" onclick="selectLevel('HIGH')">
+        <div class="level-indicator"><span class="level-dot"></span><span class="level-name">HIGH</span></div>
+        <div class="level-title">Forensic Regulatory</div>
+        <div class="level-desc">BIS-style regulatory reporting</div>
+      </div>
+    </div>
+
+    <!-- MEDIUM Metadata Form -->
+    <div class="metadata-form" id="mediumForm">
+      <div class="form-title"><i class="fas fa-building" style="color:var(--medium-amber)"></i> Institutional Metadata (7 fields required)</div>
+      <div class="form-grid">
+        <div class="form-field"><label>Issuing Authority</label><input type="text" id="m_issuing_authority" value="Bundesregierung (Model)"></div>
+        <div class="form-field"><label>Issuing Department</label><input type="text" id="m_issuing_department" placeholder="e.g. Stabsstelle Digitalisierung"></div>
+        <div class="form-field"><label>Document Purpose</label><input type="text" id="m_document_purpose" placeholder="e.g. interne abstimmung"></div>
+        <div class="form-field"><label>Reference Period</label><input type="text" id="m_reference_period" placeholder="e.g. 2026-02"></div>
+        <div class="form-field"><label>Confidentiality Level</label>
+          <select id="m_confidentiality_level">
+            <option value="public">Public</option>
+            <option value="restricted" selected>Restricted</option>
+            <option value="confidential">Confidential</option>
+            <option value="secret">Secret</option>
+          </select>
+        </div>
+        <div class="form-field"><label>Document Owner</label><input type="text" id="m_document_owner" placeholder="e.g. Chief of Staff (Model)"></div>
+        <div class="form-field"><label>Validation Status</label>
+          <select id="m_validation_status">
+            <option value="provisional" selected>Provisional</option>
+            <option value="validated">Validated</option>
+            <option value="final">Final</option>
+            <option value="revised">Revised</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- HIGH Metadata Form -->
+    <div class="metadata-form" id="highForm">
+      <div class="form-title"><i class="fas fa-balance-scale" style="color:var(--high-red)"></i> Regulatory Metadata (10 fields required — SDMX-aligned)</div>
+      <div class="form-grid">
+        <div class="form-field"><label>Reporting Entity</label><input type="text" id="h_reporting_entity" placeholder="e.g. European Central Bank (Model)"></div>
+        <div class="form-field"><label>Entity Identifier</label><input type="text" id="h_reporting_entity_identifier" placeholder="e.g. ECB-MODEL-001"></div>
+        <div class="form-field"><label>Reporting Scope</label><input type="text" id="h_reporting_scope" placeholder="e.g. euro_area"></div>
+        <div class="form-field"><label>Reference Period</label><input type="text" id="h_reference_period" placeholder="e.g. 2026-Q1"></div>
+        <div class="form-field"><label>Data Frequency</label>
+          <select id="h_data_frequency">
+            <option value="quarterly" selected>Quarterly</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="semi-annual">Semi-annual</option>
+            <option value="annual">Annual</option>
+            <option value="ad-hoc">Ad-hoc</option>
+          </select>
+        </div>
+        <div class="form-field"><label>Consolidation Level</label><input type="text" id="h_consolidation_level" placeholder="e.g. consolidated"></div>
+        <div class="form-field"><label>Statistical Framework</label><input type="text" id="h_statistical_framework" placeholder="e.g. ESA2010"></div>
+        <div class="form-field"><label>Confidentiality Level</label>
+          <select id="h_confidentiality_level">
+            <option value="restricted" selected>Restricted</option>
+            <option value="public">Public</option>
+            <option value="confidential">Confidential</option>
+            <option value="secret">Secret</option>
+          </select>
+        </div>
+        <div class="form-field"><label>Data Owner</label><input type="text" id="h_data_owner" placeholder="e.g. DG-Statistics"></div>
+        <div class="form-field"><label>Validation Status</label>
+          <select id="h_validation_status">
+            <option value="provisional" selected>Provisional</option>
+            <option value="validated">Validated</option>
+            <option value="final">Final</option>
+            <option value="revised">Revised</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-generate level-low" id="btnGenerate" onclick="generateDocument()">
+      <i class="fas fa-shield-alt"></i> Generate LOW Document
+    </button>
+
+    <div class="result-box" id="resultBox">
+      <div class="result-header">
+        <span class="result-status" id="resultStatus">—</span>
+        <span style="font-size:.8rem;color:var(--text);opacity:.5" id="resultTimestamp"></span>
+      </div>
+      <div class="result-details" id="resultDetails"></div>
+    </div>
+  </div>
+
+  <!-- PAGE: Audit -->
+  <div class="page" id="pageAudit">
+    <h2 class="page-title">Audit Dashboard</h2>
+    <p class="page-desc">Real-time submission registry and chain integrity verification.</p>
+
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card"><div class="stat-value" id="statTotal">—</div><div class="stat-label">Total Submissions</div></div>
+      <div class="stat-card stat-low"><div class="stat-value" id="statLow">0</div><div class="stat-label">LOW</div></div>
+      <div class="stat-card stat-medium"><div class="stat-value" id="statMedium">0</div><div class="stat-label">MEDIUM</div></div>
+      <div class="stat-card stat-high"><div class="stat-value" id="statHigh">0</div><div class="stat-label">HIGH</div></div>
+    </div>
+
+    <h3 style="color:var(--text-bright);margin-bottom:12px;font-size:1rem"><i class="fas fa-link"></i> Chain Integrity</h3>
+    <div id="chainStatus" style="margin-bottom:24px"></div>
+
+    <h3 style="color:var(--text-bright);margin-bottom:12px;font-size:1rem"><i class="fas fa-list"></i> Submission Registry</h3>
+    <div id="registryContent"><div class="loading"><i class="fas fa-spinner fa-spin"></i><p>Loading...</p></div></div>
+  </div>
+
+  <!-- PAGE: Compliance -->
+  <div class="page" id="pageCompliance">
+    <h2 class="page-title">Compliance Monitor</h2>
+    <p class="page-desc">Eight Invariants validation and governance level compliance matrix.</p>
+
+    <h3 style="color:var(--text-bright);margin-bottom:12px;font-size:1rem"><i class="fas fa-check-double"></i> Eight WINDI Invariants</h3>
+    <div class="invariant-grid">
+      <div class="invariant-card"><div class="invariant-check"><i class="fas fa-check"></i></div><div class="invariant-info"><h4>I1 — Soberania</h4><p>Human sovereignty over all decisions</p></div></div>
+      <div class="invariant-card"><div class="invariant-check"><i class="fas fa-check"></i></div><div class="invariant-info"><h4>I2 — Non-Opacity</h4><p>System operations must be transparent</p></div></div>
+      <div class="invariant-card"><div class="invariant-check"><i class="fas fa-check"></i></div><div class="invariant-info"><h4>I3 — Transparência</h4><p>Audit trails visible and verifiable</p></div></div>
+      <div class="invariant-card"><div class="invariant-check"><i class="fas fa-check"></i></div><div class="invariant-info"><h4>I4 — Jurisdição</h4><p>Compliance with applicable jurisdiction</p></div></div>
+      <div class="invariant-card"><div class="invariant-check"><i class="fas fa-check"></i></div><div class="invariant-info"><h4>I5 — No Fabrication</h4><p>AI cannot fabricate governance data</p></div></div>
+      <div class="invariant-card"><div class="invariant-check"><i class="fas fa-check"></i></div><div class="invariant-info"><h4>I6 — Conflict Structuring</h4><p>Conflicts resolved by documented protocol</p></div></div>
+      <div class="invariant-card"><div class="invariant-check"><i class="fas fa-check"></i></div><div class="invariant-info"><h4>I7 — Institutional</h4><p>Governance proportional to institutional impact</p></div></div>
+      <div class="invariant-card"><div class="invariant-check"><i class="fas fa-check"></i></div><div class="invariant-info"><h4>I8 — No Depth Punishment</h4><p>Complexity does not reduce governance quality</p></div></div>
+    </div>
+
+    <h3 style="color:var(--text-bright);margin-bottom:12px;font-size:1rem;margin-top:24px"><i class="fas fa-th"></i> Governance Level Matrix</h3>
+    <table class="compliance-matrix" style="width:100%">
+      <thead><tr><th style="text-align:left">Feature</th><th style="color:var(--low-green)">LOW</th><th style="color:var(--medium-amber)">MEDIUM</th><th style="color:var(--high-red)">HIGH</th></tr></thead>
+      <tbody>
+        <tr><td>Mandatory Metadata</td><td class="cm-no">—</td><td class="cm-yes"><i class="fas fa-check"></i> 7</td><td class="cm-yes"><i class="fas fa-check"></i> 10</td></tr>
+        <tr><td>Policy Version</td><td class="cm-no">—</td><td class="cm-yes"><i class="fas fa-check"></i></td><td class="cm-yes"><i class="fas fa-check"></i></td></tr>
+        <tr><td>Config Hash</td><td class="cm-no">—</td><td class="cm-no">—</td><td class="cm-yes"><i class="fas fa-check"></i></td></tr>
+        <tr><td>Submission ID</td><td class="cm-no">—</td><td class="cm-no">—</td><td class="cm-yes"><i class="fas fa-check"></i></td></tr>
+        <tr><td>Integrity Hash</td><td class="cm-no">—</td><td class="cm-no">—</td><td class="cm-yes"><i class="fas fa-check"></i></td></tr>
+        <tr><td>Forensic Registry</td><td class="cm-no">—</td><td class="cm-no">—</td><td class="cm-yes"><i class="fas fa-check"></i></td></tr>
+        <tr><td>Audit Trail</td><td class="cm-no">—</td><td class="cm-partial"><i class="fas fa-minus"></i> Standard</td><td class="cm-yes"><i class="fas fa-check"></i> Full</td></tr>
+        <tr><td>Watermark</td><td class="cm-no">—</td><td class="cm-partial"><i class="fas fa-minus"></i> Footer</td><td class="cm-yes"><i class="fas fa-check"></i> H+F</td></tr>
+        <tr><td>Generation Blocking</td><td class="cm-no">—</td><td class="cm-yes"><i class="fas fa-check"></i></td><td class="cm-yes"><i class="fas fa-check"></i></td></tr>
+        <tr><td>Tamper Evidence</td><td class="cm-no">—</td><td class="cm-no">—</td><td class="cm-yes"><i class="fas fa-check"></i></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<div class="footer">
+  WINDI SYSTEM — Kempten, Bavaria, Germany — Pre-AI Governance Layer v2.0
+</div>
+
+<script>
+const API_BASE = '';
+let currentLevel = 'LOW';
+let engineOnline = false;
+
+// --- Navigation ---
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page' + page.charAt(0).toUpperCase() + page.slice(1)).classList.add('active');
+  event.target.closest('.nav-tab').classList.add('active');
+  if (page === 'audit') loadAudit();
+}
+
+// --- Level Selection ---
+function selectLevel(level) {
+  currentLevel = level;
+  document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector('.level-' + level.toLowerCase()).classList.add('selected');
+
+  document.getElementById('mediumForm').classList.toggle('show', level === 'MEDIUM');
+  document.getElementById('highForm').classList.toggle('show', level === 'HIGH');
+
+  const btn = document.getElementById('btnGenerate');
+  btn.className = 'btn-generate level-' + level.toLowerCase();
+  btn.innerHTML = '<i class="fas fa-shield-alt"></i> Generate ' + level + ' Document';
+}
+
+// --- Generate ---
+async function generateDocument() {
+  const btn = document.getElementById('btnGenerate');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+  let metadata = {};
+  let isp = 'deutsche-bahn';
+
+  if (currentLevel === 'MEDIUM') {
+    isp = 'bundesregierung';
+    metadata = {
+      issuing_authority: document.getElementById('m_issuing_authority').value,
+      issuing_department: document.getElementById('m_issuing_department').value,
+      document_purpose: document.getElementById('m_document_purpose').value,
+      reference_period: document.getElementById('m_reference_period').value,
+      confidentiality_level: document.getElementById('m_confidentiality_level').value,
+      document_owner: document.getElementById('m_document_owner').value,
+      validation_status: document.getElementById('m_validation_status').value
+    };
+  } else if (currentLevel === 'HIGH') {
+    isp = 'bis-style';
+    metadata = {
+      reporting_entity: document.getElementById('h_reporting_entity').value,
+      reporting_entity_identifier: document.getElementById('h_reporting_entity_identifier').value,
+      reporting_scope: document.getElementById('h_reporting_scope').value,
+      reference_period: document.getElementById('h_reference_period').value,
+      data_frequency: document.getElementById('h_data_frequency').value,
+      consolidation_level: document.getElementById('h_consolidation_level').value,
+      statistical_framework: document.getElementById('h_statistical_framework').value,
+      confidentiality_level: document.getElementById('h_confidentiality_level').value,
+      data_owner: document.getElementById('h_data_owner').value,
+      validation_status: document.getElementById('h_validation_status').value
+    };
+  }
+
+  try {
+    const res = await fetch(API_BASE + '/api/gov/generate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        governance_level: currentLevel,
+        isp_profile: isp,
+        metadata: currentLevel === 'LOW' ? {} : metadata
+      })
+    });
+    const data = await res.json();
+    showResult(data);
+  } catch (e) {
+    showResult({status: 'ERROR', error: 'Connection failed: ' + e.message});
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-shield-alt"></i> Generate ' + currentLevel + ' Document';
+}
+
+function showResult(data) {
+  const box = document.getElementById('resultBox');
+  const status = document.getElementById('resultStatus');
+  const details = document.getElementById('resultDetails');
+  const ts = document.getElementById('resultTimestamp');
+
+  box.classList.add('show');
+  status.textContent = data.status;
+  status.className = 'result-status ' + (data.status === 'APPROVED' ? 'result-approved' : 'result-blocked');
+  ts.textContent = data.timestamp || '';
+
+  if (data.status === 'APPROVED') {
+    let out = '';
+    out += 'Level:         ' + (data.governance_level || '') + ' (' + (data.governance_name || '') + ')\n';
+    out += 'Profile:       ' + (data.isp_profile || '') + '\n';
+    out += 'Organization:  ' + (data.organization || '') + '\n';
+    out += 'Policy:        ' + (data.policy_version || '') + '\n';
+    if (data.submission_id) out += 'Submission ID: ' + data.submission_id + '\n';
+    if (data.config_hash) out += 'Config Hash:   ' + data.config_hash.substring(0, 16) + '...\n';
+    if (data.integrity_hash) out += 'Integrity:     ' + data.integrity_hash.substring(0, 16) + '...\n';
+    if (data.sealed_at) out += 'Sealed:        ' + data.sealed_at + '\n';
+    if (data.identity_governance) {
+      var ig = data.identity_governance;
+      out += '\nIdentity Governance:\n';
+      out += '  Institution:  ' + (ig.institution || '-') + '\n';
+      out += '  License:      ' + (ig.license_status || 'model_only') + '\n';
+      out += '  Logo Allowed: ' + (ig.logo_allowed ? 'YES' : 'NO') + '\n';
+      out += '  Disclaimer:   ' + (ig.disclaimer_required ? 'REQUIRED' : 'not required') + '\n';
+      out += '  Audit:        ' + (ig.audit_category || '-') + '\n';
+      if (ig.authorization_ref) out += '  Auth Ref:     ' + ig.authorization_ref + '\n';
+      if (ig.restrictions && ig.restrictions.length) {
+        out += '  Restrictions: ' + ig.restrictions.join(', ') + '\n';
+      }
+      if (ig.disclaimer_text) {
+        out += '\n  ⚠ ' + ig.disclaimer_text + '\n';
+      }
+    }
+    if (data.metadata) {
+      out += '\nMetadata:\n';
+      for (const [k, v] of Object.entries(data.metadata)) {
+        out += '  ' + k + ': ' + v + '\n';
+      }
+    }
+    details.textContent = out;
+  } else {
+    details.textContent = data.error || JSON.stringify(data, null, 2);
+  }
+}
+
+// --- Audit ---
+async function loadAudit() {
+  try {
+    const [dashRes, subRes] = await Promise.all([
+      fetch(API_BASE + '/api/gov/dashboard'),
+      fetch(API_BASE + '/api/gov/submissions')
+    ]);
+    const dash = await dashRes.json();
+    const subs = await subRes.json();
+
+    const stats = dash.statistics || {};
+    const byLevel = stats.by_level || {};
+    document.getElementById('statTotal').textContent = stats.total || 0;
+    document.getElementById('statLow').textContent = byLevel.LOW || 0;
+    document.getElementById('statMedium').textContent = byLevel.MEDIUM || 0;
+    document.getElementById('statHigh').textContent = byLevel.HIGH || 0;
+
+    const chain = dash.chain_integrity || {};
+    document.getElementById('chainStatus').innerHTML =
+      '<span class="chain-status ' + (chain.complete ? 'chain-complete' : 'chain-incomplete') + '">' +
+      '<i class="fas fa-' + (chain.complete ? 'check-circle' : 'exclamation-circle') + '"></i> ' +
+      'Chain: ' + (chain.sealed || 0) + '/' + (chain.total || 0) + ' sealed — ' +
+      (chain.complete ? 'COMPLETE' : 'INCOMPLETE') + '</span>';
+
+    const results = subs.results || [];
+    if (results.length === 0) {
+      document.getElementById('registryContent').innerHTML = '<p style="color:var(--text);opacity:.5;padding:20px">No submissions yet.</p>';
+    } else {
+      let html = '<table class="registry-table"><thead><tr><th>Submission ID</th><th>Entity</th><th>Level</th><th>Policy</th><th>Time</th></tr></thead><tbody>';
+      for (const r of results) {
+        const levelClass = (r.governance_level || '').toLowerCase();
+        html += '<tr>';
+        html += '<td style="font-family:monospace;font-size:.8rem">' + (r.submission_id || '—') + '</td>';
+        html += '<td>' + (r.reporting_entity || '—') + '</td>';
+        html += '<td><span style="color:var(--' + levelClass + '-' + (levelClass === 'medium' ? 'amber' : levelClass === 'high' ? 'red' : 'green') + ');font-weight:700">' + (r.governance_level || '') + '</span></td>';
+        html += '<td>' + (r.policy_version || '') + '</td>';
+        html += '<td style="font-size:.8rem">' + (r.registered_at || '').split('.')[0] + '</td>';
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      document.getElementById('registryContent').innerHTML = html;
+    }
+  } catch (e) {
+    document.getElementById('registryContent').innerHTML = '<p style="color:var(--high-red);padding:20px">Failed to load: ' + e.message + '</p>';
+  }
+}
+
+// --- Engine Status ---
+async function checkEngine() {
+  const el = document.getElementById('engineStatus');
+  try {
+    const res = await fetch(API_BASE + '/api/gov/status');
+    const data = await res.json();
+    el.className = 'engine-status engine-online';
+    el.innerHTML = '<i class="fas fa-circle"></i> ENGINE ONLINE';
+    document.getElementById('versionBadge').textContent = 'v' + (data.engine?.policy_version || '2.0.0');
+    engineOnline = true;
+  } catch (e) {
+    el.className = 'engine-status engine-offline';
+    el.innerHTML = '<i class="fas fa-circle"></i> ENGINE OFFLINE';
+    engineOnline = false;
+  }
+}
+
+// Init
+checkEngine();
+setInterval(checkEngine, 10000);
+</script>
+</body>
+</html>

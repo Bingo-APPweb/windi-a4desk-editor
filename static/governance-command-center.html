@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>WINDI Governance Dashboard</title>
+<meta name="description" content="WINDI Governance Intelligence — Unified Governance Dashboard for Document Governance Operations">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2306060c'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='%23c9a227'%3E⚖%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200;12..96,400;12..96,600;12..96,800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   WINDI GOVERNANCE COMMAND CENTER — Noir Design System
+   "From firefighter to air traffic controller"
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --void: #06060c;
+  --surface-0: #0a0a14;
+  --surface-1: #0f0f1c;
+  --surface-2: #15152a;
+  --surface-3: #1c1c36;
+  --surface-glass: rgba(15, 15, 28, 0.72);
+  --gold: #c9a227;
+  --gold-bright: #e2be3a;
+  --gold-dim: #8a7020;
+  --gold-glow: rgba(201, 162, 39, 0.15);
+  --gold-glow-strong: rgba(201, 162, 39, 0.3);
+  --gold-line: rgba(201, 162, 39, 0.25);
+  --text-primary: #e8e6e0;
+  --text-secondary: #9896a4;
+  --text-tertiary: #5e5c6e;
+  --text-inverse: #0a0a14;
+  --signal-core: #d44a5a;
+  --signal-core-dim: rgba(212, 74, 90, 0.15);
+  --signal-flow: #d49a3a;
+  --signal-flow-dim: rgba(212, 154, 58, 0.15);
+  --signal-gov: #3a8ad4;
+  --signal-gov-dim: rgba(58, 138, 212, 0.15);
+  --signal-safe: #3ab87a;
+  --signal-safe-dim: rgba(58, 184, 122, 0.15);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-medium: rgba(255, 255, 255, 0.1);
+  --border-gold: rgba(201, 162, 39, 0.2);
+  --font-display: 'Bricolage Grotesque', Georgia, serif;
+  --font-body: 'Outfit', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 15px; }
+body { font-family: var(--font-body); background: var(--void); color: var(--text-primary); line-height: 1.6; -webkit-font-smoothing: antialiased; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+::selection { background: var(--gold); color: var(--void); }
+
+/* ═══════════ HEADER ═══════════ */
+.gc-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 24px;
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.gc-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.gc-logo-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 2px 8px var(--gold-glow);
+}
+
+.gc-logo-text {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.gc-logo-sub {
+  font-size: 0.62rem;
+  color: var(--text-tertiary);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Navigation Tabs */
+.gc-nav {
+  display: flex;
+  gap: 2px;
+  background: var(--surface-0);
+  border-radius: 10px;
+  padding: 3px;
+  margin-left: 16px;
+}
+
+.gc-tab {
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.gc-tab:hover { background: var(--surface-2); color: var(--text-primary); }
+.gc-tab.active { background: var(--gold); color: var(--text-inverse); font-weight: 600; }
+.gc-tab i { font-size: 0.72rem; }
+
+/* Header Right */
+.gc-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.gc-engine-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.gc-engine-badge.online {
+  background: var(--signal-safe-dim);
+  color: var(--signal-safe);
+  border: 1px solid rgba(58, 184, 122, 0.25);
+}
+
+.gc-engine-badge.offline {
+  background: var(--signal-core-dim);
+  color: var(--signal-core);
+  border: 1px solid rgba(212, 74, 90, 0.25);
+}
+
+.gc-engine-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.gc-link-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-medium);
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.gc-link-btn:hover {
+  background: var(--gold-glow);
+  color: var(--gold);
+  border-color: var(--border-gold);
+}
+
+/* ═══════════ MAIN CONTENT ═══════════ */
+.gc-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+
+.gc-main::-webkit-scrollbar { width: 6px; }
+.gc-main::-webkit-scrollbar-track { background: transparent; }
+.gc-main::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 4px; }
+
+/* Page Sections */
+.gc-page { display: none; animation: fadeIn 0.3s var(--ease-out); }
+.gc-page.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════ OVERVIEW PAGE ═══════════ */
+
+/* Stats Grid */
+.gc-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.gc-stat-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  transition: all 0.2s ease;
+}
+
+.gc-stat-card:hover {
+  border-color: var(--border-gold);
+  box-shadow: 0 4px 16px var(--gold-glow);
+}
+
+.gc-stat-label {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+.gc-stat-value {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.gc-stat-sub {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* WINDI VERIFIED Card */
+.gc-verified-card {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: linear-gradient(135deg, var(--surface-1), var(--surface-2));
+  border: 2px solid var(--signal-safe);
+  border-radius: var(--radius-lg);
+  padding: 20px 28px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 24px rgba(58, 184, 122, 0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.gc-verified-badge {
+  flex-shrink: 0;
+}
+
+.gc-verified-svg {
+  width: 100px;
+  height: 100px;
+  transition: transform 0.3s var(--ease-spring);
+  filter: drop-shadow(0 4px 12px rgba(58, 184, 122, 0.3));
+}
+
+.gc-verified-svg:hover {
+  transform: scale(1.08);
+}
+
+.gc-verified-info {
+  flex: 1;
+}
+
+.gc-verified-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--signal-safe);
+  margin-bottom: 4px;
+}
+
+.gc-verified-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.gc-verified-links {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.gc-verified-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--surface-0);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.gc-verified-link:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  box-shadow: 0 2px 8px var(--gold-glow);
+}
+
+.gc-verified-link i {
+  color: var(--gold);
+}
+
+.gc-verified-meta {
+  display: flex;
+  gap: 20px;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.gc-verified-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.gc-verified-meta i {
+  color: var(--text-secondary);
+}
+
+/* Service Grid */
+.gc-services {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.gc-service {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.2s ease;
+}
+
+.gc-service:hover {
+  border-color: var(--border-medium);
+}
+
+.gc-service-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.gc-service-icon.core { background: var(--signal-gov-dim); color: var(--signal-gov); }
+.gc-service-icon.sge { background: var(--signal-flow-dim); color: var(--signal-flow); }
+.gc-service-icon.ledger { background: var(--gold-glow); color: var(--gold); }
+.gc-service-icon.babel { background: var(--signal-safe-dim); color: var(--signal-safe); }
+.gc-service-icon.trust { background: rgba(120, 80, 200, 0.15); color: #9b7ae0; }
+.gc-service-icon.dayby { background: var(--signal-core-dim); color: var(--signal-core); }
+
+.gc-service-info { flex: 1; min-width: 0; }
+
+.gc-service-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.gc-service-detail {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.gc-service-status {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.gc-service-status.up { background: var(--signal-safe-dim); color: var(--signal-safe); }
+.gc-service-status.down { background: var(--signal-core-dim); color: var(--signal-core); }
+.gc-service-status.unknown { background: var(--surface-3); color: var(--text-tertiary); }
+
+/* Section Headers */
+.gc-section-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gold);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.gc-section-title i {
+  font-size: 0.85rem;
+}
+
+/* ═══════════ BRIEFING PAGE ═══════════ */
+.gc-briefing-header {
+  background: var(--surface-1);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.gc-briefing-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-dim), transparent);
+}
+
+.gc-briefing-id {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.gc-briefing-date {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.gc-briefing-time {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.gc-briefing-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.gc-briefing-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+}
+
+.gc-briefing-card-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gc-briefing-summary {
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  line-height: 1.7;
+}
+
+.gc-briefing-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.gc-briefing-meta-item {
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+
+.gc-briefing-meta-label {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.gc-briefing-meta-value {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+
+/* ═══════════ WAR ROOM PAGE ═══════════ */
+.gc-warroom-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.gc-panel {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.gc-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.gc-panel-body {
+  padding: 16px 18px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Event Log */
+.gc-event {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.gc-event:last-child { border-bottom: none; }
+
+.gc-event-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.gc-event-dot.safe { background: var(--signal-safe); }
+.gc-event-dot.warn { background: var(--signal-flow); }
+.gc-event-dot.crit { background: var(--signal-core); }
+.gc-event-dot.info { background: var(--signal-gov); }
+
+.gc-event-text {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+}
+
+.gc-event-time {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+/* ISP Monitor */
+.gc-isp-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.gc-isp-item:last-child { border-bottom: none; }
+
+.gc-isp-name {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.gc-isp-level {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.gc-isp-level.low { background: var(--signal-safe-dim); color: var(--signal-safe); }
+.gc-isp-level.medium { background: var(--signal-flow-dim); color: var(--signal-flow); }
+.gc-isp-level.high { background: var(--signal-core-dim); color: var(--signal-core); }
+
+/* ═══════════ GENERATE PAGE ═══════════ */
+.gc-level-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.gc-level-card {
+  background: var(--surface-1);
+  border: 2px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: center;
+}
+
+.gc-level-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.gc-level-card.selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 20px var(--gold-glow);
+}
+
+.gc-level-card.low:hover, .gc-level-card.low.selected { border-color: var(--signal-safe); }
+.gc-level-card.medium:hover, .gc-level-card.medium.selected { border-color: var(--signal-flow); }
+.gc-level-card.high:hover, .gc-level-card.high.selected { border-color: var(--signal-core); }
+
+.gc-level-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.gc-level-name {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.gc-level-card.low .gc-level-name { color: var(--signal-safe); }
+.gc-level-card.medium .gc-level-name { color: var(--signal-flow); }
+.gc-level-card.high .gc-level-name { color: var(--signal-core); }
+
+.gc-level-desc {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.gc-level-example {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  margin-top: 8px;
+}
+
+/* Form */
+.gc-form { max-width: 680px; }
+
+.gc-form-group {
+  margin-bottom: 16px;
+}
+
+.gc-form-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 5px;
+}
+
+.gc-form-label .required { color: var(--signal-core); }
+
+.gc-form-input, .gc-form-select {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--surface-0);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.gc-form-input:focus, .gc-form-select:focus {
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 0 2px var(--gold-glow);
+}
+
+.gc-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.gc-btn {
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.gc-btn-gold {
+  background: var(--gold);
+  color: var(--text-inverse);
+}
+
+.gc-btn-gold:hover {
+  background: var(--gold-bright);
+  box-shadow: 0 4px 16px var(--gold-glow-strong);
+}
+
+.gc-btn-ghost {
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-medium);
+}
+
+.gc-btn-ghost:hover {
+  background: var(--surface-3);
+  color: var(--text-primary);
+}
+
+/* Result Box */
+.gc-result {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-top: 20px;
+  display: none;
+}
+
+.gc-result.show { display: block; animation: fadeIn 0.3s var(--ease-out); }
+
+.gc-result-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.gc-result-status.approved { background: var(--signal-safe-dim); color: var(--signal-safe); }
+.gc-result-status.blocked { background: var(--signal-core-dim); color: var(--signal-core); }
+
+.gc-result-hash {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  word-break: break-all;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  margin-top: 10px;
+}
+
+/* ═══════════ AUDIT PAGE ═══════════ */
+.gc-table-wrap {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.gc-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gc-table th {
+  padding: 12px 16px;
+  background: var(--surface-2);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: left;
+  border-bottom: 1px solid var(--border-medium);
+}
+
+.gc-table td {
+  padding: 12px 16px;
+  font-size: 0.82rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.gc-table tr:last-child td { border-bottom: none; }
+
+.gc-table tr:hover td {
+  background: var(--surface-2);
+}
+
+.gc-hash-cell {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+}
+
+/* ═══════════ COMPLIANCE PAGE ═══════════ */
+.gc-compliance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.gc-compliance-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 20px;
+}
+
+.gc-compliance-title {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.gc-compliance-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.82rem;
+}
+
+.gc-compliance-item:last-child { border-bottom: none; }
+
+.gc-compliance-check {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem;
+}
+
+.gc-compliance-check.pass { background: var(--signal-safe-dim); color: var(--signal-safe); }
+.gc-compliance-check.fail { background: var(--signal-core-dim); color: var(--signal-core); }
+.gc-compliance-check.warn { background: var(--signal-flow-dim); color: var(--signal-flow); }
+
+/* ═══════════ FOOTER ═══════════ */
+.gc-footer {
+  padding: 8px 24px;
+  background: var(--surface-1);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.gc-principle {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+/* ═══════════ LOADING SPINNER ═══════════ */
+.gc-spinner {
+  display: inline-block;
+  width: 18px; height: 18px;
+  border: 2px solid var(--border-medium);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Empty State */
+.gc-empty {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text-tertiary);
+}
+
+.gc-empty i {
+  font-size: 2rem;
+  margin-bottom: 12px;
+  color: var(--text-tertiary);
+  opacity: 0.5;
+}
+
+.gc-empty p {
+  font-size: 0.88rem;
+}
+
+/* ═══════════ RESPONSIVE ═══════════ */
+@media (max-width: 960px) {
+  .gc-nav { overflow-x: auto; }
+  .gc-level-cards { grid-template-columns: 1fr; }
+  .gc-warroom-grid { grid-template-columns: 1fr; }
+  .gc-briefing-grid { grid-template-columns: 1fr; }
+  .gc-form-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .gc-header { flex-wrap: wrap; padding: 8px 12px; gap: 8px; }
+  .gc-nav { margin-left: 0; order: 3; width: 100%; }
+  .gc-main { padding: 12px; }
+  .gc-stats { grid-template-columns: 1fr 1fr; }
+}
+/* ====== KLAR THEME (Light Mode) ====== */
+[data-theme="klar"] {
+  --void: #f5f5f0;
+  --surface-0: #ffffff;
+  --surface-1: #f0ede6;
+  --surface-2: #e8e4db;
+  --gold: #8b6914;
+  --gold-bright: #a07d1a;
+  --gold-dim: #c9a227;
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4a4a;
+  --text-muted: #6a6a6a;
+  --border-subtle: #d4d0c8;
+  --border-default: #b8b4ac;
+  --status-success: #2d6a30;
+  --status-warning: #8b6914;
+  --status-danger: #a82020;
+  --status-info: #1a5276;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+}
+[data-theme="klar"] .gc-header {
+  background: linear-gradient(135deg, #ffffff 0%, #f0ede6 100%);
+  border-bottom: 1px solid #d4d0c8;
+}
+[data-theme="klar"] .gc-card {
+  background: #ffffff;
+  border: 1px solid #d4d0c8;
+}
+[data-theme="klar"] .gc-tab.active {
+  background: #8b6914;
+  color: #ffffff;
+}
+[data-theme="klar"] .gc-tab:not(.active) {
+  background: #f0ede6;
+  color: #4a4a4a;
+  border: 1px solid #d4d0c8;
+}
+[data-theme="klar"] .gc-tab:not(.active):hover {
+  background: #e8e4db;
+}
+[data-theme="klar"] .gc-kpi-value {
+  color: #1a1a1a;
+}
+[data-theme="klar"] .gc-table th {
+  background: #f0ede6;
+  color: #1a1a1a;
+}
+[data-theme="klar"] .gc-table td {
+  border-color: #d4d0c8;
+  color: #1a1a1a;
+}
+[data-theme="klar"] input,
+[data-theme="klar"] select,
+[data-theme="klar"] textarea {
+  background: #ffffff;
+  color: #1a1a1a;
+  border-color: #d4d0c8;
+}
+/* Theme toggle button */
+.theme-toggle-gov {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  z-index: 1000;
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+.theme-toggle-gov:hover {
+  border-color: var(--gold);
+  box-shadow: 0 0 8px rgba(201,162,39,0.3);
+}
+</style>
+</head>
+<body>
+<button class="theme-toggle-gov" onclick="toggleTheme()" title="Toggle Noir/Klar">🌙</button>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="gc-header">
+  <a href="/governance" class="gc-logo">
+    <div class="gc-logo-icon">⚖</div>
+    <div>
+      <div class="gc-logo-text">WINDI Governance</div>
+      <div class="gc-logo-sub">Governance Dashboard</div>
+    </div>
+  </a>
+
+  <nav class="gc-nav" id="gcNav">
+    <button class="gc-tab active" data-page="overview"><i class="fas fa-tachometer-alt"></i> Overview</button>
+    <button class="gc-tab" data-page="briefing"><i class="fas fa-newspaper"></i> Briefing</button>
+    <button class="gc-tab" data-page="warroom"><i class="fas fa-shield-alt"></i> War Room</button>
+    <button class="gc-tab" data-page="generate"><i class="fas fa-plus-circle"></i> Generate</button>
+    <button class="gc-tab" data-page="audit"><i class="fas fa-search"></i> Audit</button>
+    <button class="gc-tab" data-page="compliance"><i class="fas fa-clipboard-check"></i> Compliance</button>
+  </nav>
+
+  <div class="gc-header-right">
+    <div class="gc-engine-badge online" id="engineBadge">
+      <span class="gc-engine-dot"></span>
+      <span id="engineText">ENGINE ONLINE</span>
+    </div>
+    <a href="/governance/hub" class="gc-link-btn" style="background:var(--signal-gov-dim);border-color:var(--signal-gov);" title="8-Agent Constellation Hub"><i class="fas fa-satellite"></i> Hub</a>
+    <a href="/static/audit_dashboard.html" class="gc-link-btn" style="background:var(--gold-glow);border-color:var(--gold);" title="ISP Agent Audit — Ecosystem Health Monitor"><i class="fas fa-heartbeat"></i> ISP Audit</a>
+    <a href="/governance/tutorial" class="gc-link-btn"><i class="fas fa-book"></i> Tutorial</a>
+    <a href="/" class="gc-link-btn"><i class="fas fa-edit"></i> A4 Desk BABEL</a>
+  </div>
+</header>
+
+<!-- ═══════════ OVERVIEW PAGE ═══════════ -->
+<main class="gc-main">
+  <section class="gc-page active" id="page-overview">
+    <!-- Stats -->
+    <div class="gc-stats">
+      <div class="gc-stat-card">
+        <div class="gc-stat-label">Documents Governed</div>
+        <div class="gc-stat-value" id="statDocs">—</div>
+        <div class="gc-stat-sub">in audit chain</div>
+      </div>
+      <div class="gc-stat-card">
+        <div class="gc-stat-label">Continuous Days</div>
+        <div class="gc-stat-value" id="statDays">—</div>
+        <div class="gc-stat-sub">operational</div>
+      </div>
+      <div class="gc-stat-card">
+        <div class="gc-stat-label">ISP Profiles</div>
+        <div class="gc-stat-value" id="statISP">—</div>
+        <div class="gc-stat-sub">loaded</div>
+      </div>
+      <div class="gc-stat-card">
+        <div class="gc-stat-label">Chain Integrity</div>
+        <div class="gc-stat-value" id="statChain">—</div>
+        <div class="gc-stat-sub">sealed entries</div>
+      </div>
+      <div class="gc-stat-card">
+        <div class="gc-stat-label">HIGH Flagged</div>
+        <div class="gc-stat-value" id="statHigh">—</div>
+        <div class="gc-stat-sub">for review</div>
+      </div>
+      <div class="gc-stat-card">
+        <div class="gc-stat-label">SGE Version</div>
+        <div class="gc-stat-value" id="statSGE">—</div>
+        <div class="gc-stat-sub">Semantic Governance</div>
+      </div>
+    </div>
+
+    <!-- WINDI VERIFIED Card -->
+    <div class="gc-verified-card">
+      <div class="gc-verified-badge">
+        <a href="/records/DOC-GUARD-20260207-001.html" target="_blank" title="View Institutional Deposition">
+          <img src="/records/WINDI_VERIFIED_BADGE.svg" alt="WINDI VERIFIED" class="gc-verified-svg">
+        </a>
+      </div>
+      <div class="gc-verified-info">
+        <div class="gc-verified-title">✅ WINDI VERIFIED</div>
+        <div class="gc-verified-subtitle">Governance Intact · Guard v1.4</div>
+        <div class="gc-verified-links">
+          <a href="/records/DOC-GUARD-20260207-001.html" target="_blank" class="gc-verified-link">
+            <i class="fas fa-file-contract"></i> Institutional Deposition
+          </a>
+          <a href="/records/WINDI_VERIFIED_BADGE.svg" target="_blank" class="gc-verified-link">
+            <i class="fas fa-certificate"></i> Badge SVG
+          </a>
+        </div>
+        <div class="gc-verified-meta">
+          <span><i class="fas fa-link"></i> 158 records</span>
+          <span><i class="fas fa-shield-alt"></i> 17 ISP profiles</span>
+          <span><i class="fas fa-clock"></i> 2026-02-07</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Services Status -->
+    <div class="gc-section-title"><i class="fas fa-server"></i> Service Health</div>
+    <div class="gc-services" id="serviceGrid">
+      <div class="gc-service">
+        <div class="gc-service-icon core"><i class="fas fa-cogs"></i></div>
+        <div class="gc-service-info">
+          <div class="gc-service-name">Governance Core</div>
+          <div class="gc-service-detail">:8080 · windi_governance_api.py</div>
+        </div>
+        <span class="gc-service-status unknown" id="svc-core">checking</span>
+      </div>
+      <div class="gc-service">
+        <div class="gc-service-icon sge"><i class="fas fa-brain"></i></div>
+        <div class="gc-service-info">
+          <div class="gc-service-name">SGE Engine</div>
+          <div class="gc-service-detail">:8083 · governance_api_minimal.py</div>
+        </div>
+        <span class="gc-service-status unknown" id="svc-sge">checking</span>
+      </div>
+      <div class="gc-service">
+        <div class="gc-service-icon ledger"><i class="fas fa-link"></i></div>
+        <div class="gc-service-info">
+          <div class="gc-service-name">Forensic Ledger</div>
+          <div class="gc-service-detail">:8080 · Merkle Tree</div>
+        </div>
+        <span class="gc-service-status unknown" id="svc-ledger">checking</span>
+      </div>
+      <div class="gc-service">
+        <div class="gc-service-icon babel"><i class="fas fa-file-alt"></i></div>
+        <div class="gc-service-info">
+          <div class="gc-service-name">A4 Desk BABEL</div>
+          <div class="gc-service-detail">:8085 · a4desk_tiptap_babel.py</div>
+        </div>
+        <span class="gc-service-status up">online</span>
+      </div>
+      <div class="gc-service">
+        <div class="gc-service-icon trust"><i class="fas fa-handshake"></i></div>
+        <div class="gc-service-info">
+          <div class="gc-service-name">Trust Bus</div>
+          <div class="gc-service-detail">:8081 · trust_bus.py</div>
+        </div>
+        <span class="gc-service-status unknown" id="svc-trust">checking</span>
+      </div>
+      <div class="gc-service">
+        <div class="gc-service-icon dayby"><i class="fas fa-calendar-day"></i></div>
+        <div class="gc-service-info">
+          <div class="gc-service-name">Day-by-Day</div>
+          <div class="gc-service-detail">:8090 · day-by-day-server.js</div>
+        </div>
+        <span class="gc-service-status unknown" id="svc-dayby">checking</span>
+      </div>
+    </div>
+
+    <!-- Agent Constellation Section -->
+    <div class="gc-section-title" style="margin-top:24px;"><i class="fas fa-dragon"></i> Agent Constellation</div>
+    <div class="gc-services" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+      <a href="/static/audit_dashboard.html" class="gc-service" style="text-decoration:none;cursor:pointer;border:1px solid var(--gold-line);background:var(--gold-glow);" title="ISP Agent Audit — Ecosystem Health Monitor">
+        <div class="gc-service-icon" style="background:var(--gold);"><i class="fas fa-heartbeat"></i></div>
+        <div class="gc-service-info">
+          <div class="gc-service-name" style="color:var(--gold);">ISP Agent Audit</div>
+          <div class="gc-service-detail">Grade C (84) · 17 Profiles · 0 Violations</div>
+        </div>
+        <span class="gc-service-status up">LIVE</span>
+      </a>
+      <a href="/static/audit_unified.html" class="gc-service" style="text-decoration:none;cursor:pointer;" title="Unified Audit View">
+        <div class="gc-service-icon sge"><i class="fas fa-search"></i></div>
+        <div class="gc-service-info">
+          <div class="gc-service-name">Unified Audit</div>
+          <div class="gc-service-detail">Document audit trail view</div>
+        </div>
+        <span class="gc-service-status up">LIVE</span>
+      </a>
+      <div class="gc-service" style="opacity:0.6;cursor:default;" title="Coming Soon — Governance Cycle Reports">
+        <div class="gc-service-icon ledger"><i class="fas fa-file-contract"></i></div>
+        <div class="gc-service-info">
+          <div class="gc-service-name">Cycle Reports</div>
+          <div class="gc-service-detail">Report Agent · Maestro integration</div>
+        </div>
+        <span class="gc-service-status" style="background:var(--gold-dim);color:var(--text-inverse);">SOON</span>
+      </div>
+      <div class="gc-service" style="opacity:0.6;cursor:default;" title="Coming Soon — Integrity Watchdog">
+        <div class="gc-service-icon trust"><i class="fas fa-dog"></i></div>
+        <div class="gc-service-info">
+          <div class="gc-service-name">Integrity Watchdog</div>
+          <div class="gc-service-detail">Forensic chain verification</div>
+        </div>
+        <span class="gc-service-status" style="background:var(--gold-dim);color:var(--text-inverse);">SOON</span>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:12px;font-size:0.75rem;color:var(--text-tertiary);">
+      <i class="fas fa-shield-alt"></i> Three Dragons Protocol — 8 Agents · 3 Operational · I9 Enforced
+    </div>
+  </section>
+
+  <!-- ═══════════ BRIEFING PAGE ═══════════ -->
+  <section class="gc-page" id="page-briefing">
+    <div class="gc-briefing-header">
+      <div class="gc-briefing-id" id="briefingId">Loading...</div>
+      <div class="gc-briefing-date" id="briefingDate">—</div>
+      <div class="gc-briefing-time" id="briefingTime">Generated at —</div>
+    </div>
+
+    <div class="gc-briefing-grid">
+      <div class="gc-briefing-card">
+        <div class="gc-briefing-card-title"><i class="fas fa-globe"></i> Summary (EN)</div>
+        <div class="gc-briefing-summary" id="briefingSummaryEN">Loading briefing data...</div>
+      </div>
+      <div class="gc-briefing-card">
+        <div class="gc-briefing-card-title"><i class="fas fa-flag"></i> Zusammenfassung (DE)</div>
+        <div class="gc-briefing-summary" id="briefingSummaryDE">Briefing-Daten werden geladen...</div>
+      </div>
+    </div>
+
+    <div class="gc-section-title"><i class="fas fa-info-circle"></i> Briefing Metadata</div>
+    <div class="gc-briefing-meta" id="briefingMeta">
+      <!-- Populated by JS -->
+    </div>
+  </section>
+
+  <!-- ═══════════ WAR ROOM PAGE ═══════════ -->
+  <section class="gc-page" id="page-warroom">
+    <div class="gc-warroom-grid">
+      <div class="gc-panel">
+        <div class="gc-panel-header">
+          <span><i class="fas fa-stream"></i> Governance Event Log</span>
+          <button class="gc-btn-ghost" onclick="refreshWarRoom()" style="padding:4px 10px;font-size:0.72rem;"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+        <div class="gc-panel-body" id="eventLog">
+          <div class="gc-empty"><i class="fas fa-inbox"></i><p>No events yet. Generate a document to see activity.</p></div>
+        </div>
+      </div>
+
+      <div class="gc-panel">
+        <div class="gc-panel-header">
+          <span><i class="fas fa-id-badge"></i> ISP Profiles Active</span>
+        </div>
+        <div class="gc-panel-body" id="ispMonitor">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <div class="gc-section-title"><i class="fas fa-chart-line"></i> Chain Integrity</div>
+    <div class="gc-panel">
+      <div class="gc-panel-body" id="chainPanel">
+        <div class="gc-empty"><i class="fas fa-link"></i><p>Loading chain data...</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ GENERATE PAGE ═══════════ -->
+  <section class="gc-page" id="page-generate">
+    <div class="gc-section-title"><i class="fas fa-layer-group"></i> Select Governance Level</div>
+
+    <div class="gc-level-cards">
+      <div class="gc-level-card low" onclick="selectLevel('LOW')">
+        <div class="gc-level-icon">🟢</div>
+        <div class="gc-level-name">LOW</div>
+        <div class="gc-level-desc">Standard documents. No sensitive metadata required.</div>
+        <div class="gc-level-example">e.g. Deutsche Bahn operational docs</div>
+      </div>
+      <div class="gc-level-card medium" onclick="selectLevel('MEDIUM')">
+        <div class="gc-level-icon">🟡</div>
+        <div class="gc-level-name">MEDIUM</div>
+        <div class="gc-level-desc">Institutional documents. 7 metadata fields required.</div>
+        <div class="gc-level-example">e.g. Bundesregierung, BaFin</div>
+      </div>
+      <div class="gc-level-card high" onclick="selectLevel('HIGH')">
+        <div class="gc-level-icon">🔴</div>
+        <div class="gc-level-name">HIGH</div>
+        <div class="gc-level-desc">Critical governance. Full compliance chain required.</div>
+        <div class="gc-level-example">e.g. BIS, ECB supervisory</div>
+      </div>
+    </div>
+
+    <div class="gc-form" id="genForm" style="display:none;">
+      <div class="gc-section-title"><i class="fas fa-file-signature"></i> <span id="genFormTitle">Document Metadata</span></div>
+
+      <div class="gc-form-row">
+        <div class="gc-form-group">
+          <label class="gc-form-label">Document Type <span class="required">*</span></label>
+          <select class="gc-form-select" id="fDocType">
+            <option value="">— Select —</option>
+            <option value="CONTRACT">Contract</option>
+            <option value="INVOICE">Invoice</option>
+            <option value="APPROVAL">Approval</option>
+            <option value="REPORT">Report</option>
+            <option value="POLICY">Policy</option>
+          </select>
+        </div>
+        <div class="gc-form-group">
+          <label class="gc-form-label">Impact Level <span class="required">*</span></label>
+          <select class="gc-form-select" id="fImpact">
+            <option value="">— Select —</option>
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+            <option value="CRITICAL">Critical</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="gc-form-row">
+        <div class="gc-form-group">
+          <label class="gc-form-label">Department Code</label>
+          <input class="gc-form-input" id="fDept" placeholder="e.g. FIN-001">
+        </div>
+        <div class="gc-form-group">
+          <label class="gc-form-label">Value Range</label>
+          <select class="gc-form-select" id="fRange">
+            <option value="">— Select —</option>
+            <option value="R1">R1 (< €1K)</option>
+            <option value="R2">R2 (€1K–€50K)</option>
+            <option value="R3">R3 (€50K–€500K)</option>
+            <option value="R4">R4 (€500K–€5M)</option>
+            <option value="R5">R5 (> €5M)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="gc-form-row" id="mediumFields" style="display:none;">
+        <div class="gc-form-group">
+          <label class="gc-form-label">Responsible Officer <span class="required">*</span></label>
+          <input class="gc-form-input" id="fOfficer" placeholder="Dr. Weber">
+        </div>
+        <div class="gc-form-group">
+          <label class="gc-form-label">Authorization Reference</label>
+          <input class="gc-form-input" id="fAuthRef" placeholder="AUTH-2026-001">
+        </div>
+      </div>
+
+      <div class="gc-form-group">
+        <label class="gc-form-label">Content Summary</label>
+        <input class="gc-form-input" id="fSummary" placeholder="Brief description of document content">
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:20px;">
+        <button class="gc-btn gc-btn-gold" onclick="submitGenerate()">
+          <i class="fas fa-shield-alt"></i> Generate Governance Envelope
+        </button>
+        <button class="gc-btn gc-btn-ghost" onclick="resetGenerate()">
+          <i class="fas fa-undo"></i> Reset
+        </button>
+      </div>
+    </div>
+
+    <div class="gc-result" id="genResult">
+      <div class="gc-result-status" id="genStatus"></div>
+      <div id="genResultBody"></div>
+      <div class="gc-result-hash" id="genHash"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ AUDIT PAGE ═══════════ -->
+  <section class="gc-page" id="page-audit">
+    <!-- Unified Audit Banner -->
+    <div style="background:linear-gradient(135deg,#238636 0%,#1a7f37 100%);border-radius:8px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <i class="fas fa-layer-group" style="font-size:1.5rem;"></i>
+        <div>
+          <div style="font-weight:600;font-size:1.1rem;">Unified Audit Dashboard</div>
+          <div style="opacity:0.9;font-size:0.85rem;">Submissions + ISP Ecosystem | Grade A (100) | Noir/Klar | EN/DE/PT</div>
+        </div>
+      </div>
+      <a href="/static/audit_unified.html" target="_blank" style="background:#fff;color:#238636;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.9rem;display:flex;align-items:center;gap:6px;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+        <span>Open Dashboard</span>
+        <i class="fas fa-external-link-alt"></i>
+      </a>
+    </div>
+    <div class="gc-section-title"><i class="fas fa-history"></i> Submission Registry</div>
+    <div class="gc-table-wrap">
+      <table class="gc-table">
+        <thead>
+          <tr>
+            <th>Reg-ID</th>
+            <th>Date</th>
+            <th>Level</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Hash</th>
+          </tr>
+        </thead>
+        <tbody id="auditTableBody">
+          <tr><td colspan="6" style="text-align:center;color:var(--text-tertiary);padding:32px;">Loading submissions...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════════ COMPLIANCE PAGE ═══════════ -->
+  <section class="gc-page" id="page-compliance">
+    <div class="gc-section-title"><i class="fas fa-check-double"></i> Compliance Status</div>
+    <div class="gc-compliance-grid">
+      <div class="gc-compliance-card">
+        <div class="gc-compliance-title"><i class="fas fa-shield-alt"></i> WINDI 9 Invariants</div>
+        <div class="gc-compliance-item"><span>I1 — Soberania</span><span class="gc-compliance-check pass"><i class="fas fa-check"></i></span></div>
+        <div class="gc-compliance-item"><span>I2 — Non-Opacity</span><span class="gc-compliance-check pass"><i class="fas fa-check"></i></span></div>
+        <div class="gc-compliance-item"><span>I3 — Transparência</span><span class="gc-compliance-check pass"><i class="fas fa-check"></i></span></div>
+        <div class="gc-compliance-item"><span>I4 — Jurisdição</span><span class="gc-compliance-check pass"><i class="fas fa-check"></i></span></div>
+        <div class="gc-compliance-item"><span>I5 — No Fabrication</span><span class="gc-compliance-check pass"><i class="fas fa-check"></i></span></div>
+        <div class="gc-compliance-item"><span>I6 — Conflict Structuring</span><span class="gc-compliance-check pass"><i class="fas fa-check"></i></span></div>
+        <div class="gc-compliance-item"><span>I7 — Institutional</span><span class="gc-compliance-check pass"><i class="fas fa-check"></i></span></div>
+        <div class="gc-compliance-item"><span>I8 — No Depth Punishment</span><span class="gc-compliance-check pass"><i class="fas fa-check"></i></span></div>
+      </div>
+
+      <div class="gc-compliance-card">
+        <div class="gc-compliance-title"><i class="fas fa-server"></i> Infrastructure</div>
+        <div class="gc-compliance-item"><span>Server Location: Germany 🇩🇪</span><span class="gc-compliance-check pass"><i class="fas fa-check"></i></span></div>
+        <div class="gc-compliance-item"><span>Data Jurisdiction: EU</span><span class="gc-compliance-check pass"><i class="fas fa-check"></i></span></div>
+        <div class="gc-compliance-item"><span>Zero-Knowledge Architecture</span><span class="gc-compliance-check pass"><i class="fas fa-check"></i></span></div>
+        <div class="gc-compliance-item"><span>Forensic Ledger Active</span><span class="gc-compliance-check" id="compLedger"><i class="fas fa-spinner fa-spin"></i></span></div>
+        <div class="gc-compliance-item"><span>SGE Operational</span><span class="gc-compliance-check" id="compSGE"><i class="fas fa-spinner fa-spin"></i></span></div>
+        <div class="gc-compliance-item"><span>WSG (Surface Guard)</span><span class="gc-compliance-check pass"><i class="fas fa-check"></i></span></div>
+      </div>
+
+      <div class="gc-compliance-card">
+        <div class="gc-compliance-title"><i class="fas fa-balance-scale"></i> EU AI Act Alignment</div>
+        <div class="gc-compliance-item"><span>Art. 9 — Risk Management</span><span class="gc-compliance-check pass"><i class="fas fa-check"></i></span></div>
+        <div class="gc-compliance-item"><span>Art. 11 — Technical Documentation</span><span class="gc-compliance-check pass"><i class="fas fa-check"></i></span></div>
+        <div class="gc-compliance-item"><span>Art. 13 — Transparency</span><span class="gc-compliance-check pass"><i class="fas fa-check"></i></span></div>
+        <div class="gc-compliance-item"><span>Art. 14 — Human Oversight</span><span class="gc-compliance-check pass"><i class="fas fa-check"></i></span></div>
+        <div class="gc-compliance-item"><span>Art. 15 — Accuracy & Robustness</span><span class="gc-compliance-check warn"><i class="fas fa-exclamation"></i></span></div>
+        <div class="gc-compliance-item"><span>Art. 17 — Quality Management</span><span class="gc-compliance-check pass"><i class="fas fa-check"></i></span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="gc-footer">
+  <span>WINDI SYSTEM · Kempten, Bavaria · v2.0.0</span>
+  <span class="gc-principle">"AI processes. Human decides. WINDI guarantees."</span>
+  <span id="footerTime"></span>
+</footer>
+
+<!-- ═══════════ JAVASCRIPT ═══════════ -->
+<script>
+// ═══════════ CONFIGURATION ═══════════
+const API = {
+  gov: '/api/gov',        // Proxy to :8080
+  briefing: '/api/gov',   // Will try day-by-day first, fallback to gov
+  status: '/api/gov/status'
+};
+
+// ═══════════ NAVIGATION ═══════════
+const tabs = document.querySelectorAll('.gc-tab');
+const pages = document.querySelectorAll('.gc-page');
+
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    const target = tab.dataset.page;
+    tabs.forEach(t => t.classList.remove('active'));
+    pages.forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('page-' + target).classList.add('active');
+
+    // Load data for page
+    if (target === 'briefing') loadBriefing();
+    if (target === 'audit') loadAudit();
+    if (target === 'warroom') loadWarRoom();
+
+    // Update URL hash
+    history.replaceState(null, '', '#' + target);
+  });
+});
+
+// Load page from hash
+function loadFromHash() {
+  const hash = location.hash.replace('#', '');
+  if (hash) {
+    const tab = document.querySelector(`.gc-tab[data-page="${hash}"]`);
+    if (tab) tab.click();
+  }
+}
+
+// ═══════════ API HELPERS ═══════════
+async function apiFetch(url, options = {}) {
+  try {
+    const res = await fetch(url, { timeout: 5000, ...options });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (e) {
+    console.warn('[GC] API error:', url, e.message);
+    return null;
+  }
+}
+
+// ═══════════ OVERVIEW — Load Stats & Health ═══════════
+async function loadOverview() {
+  // Try governance dashboard endpoint
+  const dashboard = await apiFetch(API.gov + '/dashboard');
+  if (dashboard && dashboard.success !== false) {
+    const d = dashboard.data || dashboard;
+    document.getElementById('statDocs').textContent = d.total_submissions || d.documents || '0';
+    document.getElementById('statChain').textContent = d.sealed_count || d.sealed || '—';
+  }
+
+  // Try status endpoint
+  const status = await apiFetch(API.gov + '/status');
+  if (status) {
+    const el = document.getElementById('engineBadge');
+    el.className = 'gc-engine-badge online';
+    document.getElementById('engineText').textContent = 'ENGINE ONLINE';
+    document.getElementById('svc-core').textContent = 'online';
+    document.getElementById('svc-core').className = 'gc-service-status up';
+    document.getElementById('svc-ledger').textContent = 'online';
+    document.getElementById('svc-ledger').className = 'gc-service-status up';
+  } else {
+    document.getElementById('engineBadge').className = 'gc-engine-badge offline';
+    document.getElementById('engineText').textContent = 'ENGINE OFFLINE';
+    document.getElementById('svc-core').textContent = 'offline';
+    document.getElementById('svc-core').className = 'gc-service-status down';
+  }
+
+  // Try SGE
+  const sge = await apiFetch('/api/gov/status');
+  if (sge !== null) {
+    document.getElementById('svc-sge').textContent = 'online';
+    document.getElementById('svc-sge').className = 'gc-service-status up';
+    document.getElementById('statSGE').textContent = sge.version || '1.2';
+    document.getElementById('compSGE').className = 'gc-compliance-check pass';
+    document.getElementById('compSGE').innerHTML = '<i class="fas fa-check"></i>';
+  } else {
+    document.getElementById('svc-sge').textContent = 'offline';
+    document.getElementById('svc-sge').className = 'gc-service-status down';
+  }
+
+  // Try briefing for extra stats
+  const briefing = await apiFetch(API.gov + '/briefing');
+  if (briefing && briefing.data) {
+    const bd = briefing.data;
+    if (bd.contDays) document.getElementById('statDays').textContent = bd.contDays;
+    if (bd.summary && bd.summary.en) {
+      // Extract ISP count from summary
+      const ispMatch = bd.summary.en.match(/(\d+) ISP/);
+      if (ispMatch) document.getElementById('statISP').textContent = ispMatch[1];
+      // Extract HIGH count
+      const highMatch = bd.summary.en.match(/(\d+) HIGH/);
+      if (highMatch) document.getElementById('statHigh').textContent = highMatch[1];
+    }
+  }
+
+  // Ledger compliance
+  const integrity = await apiFetch(API.gov + '/integrity');
+  if (integrity) {
+    document.getElementById('compLedger').className = 'gc-compliance-check pass';
+    document.getElementById('compLedger').innerHTML = '<i class="fas fa-check"></i>';
+  }
+
+  // Trust Bus
+  // (would check :8081 but proxy might not exist, mark as checking)
+  document.getElementById('svc-trust').textContent = 'check';
+  document.getElementById('svc-trust').className = 'gc-service-status unknown';
+
+  // Day-by-Day
+  document.getElementById('svc-dayby').textContent = 'check';
+  document.getElementById('svc-dayby').className = 'gc-service-status unknown';
+}
+
+// ═══════════ BRIEFING ═══════════
+async function loadBriefing() {
+  const data = await apiFetch(API.gov + '/briefing');
+  if (!data || !data.data) {
+    document.getElementById('briefingId').textContent = 'Briefing unavailable';
+    return;
+  }
+  const b = data.data;
+  document.getElementById('briefingId').textContent = b.reportId || '—';
+  document.getElementById('briefingDate').textContent = b.briefingDate || '—';
+  document.getElementById('briefingTime').textContent = 'Generated at ' + (b.genTime || '—');
+  document.getElementById('briefingSummaryEN').textContent = b.summary?.en || 'No summary available';
+  document.getElementById('briefingSummaryDE').textContent = b.summary?.de || 'Keine Zusammenfassung verfügbar';
+
+  // Meta
+  const metaHtml = [
+    { label: 'Report ID', value: b.reportId },
+    { label: 'Hash', value: b.hash },
+    { label: 'Ledger Ref', value: b.ledgerRef },
+    { label: 'System Status', value: b.systemStatus },
+    { label: 'Director', value: b.director },
+    { label: 'Continuous Days', value: b.contDays },
+  ].map(m => `
+    <div class="gc-briefing-meta-item">
+      <div class="gc-briefing-meta-label">${m.label}</div>
+      <div class="gc-briefing-meta-value">${m.value || '—'}</div>
+    </div>
+  `).join('');
+  document.getElementById('briefingMeta').innerHTML = metaHtml;
+}
+
+// ═══════════ WAR ROOM ═══════════
+async function loadWarRoom() {
+  // Load submissions as events
+  const subs = await apiFetch(API.gov + '/submissions');
+  if (subs && Array.isArray(subs.results || subs)) {
+    const entries = subs.results || subs;
+    if (entries.length === 0) {
+      document.getElementById('eventLog').innerHTML = '<div class="gc-empty"><i class="fas fa-inbox"></i><p>No events yet.</p></div>';
+    } else {
+      document.getElementById('eventLog').innerHTML = entries.map(e => `
+        <div class="gc-event">
+          <div class="gc-event-dot ${e.governance_level === 'HIGH' ? 'crit' : e.governance_level === 'MEDIUM' ? 'warn' : 'safe'}"></div>
+          <div>
+            <div class="gc-event-text">${e.governance_level || '—'} · ${e.governance_level || e.governance_level || 'Document'} · ${e.validation_status || 'submitted'}</div>
+            <div class="gc-event-time">${e.submission_id || e.id || '—'} · ${e.registered_at || e.registered_at || '—'}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+
+  // Load ISP profiles
+  const integrity = await apiFetch(API.gov + '/integrity');
+  if (integrity && typeof integrity.profiles === "object") {
+    document.getElementById('ispMonitor').innerHTML = Object.entries(integrity.profiles).map(([name, data]) => `
+      <div class="gc-isp-item">
+        <span class="gc-isp-name">${name}</span>
+        <span class="gc-isp-level ${(data.level || 'low').toLowerCase()}">${data.level || '—'}</span>
+      </div>
+    `).join('');
+  } else {
+    // Fallback: show known profiles
+    const profiles = ['deutsche-bahn', 'bundesregierung', 'bis-style', '_base'];
+    document.getElementById('ispMonitor').innerHTML = profiles.map(p => `
+      <div class="gc-isp-item">
+        <span class="gc-isp-name">${p}</span>
+        <span class="gc-isp-level low">loaded</span>
+      </div>
+    `).join('');
+  }
+
+  // Chain integrity
+  if (integrity) {
+    document.getElementById('chainPanel').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+        <div>
+          <div class="gc-stat-label">Total Entries</div>
+          <div style="font-size:1.2rem;font-weight:700;color:var(--text-primary);">${integrity.report?.total || integrity.report?.total || '—'}</div>
+        </div>
+        <div>
+          <div class="gc-stat-label">Sealed</div>
+          <div style="font-size:1.2rem;font-weight:700;color:var(--signal-safe);">${integrity.report?.sealed || integrity.report?.sealed || '—'}</div>
+        </div>
+        <div>
+          <div class="gc-stat-label">Integrity</div>
+          <div style="font-size:1.2rem;font-weight:700;color:${integrity.status === 'INTACT' ? 'var(--signal-safe)' : 'var(--signal-core)'};">${integrity.status === 'INTACT' ? '✓ INTACT' : '✗ Broken'}</div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function refreshWarRoom() { loadWarRoom(); }
+
+// ═══════════ GENERATE ═══════════
+let selectedLevel = null;
+
+function selectLevel(level) {
+  selectedLevel = level;
+  document.querySelectorAll('.gc-level-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`.gc-level-card.${level.toLowerCase()}`).classList.add('selected');
+  document.getElementById('genForm').style.display = 'block';
+  document.getElementById('genFormTitle').textContent = level + ' Document Metadata';
+  document.getElementById('genResult').classList.remove('show');
+
+  // Show/hide medium fields
+  document.getElementById('mediumFields').style.display = (level === 'MEDIUM' || level === 'HIGH') ? 'grid' : 'none';
+}
+
+async function submitGenerate() {
+  if (!selectedLevel) return;
+
+  const payload = {
+    governance_level: selectedLevel,
+    doc_type: document.getElementById('fDocType').value,
+    impact_level: document.getElementById('fImpact').value,
+    department_code: document.getElementById('fDept').value,
+    value_range: document.getElementById('fRange').value,
+    content_summary: document.getElementById('fSummary').value,
+    responsible_officer: document.getElementById('fOfficer').value,
+    auth_reference: document.getElementById('fAuthRef').value,
+  };
+
+  const res = await apiFetch(API.gov + '/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  const resultEl = document.getElementById('genResult');
+  const statusEl = document.getElementById('genStatus');
+  const bodyEl = document.getElementById('genResultBody');
+  const hashEl = document.getElementById('genHash');
+
+  if (res) {
+    const approved = res.status === 'APPROVED' || res.approved;
+    statusEl.className = 'gc-result-status ' + (approved ? 'approved' : 'blocked');
+    statusEl.innerHTML = `<i class="fas fa-${approved ? 'check-circle' : 'times-circle'}"></i> ${approved ? 'APPROVED' : 'BLOCKED'}`;
+    bodyEl.innerHTML = `
+      <p style="margin-top:8px;font-size:0.88rem;">Level: <strong>${selectedLevel}</strong> · ${res.reg_id || res.id || '—'}</p>
+      ${res.missing_fields ? `<p style="color:var(--signal-core);margin-top:6px;">Missing: ${res.missing_fields.join(', ')}</p>` : ''}
+      ${res.message ? `<p style="margin-top:6px;color:var(--text-secondary);">${res.message}</p>` : ''}
+    `;
+    hashEl.textContent = res.hash || res.envelope_hash || '—';
+    resultEl.classList.add('show');
+  } else {
+    statusEl.className = 'gc-result-status blocked';
+    statusEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> API ERROR';
+    bodyEl.innerHTML = '<p>Could not reach Governance Engine.</p>';
+    hashEl.textContent = '';
+    resultEl.classList.add('show');
+  }
+}
+
+function resetGenerate() {
+  selectedLevel = null;
+  document.querySelectorAll('.gc-level-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('genForm').style.display = 'none';
+  document.getElementById('genResult').classList.remove('show');
+  document.querySelectorAll('.gc-form-input, .gc-form-select').forEach(el => el.value = '');
+}
+
+// ═══════════ AUDIT ═══════════
+async function loadAudit() {
+  const subs = await apiFetch(API.gov + '/submissions');
+  const tbody = document.getElementById('auditTableBody');
+
+  if (subs && (subs.results || Array.isArray(subs))) {
+    const entries = subs.results || subs;
+    if (entries.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-tertiary);padding:32px;">No submissions yet.</td></tr>';
+    } else {
+      tbody.innerHTML = entries.map(e => `
+        <tr>
+          <td><span style="font-family:var(--font-mono);font-size:0.78rem;">${e.submission_id || e.id || '—'}</span></td>
+          <td>${e.registered_at || e.registered_at || '—'}</td>
+          <td><span class="gc-isp-level ${(e.governance_level || 'low').toLowerCase()}">${e.governance_level || '—'}</span></td>
+          <td>${e.governance_level || e.governance_level || '—'}</td>
+          <td>${e.validation_status || '—'}</td>
+          <td class="gc-hash-cell">${(e.integrity_hash || e.integrity_hash || '—').substring(0, 16)}…</td>
+        </tr>
+      `).join('');
+    }
+  } else {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-tertiary);padding:32px;">Could not load submissions.</td></tr>';
+  }
+}
+
+// ═══════════ FOOTER CLOCK ═══════════
+function updateClock() {
+  const now = new Date();
+  document.getElementById('footerTime').textContent = now.toLocaleString('de-DE', {
+    timeZone: 'Europe/Berlin', hour: '2-digit', minute: '2-digit', second: '2-digit'
+  }) + ' CET';
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ═══════════ INIT ═══════════
+loadOverview();
+loadFromHash();
+
+// === THEME TOGGLE (Noir/Klar) ===
+function toggleTheme() {
+  const html = document.documentElement;
+  const btn = document.querySelector(".theme-toggle-gov");
+  const current = html.getAttribute("data-theme");
+  if (current === "dark") {
+    html.setAttribute("data-theme", "klar");
+    btn.textContent = "☀️";
+    localStorage.setItem("windi-gov-theme", "klar");
+  } else {
+    html.setAttribute("data-theme", "dark");
+    btn.textContent = "🌙";
+    localStorage.setItem("windi-gov-theme", "dark");
+  }
+}
+// Restore saved theme
+(function() {
+  var saved = localStorage.getItem("windi-gov-theme");
+  if (saved === "klar") {
+    document.documentElement.setAttribute("data-theme", "klar");
+    var btn = document.querySelector(".theme-toggle-gov");
+    if (btn) btn.textContent = "☀️";
+  }
+})();
+</script>
+
+<!-- WINDI VERIFIED Fixed Badge -->
+<div style="position:fixed; bottom:16px; right:16px; z-index:9999;">
+  <a href="/records/DOC-GUARD-20260207-001.html" target="_blank" title="View Governance Deposition">
+    <img src="/records/WINDI_VERIFIED_BADGE.svg" alt="WINDI VERIFIED" width="80" style="opacity:0.85; transition:opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.85'">
+  </a>
+</div>
+
+</body>
+</html>

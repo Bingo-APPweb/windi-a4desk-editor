@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WINDI — Ist Ihr Dokument fair?</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafaf7;
+    --bg-warm: #f5f4ef;
+    --card: #ffffff;
+    --text: #1a1a1a;
+    --text-body: #3a3a3a;
+    --text-soft: #6b6b6b;
+    --text-faint: #9a9a94;
+    --border: #e8e8e2;
+    --gold: #c9a84c;
+    --gold-bright: #e0be5a;
+    --green: #2d8a4e;
+    --green-soft: #e8f5ec;
+    --red-warn: #d44;
+    --blue-calm: #4a7ab5;
+
+    /* Noir for premium section */
+    --noir: #111;
+    --noir-card: #1a1a1a;
+    --noir-text: #f0efe8;
+    --noir-soft: #8a8a82;
+    --noir-border: #2a2a2a;
+
+    --radius: 14px;
+    --radius-lg: 20px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ═══════════════════════════════════════
+     HEADER — Minimal, trustworthy
+     ═══════════════════════════════════════ */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+
+  .logo {
+    display: flex; align-items: center; gap: 9px;
+  }
+
+  .logo-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), #a08838);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 800; font-size: 12px; color: #1a1a1a;
+  }
+
+  .logo-text {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700; font-size: 16px; letter-spacing: 1px;
+  }
+
+  .header-right {
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .lang-btn {
+    padding: 3px 8px; border: 1px solid var(--border);
+    border-radius: 4px; background: transparent;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; cursor: pointer; color: var(--text-soft);
+  }
+  .lang-btn.on { background: var(--text); color: white; border-color: var(--text); }
+
+  /* ═══════════════════════════════════════
+     HERO — The human question
+     ═══════════════════════════════════════ */
+  .hero {
+    text-align: center;
+    padding: 72px 24px 48px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .hero h1 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 800;
+    font-size: 38px;
+    line-height: 1.15;
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+  }
+
+  .hero h1 .highlight {
+    background: linear-gradient(180deg, transparent 60%, rgba(201,168,76,0.25) 60%);
+    padding: 0 4px;
+  }
+
+  .hero p {
+    font-size: 17px;
+    color: var(--text-body);
+    line-height: 1.7;
+    max-width: 480px;
+    margin: 0 auto 28px;
+  }
+
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 32px;
+    background: var(--text);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+
+  .hero-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .hero-sub {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-faint);
+  }
+
+  .hero-sub .green { color: var(--green); font-weight: 600; }
+
+  /* ═══════════════════════════════════════
+     TRUST STRIP — Simple proof
+     ═══════════════════════════════════════ */
+  .trust-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    padding: 16px 24px;
+    background: var(--bg-warm);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .trust-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--text-soft);
+  }
+
+  .trust-item .icon { font-size: 16px; }
+
+  /* ═══════════════════════════════════════
+     PAIN POINTS — What keeps you up
+     ═══════════════════════════════════════ */
+  .pains {
+    max-width: 800px;
+    margin: 56px auto 0;
+    padding: 0 24px;
+  }
+
+  .pains-title {
+    text-align: center;
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700;
+    font-size: 24px;
+    margin-bottom: 32px;
+    color: var(--text);
+  }
+
+  .pain-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .pain-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 22px;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+
+  .pain-emoji {
+    font-size: 36px;
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  .pain-card h3 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 600; font-size: 15px;
+    margin-bottom: 6px;
+  }
+
+  .pain-card p {
+    font-size: 13px;
+    color: var(--text-soft);
+    line-height: 1.5;
+  }
+
+  /* ═══════════════════════════════════════
+     HOW IT WORKS — 3 stupidly simple steps
+     ═══════════════════════════════════════ */
+  .how {
+    max-width: 720px;
+    margin: 64px auto 0;
+    padding: 0 24px;
+    text-align: center;
+  }
+
+  .how h2 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700; font-size: 24px;
+    margin-bottom: 36px;
+  }
+
+  .steps {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  .step {
+    flex: 1;
+    text-align: center;
+  }
+
+  .step-number {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--text);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700; font-size: 18px;
+    margin: 0 auto 14px;
+  }
+
+  .step h3 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 600; font-size: 16px;
+    margin-bottom: 6px;
+  }
+
+  .step p {
+    font-size: 13px;
+    color: var(--text-soft);
+    line-height: 1.5;
+  }
+
+  .step-arrow {
+    display: flex;
+    align-items: center;
+    padding-top: 20px;
+    color: var(--text-faint);
+    font-size: 20px;
+  }
+
+  /* ═══════════════════════════════════════
+     WHAT YOU SEE — Result preview
+     ═══════════════════════════════════════ */
+  .result-section {
+    max-width: 680px;
+    margin: 56px auto 0;
+    padding: 0 24px;
+  }
+
+  .result-section h2 {
+    text-align: center;
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700; font-size: 24px;
+    margin-bottom: 24px;
+  }
+
+  .result-card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .result-top {
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .result-doc {
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .result-doc-icon {
+    width: 40px; height: 40px;
+    border-radius: 8px;
+    background: #f0f0ea;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+
+  .result-doc-name {
+    font-weight: 600; font-size: 15px;
+  }
+
+  .result-doc-type {
+    font-size: 12px; color: var(--text-faint);
+  }
+
+  .result-badge {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600; font-size: 14px;
+  }
+
+  .badge-safe {
+    background: var(--green-soft);
+    color: var(--green);
+  }
+
+  .badge-warn {
+    background: #fff3e0;
+    color: #e65100;
+  }
+
+  .result-body {
+    padding: 24px 28px;
+  }
+
+  .result-findings {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .finding {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-body);
+  }
+
+  .finding-icon {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .fi-ok { background: var(--green-soft); color: var(--green); }
+  .fi-warn { background: #fff3e0; color: #e65100; }
+  .fi-info { background: #e3f2fd; color: #1565c0; }
+
+  .finding strong { font-weight: 600; }
+
+  .result-bottom {
+    padding: 16px 28px;
+    background: var(--bg-warm);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .result-principle {
+    font-size: 12px; color: var(--text-faint);
+  }
+
+  .result-hash {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--text-faint);
+    letter-spacing: 0.5px;
+  }
+
+  /* ═══════════════════════════════════════
+     PERSONAS — Who is this for
+     ═══════════════════════════════════════ */
+  .personas {
+    max-width: 720px;
+    margin: 64px auto 0;
+    padding: 0 24px;
+  }
+
+  .personas h2 {
+    text-align: center;
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700; font-size: 24px;
+    margin-bottom: 28px;
+  }
+
+  .persona-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .pers-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 16px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--shadow);
+  }
+
+  .pers-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--gold);
+  }
+
+  .pers-emoji { font-size: 28px; margin-bottom: 10px; display: block; }
+
+  .pers-card h3 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 600; font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .pers-card p {
+    font-size: 11px; color: var(--text-soft);
+  }
+
+  /* ═══════════════════════════════════════
+     SOCIAL PROOF — Numbers
+     ═══════════════════════════════════════ */
+  .proof {
+    text-align: center;
+    padding: 48px 24px;
+    margin-top: 48px;
+    background: var(--bg-warm);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .proof-text {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 600; font-size: 18px;
+    color: var(--text-body);
+    max-width: 500px;
+    margin: 0 auto 8px;
+    line-height: 1.5;
+  }
+
+  .proof-sub {
+    font-size: 13px;
+    color: var(--text-faint);
+  }
+
+  /* ═══════════════════════════════════════
+     PRICING — Human-readable
+     ═══════════════════════════════════════ */
+  .pricing {
+    max-width: 880px;
+    margin: 56px auto 0;
+    padding: 0 24px;
+  }
+
+  .pricing h2 {
+    text-align: center;
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700; font-size: 24px;
+    margin-bottom: 8px;
+  }
+
+  .pricing .pricing-sub {
+    text-align: center;
+    font-size: 15px;
+    color: var(--text-soft);
+    margin-bottom: 32px;
+  }
+
+  .price-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+
+  .price-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px 24px 28px;
+    box-shadow: var(--shadow);
+    position: relative;
+    transition: all 0.2s;
+  }
+
+  .price-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .price-card.featured {
+    border: 2px solid var(--gold);
+    box-shadow: 0 8px 32px rgba(201,168,76,0.12);
+  }
+
+  .price-popular {
+    position: absolute;
+    top: -10px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--gold);
+    color: #1a1a1a;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 14px;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
+
+  .price-tier-name {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700; font-size: 20px;
+    margin-bottom: 4px;
+  }
+
+  .price-tier-line {
+    font-size: 13px;
+    color: var(--text-soft);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .price-amount {
+    display: flex; align-items: baseline; gap: 4px;
+    margin-bottom: 20px;
+  }
+
+  .price-num {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 800; font-size: 36px;
+  }
+
+  .price-per {
+    font-size: 13px; color: var(--text-faint);
+  }
+
+  .price-features {
+    list-style: none;
+    display: flex; flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .price-features li {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 14px; color: var(--text-body);
+    line-height: 1.4;
+  }
+
+  .price-features li .ch { color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+  .price-cta {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600; font-size: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    text-decoration: none;
+  }
+
+  .cta-free { background: var(--text); color: white; }
+  .cta-free:hover { background: #333; }
+
+  .cta-vip { background: var(--gold); color: #1a1a1a; }
+  .cta-vip:hover { background: var(--gold-bright); }
+
+  .cta-ent { background: transparent; border: 2px solid var(--text) !important; color: var(--text); }
+  .cta-ent:hover { background: var(--text); color: white; }
+
+  /* ═══════════════════════════════════════
+     BOTTOM CTA
+     ═══════════════════════════════════════ */
+  .bottom-cta {
+    text-align: center;
+    padding: 56px 24px 64px;
+  }
+
+  .bottom-cta h2 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700; font-size: 26px;
+    margin-bottom: 12px;
+  }
+
+  .bottom-cta p {
+    font-size: 15px;
+    color: var(--text-soft);
+    margin-bottom: 24px;
+  }
+
+  /* ═══════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════ */
+  .footer {
+    padding: 20px 24px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .footer-line {
+    font-size: 12px; color: var(--text-faint);
+  }
+
+  .footer-line .g { color: var(--gold); font-weight: 600; }
+
+  .footer-principle {
+    font-size: 11px; color: var(--text-faint);
+    margin-top: 4px;
+  }
+
+  /* ═══════════════════════════════════════
+     RESPONSIVE
+     ═══════════════════════════════════════ */
+  @media (max-width: 700px) {
+    .hero h1 { font-size: 28px; }
+    .pain-grid, .persona-grid, .price-grid { grid-template-columns: 1fr; max-width: 360px; margin: 0 auto; }
+    .steps { flex-direction: column; gap: 20px; }
+    .step-arrow { display: none; }
+    .trust-strip { flex-wrap: wrap; gap: 16px; }
+  }
+
+  /* ═══════════════════════════════════════
+     ANIMATIONS
+     ═══════════════════════════════════════ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .pain-card, .pers-card, .price-card {
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .pain-card:nth-child(1), .pers-card:nth-child(1), .price-card:nth-child(1) { animation-delay: 0.05s; }
+  .pain-card:nth-child(2), .pers-card:nth-child(2), .price-card:nth-child(2) { animation-delay: 0.1s; }
+  .pain-card:nth-child(3), .pers-card:nth-child(3), .price-card:nth-child(3) { animation-delay: 0.15s; }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────────── -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-dot">W</div>
+    <span class="logo-text">WINDI</span>
+  </div>
+  <div class="header-right">
+    <button class="lang-btn on">DE</button>
+    <button class="lang-btn">EN</button>
+    <button class="lang-btn">PT</button>
+  </div>
+</header>
+
+<!-- ── HERO ───────────────────────────────── -->
+<section class="hero">
+  <h1>Ist Ihr Vertrag <span class="highlight">wirklich fair?</span></h1>
+  <p>Laden Sie ein Dokument hoch. In Sekunden wissen Sie, ob es sicher, konform und fair ist. Kein Jurastudium nötig.</p>
+  <a href="#" class="hero-cta">📄 Dokument prüfen — kostenlos</a>
+  <div class="hero-sub"><span class="green">Kostenlos.</span> Kein Account. Kein Haken.</div>
+</section>
+
+<!-- ── TRUST STRIP ────────────────────────── -->
+<div class="trust-strip">
+  <div class="trust-item"><span class="icon">🇩🇪</span> Server in Deutschland</div>
+  <div class="trust-item"><span class="icon">🔒</span> Ihre Daten bleiben bei Ihnen</div>
+  <div class="trust-item"><span class="icon">🤖</span> KI prüft — Sie entscheiden</div>
+  <div class="trust-item"><span class="icon">⚡</span> Ergebnis in 10 Sekunden</div>
+</div>
+
+<!-- ── PAIN POINTS ────────────────────────── -->
+<section class="pains">
+  <h2 class="pains-title">Kennen Sie das?</h2>
+  <div class="pain-grid">
+
+    <div class="pain-card">
+      <span class="pain-emoji">😰</span>
+      <h3>Sie unterschreiben und hoffen</h3>
+      <p>Der Vertrag hat 12 Seiten. Ihr Anwalt kostet €300/Stunde. Also unterschreiben Sie — und hoffen.</p>
+    </div>
+
+    <div class="pain-card">
+      <span class="pain-emoji">🤷</span>
+      <h3>"Das Kleingedruckte? Egal."</h3>
+      <p>Die AGB hat 47 Paragraphen. Niemand liest sie. Aber wenn's schiefgeht, zählt jedes Wort.</p>
+    </div>
+
+    <div class="pain-card">
+      <span class="pain-emoji">💸</span>
+      <h3>Compliance frisst Budget</h3>
+      <p>DSGVO-Audit, EU AI Act, BSI — Ihr Team verbringt Wochen damit, Dokumente manuell zu prüfen.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ───────────────────────── -->
+<section class="how">
+  <h2>So einfach geht's</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-number">1</div>
+      <h3>Hochladen</h3>
+      <p>PDF, Word, Foto — egal welches Format. Einfach reinwerfen.</p>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step">
+      <div class="step-number">2</div>
+      <h3>Verstehen</h3>
+      <p>WINDI liest, was Sie nicht lesen wollen. Und erklärt es in Ihrer Sprache.</p>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step">
+      <div class="step-number">3</div>
+      <h3>Entscheiden</h3>
+      <p>Sie sehen klar: ✅ Fair · ⚠️ Vorsicht · 🚫 Finger weg. Sie entscheiden.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── WHAT YOU SEE ───────────────────────── -->
+<section class="result-section">
+  <h2>Das sehen Sie nach 10 Sekunden</h2>
+  <div class="result-card">
+
+    <div class="result-top">
+      <div class="result-doc">
+        <div class="result-doc-icon">📄</div>
+        <div>
+          <div class="result-doc-name">Mietvertrag_Berlin_2026.pdf</div>
+          <div class="result-doc-type">PDF · 8 Seiten · Deutsch</div>
+        </div>
+      </div>
+      <div class="result-badge badge-warn">⚠️ Vorsicht</div>
+    </div>
+
+    <div class="result-body">
+      <ul class="result-findings">
+        <li class="finding">
+          <span class="finding-icon fi-ok">✓</span>
+          <div><strong>Mietdauer und Kündigungsfrist</strong> entsprechen dem gesetzlichen Standard.</div>
+        </li>
+        <li class="finding">
+          <span class="finding-icon fi-warn">!</span>
+          <div><strong>Klausel §7.3:</strong> Der Vermieter darf die Miete jährlich um bis zu 15% erhöhen — <strong>das ist ungewöhnlich hoch.</strong></div>
+        </li>
+        <li class="finding">
+          <span class="finding-icon fi-warn">!</span>
+          <div><strong>Renovierungspflicht:</strong> Sie müssen bei Auszug komplett renovieren — auch ohne Schäden. Das könnte <strong>€2.000–4.000 kosten.</strong></div>
+        </li>
+        <li class="finding">
+          <span class="finding-icon fi-info">i</span>
+          <div><strong>Empfehlung:</strong> Vor Unterschrift §7.3 nachverhandeln oder schriftlich begrenzen lassen.</div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="result-bottom">
+      <div class="result-principle">KI prüft · Sie entscheiden · WINDI garantiert</div>
+      <div class="result-hash">WINDI-REC-2026-A7F3</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── PERSONAS ───────────────────────────── -->
+<section class="personas">
+  <h2>Für wen ist WINDI?</h2>
+  <div class="persona-grid">
+    <div class="pers-card">
+      <span class="pers-emoji">🏢</span>
+      <h3>Unternehmerin</h3>
+      <p>Verträge, Lieferanten, Compliance</p>
+    </div>
+    <div class="pers-card">
+      <span class="pers-emoji">💼</span>
+      <h3>Freelancer</h3>
+      <p>NDAs, Aufträge, AGBs</p>
+    </div>
+    <div class="pers-card">
+      <span class="pers-emoji">⚖️</span>
+      <h3>Compliance / DPO</h3>
+      <p>DSGVO, AVV, Audits</p>
+    </div>
+    <div class="pers-card">
+      <span class="pers-emoji">👤</span>
+      <h3>Privatperson</h3>
+      <p>Mietvertrag, Versicherung</p>
+    </div>
+    <div class="pers-card">
+      <span class="pers-emoji">📊</span>
+      <h3>Controller</h3>
+      <p>Risikomanagement, Reporting</p>
+    </div>
+    <div class="pers-card">
+      <span class="pers-emoji">🏛️</span>
+      <h3>Geschäftsführung</h3>
+      <p>Überblick, Entscheidungen</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── SOCIAL PROOF ──────────────────────── -->
+<section class="proof">
+  <div class="proof-text">"Ich hätte €4.000 Renovierungskosten bezahlt. WINDI hat die Klausel in 8 Sekunden gefunden."</div>
+  <div class="proof-sub">— Privatperson, Mietvertrag Berlin</div>
+</section>
+
+<!-- ── PRICING ────────────────────────────── -->
+<section class="pricing">
+  <h2>Wie viel Schutz brauchen Sie?</h2>
+  <p class="pricing-sub">Gleiche Prüfung. Gleiche Sicherheit. Mehr Werkzeuge für mehr Verantwortung.</p>
+
+  <div class="price-grid">
+
+    <!-- FREE -->
+    <div class="price-card">
+      <div class="price-tier-name">Einsteigen</div>
+      <div class="price-tier-line">Alles was Sie brauchen. Ohne Haken.</div>
+      <div class="price-amount">
+        <span class="price-num" style="color:var(--green)">€0</span>
+        <span class="price-per">für immer</span>
+      </div>
+      <ul class="price-features">
+        <li><span class="ch">✓</span> Dokument hochladen & prüfen</li>
+        <li><span class="ch">✓</span> Risiko-Ampel: grün · gelb · rot</li>
+        <li><span class="ch">✓</span> Klare Erklärung auf Deutsch</li>
+        <li><span class="ch">✓</span> Prüf-Nachweis als PDF</li>
+        <li><span class="ch">✓</span> Bis zu 3 Personen</li>
+      </ul>
+      <button class="price-cta cta-free">Jetzt prüfen — kostenlos</button>
+    </div>
+
+    <!-- VIP -->
+    <div class="price-card featured">
+      <div class="price-popular">Am beliebtesten</div>
+      <div class="price-tier-name">Durchblicken</div>
+      <div class="price-tier-line">Für Teams, die Risiken nicht nur sehen — sondern steuern.</div>
+      <div class="price-amount">
+        <span class="price-num">€25</span>
+        <span class="price-per">/ Person · Monat</span>
+      </div>
+      <ul class="price-features">
+        <li><span class="ch">✓</span> Alles aus Einsteigen</li>
+        <li><span class="ch">✓</span> Dashboard: Alle Risiken auf einen Blick</li>
+        <li><span class="ch">✓</span> "Was wäre wenn?" — Änderungen simulieren</li>
+        <li><span class="ch">✓</span> Handschrift & Fotos authentifizieren</li>
+        <li><span class="ch">✓</span> 17 Branchen-Profile (DB, Bund, etc.)</li>
+        <li><span class="ch">✓</span> Bis zu 25 Personen</li>
+      </ul>
+      <button class="price-cta cta-vip">Upgrade starten</button>
+    </div>
+
+    <!-- Enterprise -->
+    <div class="price-card">
+      <div class="price-tier-name">Kontrollieren</div>
+      <div class="price-tier-line">Für Organisationen mit maximaler Verantwortung.</div>
+      <div class="price-amount">
+        <span class="price-num">€80</span>
+        <span class="price-per">/ Person · Monat</span>
+      </div>
+      <ul class="price-features">
+        <li><span class="ch">✓</span> Alles aus Durchblicken</li>
+        <li><span class="ch">✓</span> Echtzeit-Monitoring aller Dokumente</li>
+        <li><span class="ch">✓</span> EU AI Act & DSGVO automatisch</li>
+        <li><span class="ch">✓</span> Forensische Beweiskette</li>
+        <li><span class="ch">✓</span> Eigene Server möglich</li>
+        <li><span class="ch">✓</span> Unbegrenzte Personen</li>
+      </ul>
+      <button class="price-cta cta-ent">Kontakt aufnehmen</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── BOTTOM CTA ─────────────────────────── -->
+<section class="bottom-cta">
+  <h2>Unterschreiben Sie nie wieder blind.</h2>
+  <p>Ihr nächster Vertrag wartet. Lassen Sie WINDI zuerst draufschauen.</p>
+  <a href="#" class="hero-cta">📄 Jetzt kostenlos prüfen</a>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────── -->
+<footer class="footer">
+  <div class="footer-line"><span class="g">WINDI</span> — Document Governance · Made in Germany 🇩🇪</div>
+  <div class="footer-principle">KI verarbeitet. Mensch entscheidet. WINDI garantiert.</div>
+</footer>
+
+</body>
+</html>

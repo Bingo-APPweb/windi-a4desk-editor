@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WINDI — Inside the Envelopes</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --card: #161616;
+    --card-hover: #1c1c1c;
+    --border: #252525;
+    --text: #f0efe8;
+    --text-sec: #7a7a72;
+    --text-dim: #4a4a44;
+    --gold: #c9a84c;
+    --gold-bright: #e0be5a;
+    --gold-dim: #8a7434;
+
+    --green: #4ade80;
+    --green-dim: #22c55e;
+    --green-bg: rgba(74,222,128,0.06);
+    --green-border: rgba(74,222,128,0.15);
+
+    --yellow: #facc15;
+    --yellow-dim: #eab308;
+    --yellow-bg: rgba(250,204,21,0.06);
+    --yellow-border: rgba(250,204,21,0.15);
+
+    --red: #f87171;
+    --red-dim: #ef4444;
+    --red-bg: rgba(248,113,113,0.06);
+    --red-border: rgba(248,113,113,0.15);
+
+    --radius: 12px;
+    --radius-lg: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── HEADER ──────────────────────── */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .top-left {
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .w-mark {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 800; font-size: 12px; color: #0e0e0e;
+  }
+
+  .w-name {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700; font-size: 16px; letter-spacing: 1px;
+  }
+
+  .top-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--gold);
+    letter-spacing: 2px;
+    padding: 4px 12px;
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 16px;
+  }
+
+  /* ── PAGE TITLE ──────────────────── */
+  .page-title {
+    text-align: center;
+    padding: 48px 24px 12px;
+  }
+
+  .page-title h1 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700; font-size: 32px;
+    margin-bottom: 8px;
+  }
+
+  .page-title p {
+    font-size: 15px; color: var(--text-sec);
+    max-width: 560px; margin: 0 auto; line-height: 1.6;
+  }
+
+  /* ── ENVELOPE CONTAINER ──────────── */
+  .envelopes {
+    max-width: 1100px;
+    margin: 40px auto 60px;
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  /* ── SINGLE ENVELOPE ─────────────── */
+  .envelope {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--card);
+    position: relative;
+  }
+
+  .envelope::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .envelope.green::before { background: linear-gradient(90deg, transparent, var(--green), transparent); }
+  .envelope.yellow::before { background: linear-gradient(90deg, transparent, var(--yellow), transparent); }
+  .envelope.red::before { background: linear-gradient(90deg, transparent, var(--red), transparent); }
+
+  /* ── ENVELOPE HEADER ─────────────── */
+  .env-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .env-head-left {
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  .env-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+
+  .env-icon.gi { background: var(--green-bg); border: 1px solid var(--green-border); }
+  .env-icon.yi { background: var(--yellow-bg); border: 1px solid var(--yellow-border); }
+  .env-icon.ri { background: var(--red-bg); border: 1px solid var(--red-border); }
+
+  .env-meta h2 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700; font-size: 20px;
+    margin-bottom: 2px;
+  }
+
+  .env-meta .subtitle {
+    font-size: 13px; color: var(--text-sec);
+  }
+
+  .env-altitude {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 2px;
+    padding: 5px 14px;
+    border-radius: 16px;
+  }
+
+  .alt-green { color: var(--green); background: var(--green-bg); border: 1px solid var(--green-border); }
+  .alt-yellow { color: var(--yellow); background: var(--yellow-bg); border: 1px solid var(--yellow-border); }
+  .alt-red { color: var(--red); background: var(--red-bg); border: 1px solid var(--red-border); }
+
+  /* ── ENVELOPE BODY ───────────────── */
+  .env-body {
+    padding: 24px 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  /* ── CATEGORY BLOCK ──────────────── */
+  .cat-block {
+    background: rgba(255,255,255,0.015);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+
+  .cat-label {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .cat-label .icon { font-size: 16px; }
+
+  .cat-label span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--text-sec);
+  }
+
+  .cat-items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cat-items li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .cat-items li .bullet {
+    flex-shrink: 0;
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    margin-top: 1px;
+  }
+
+  .b-green { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .b-yellow { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow-border); }
+  .b-red { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+
+  .cat-items li strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .cat-items li .detail {
+    color: var(--text-sec);
+    font-size: 12px;
+  }
+
+  /* ── ENVELOPE FOOTER ─────────────── */
+  .env-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 28px;
+    border-top: 1px solid var(--border);
+    background: rgba(255,255,255,0.01);
+  }
+
+  .env-price {
+    display: flex; align-items: baseline; gap: 6px;
+  }
+
+  .env-price .amount {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700; font-size: 24px;
+  }
+
+  .env-price .unit {
+    font-size: 12px; color: var(--text-sec);
+  }
+
+  .env-users {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+
+  .env-target {
+    font-size: 12px; color: var(--text-sec);
+  }
+
+  /* ── FULL WIDTH BLOCK ────────────── */
+  .env-body-full {
+    grid-column: 1 / -1;
+  }
+
+  /* ── COMPARISON STRIP ────────────── */
+  .compare-strip {
+    max-width: 1100px;
+    margin: 0 auto 60px;
+    padding: 0 24px;
+  }
+
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .compare-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    padding: 14px 16px;
+    text-align: left;
+    color: var(--text-sec);
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+  }
+
+  .compare-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .compare-table tr:last-child td { border-bottom: none; }
+
+  .compare-table .feat-name {
+    color: var(--text-sec);
+    font-size: 12px;
+  }
+
+  .check { color: var(--green); font-weight: 700; }
+  .gold-check { color: var(--gold); font-weight: 700; }
+  .nope { color: var(--text-dim); }
+
+  .th-green { color: var(--green) !important; }
+  .th-yellow { color: var(--yellow) !important; }
+  .th-red { color: var(--red) !important; }
+
+  /* ── FOOTER ──────────────────────── */
+  .page-footer {
+    text-align: center;
+    padding: 24px;
+    border-top: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+
+  .page-footer .fg { color: var(--gold); }
+
+  /* ── RESPONSIVE ──────────────────── */
+  @media (max-width: 700px) {
+    .env-body { grid-template-columns: 1fr; }
+    .env-head { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .env-foot { flex-direction: column; gap: 10px; align-items: flex-start; }
+  }
+
+  /* ── ANIMATIONS ──────────────────── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .envelope {
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .envelope:nth-child(1) { animation-delay: 0.1s; }
+  .envelope:nth-child(2) { animation-delay: 0.25s; }
+  .envelope:nth-child(3) { animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+
+<!-- ── TOP BAR ────────────────────────────────── -->
+<header class="top-bar">
+  <div class="top-left">
+    <div class="w-mark">W</div>
+    <span class="w-name">WINDI</span>
+  </div>
+  <div class="top-tag">INSIDE THE ENVELOPES</div>
+</header>
+
+<!-- ── PAGE TITLE ─────────────────────────────── -->
+<div class="page-title">
+  <h1>Was steckt in jedem Umschlag?</h1>
+  <p>Gleicher Flieger, gleiche Sicherheit. Die Flughöhe bestimmt Ihre Sicht, Ihre Kontrolle und Ihren Schutz.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     ENVELOPE 1 — GREEN (ONBOARD / FLYING LOW)
+     ═══════════════════════════════════════════════ -->
+<div class="envelopes">
+
+<div class="envelope green">
+  <div class="env-head">
+    <div class="env-head-left">
+      <div class="env-icon gi">✈️</div>
+      <div class="env-meta">
+        <h2>ONBOARD — Flying Low</h2>
+        <div class="subtitle">Der komplette Flieger. Alles drin.</div>
+      </div>
+    </div>
+    <div class="env-altitude alt-green">🟢 FREE</div>
+  </div>
+
+  <div class="env-body">
+
+    <!-- W-a4Desk Editor -->
+    <div class="cat-block">
+      <div class="cat-label">
+        <span class="icon">📝</span>
+        <span>W-a4DESK EDITOR</span>
+      </div>
+      <ul class="cat-items">
+        <li><span class="bullet b-green">✓</span><div><strong>BABEL Editor — Vollzugang</strong><br><span class="detail">Tiptap-basierter Governance-Editor, keine Einschränkung</span></div></li>
+        <li><span class="bullet b-green">✓</span><div><strong>Dokument-Upload & Analyse</strong><br><span class="detail">PDF, DOCX, Bilder — sofort analysierbar</span></div></li>
+        <li><span class="bullet b-green">✓</span><div><strong>Trilingual DE / EN / PT</strong><br><span class="detail">Komplette Oberfläche und Analyse in 3 Sprachen</span></div></li>
+        <li><span class="bullet b-green">✓</span><div><strong>Export als PDF</strong><br><span class="detail">Governance-geprüfte Dokumente exportieren</span></div></li>
+      </ul>
+    </div>
+
+    <!-- SGE Basic -->
+    <div class="cat-block">
+      <div class="cat-label">
+        <span class="icon">🔬</span>
+        <span>SGE — SEMANTIC GOVERNANCE</span>
+      </div>
+      <ul class="cat-items">
+        <li><span class="bullet b-green">✓</span><div><strong>6-Layer Analyse (alle Schichten)</strong><br><span class="detail">Lexical · Syntactic · Semantic · Pragmatic · Regulatory · Institutional</span></div></li>
+        <li><span class="bullet b-green">✓</span><div><strong>Risk Classification R0–R5</strong><br><span class="detail">🟢🟡🟠🔴⚫ — Vollständige Risikobewertung</span></div></li>
+        <li><span class="bullet b-green">✓</span><div><strong>Governance Receipt (Basic)</strong><br><span class="detail">Hash + Risikostufe + Zeitstempel — Nachweis der Prüfung</span></div></li>
+        <li><span class="bullet b-green">✓</span><div><strong>Persona-Modus</strong><br><span class="detail">Analyse angepasst an: Unternehmer, Freelancer, Privatperson, etc.</span></div></li>
+      </ul>
+    </div>
+
+    <!-- Governance Basic -->
+    <div class="cat-block">
+      <div class="cat-label">
+        <span class="icon">🛡️</span>
+        <span>GOVERNANCE — GRUNDSCHUTZ</span>
+      </div>
+      <ul class="cat-items">
+        <li><span class="bullet b-green">✓</span><div><strong>9 Invarianten aktiv (I1–I9)</strong><br><span class="detail">Gleicher konstitutioneller Schutz wie Enterprise</span></div></li>
+        <li><span class="bullet b-green">✓</span><div><strong>Human-in-the-Loop</strong><br><span class="detail">"KI verarbeitet. Mensch entscheidet." — Immer.</span></div></li>
+        <li><span class="bullet b-green">✓</span><div><strong>Zero-Knowledge Architektur</strong><br><span class="detail">Ihre Daten bleiben bei Ihnen. WINDI speichert nur den Nachweis.</span></div></li>
+      </ul>
+    </div>
+
+    <!-- Limits -->
+    <div class="cat-block">
+      <div class="cat-label">
+        <span class="icon">📊</span>
+        <span>KAPAZITÄT</span>
+      </div>
+      <ul class="cat-items">
+        <li><span class="bullet b-green">✓</span><div><strong>3 Benutzer</strong><br><span class="detail">Ideal für Solopreneure, Freelancer, Privatpersonen</span></div></li>
+        <li><span class="bullet b-green">✓</span><div><strong>Unbegrenzte Dokumente</strong><br><span class="detail">Kein Limit bei Upload oder Analyse</span></div></li>
+        <li><span class="bullet b-green">✓</span><div><strong>Community Support</strong><br><span class="detail">Forum + Dokumentation + Tutorials</span></div></li>
+        <li><span class="bullet b-green">✓</span><div><strong>1 Standard-ISP</strong><br><span class="detail">Basis Institutional Style Profile inklusive</span></div></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="env-foot">
+    <div class="env-price">
+      <span class="amount" style="color:var(--green)">€0</span>
+      <span class="unit">für immer · kein Trial</span>
+    </div>
+    <div class="env-target">Privatperson · Freelancer · Solopreneur</div>
+    <div class="env-users">MAX 3 USERS</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     ENVELOPE 2 — YELLOW (SALA VIP / FLYING MEDIUM)
+     ═══════════════════════════════════════════════ -->
+<div class="envelope yellow">
+  <div class="env-head">
+    <div class="env-head-left">
+      <div class="env-icon yi">🏰</div>
+      <div class="env-meta">
+        <h2>SALA VIP — Flying Medium</h2>
+        <div class="subtitle">Volle Sicht. Priority Boarding. Erweiterte Module.</div>
+      </div>
+    </div>
+    <div class="env-altitude alt-yellow">🟡 PROFESSIONAL</div>
+  </div>
+
+  <div class="env-body">
+
+    <!-- Everything from GREEN plus... -->
+    <div class="cat-block">
+      <div class="cat-label">
+        <span class="icon">✈️</span>
+        <span>ALLES AUS ONBOARD +</span>
+      </div>
+      <ul class="cat-items">
+        <li><span class="bullet b-green">✓</span><div><strong>Komplettes FREE-Paket inklusive</strong><br><span class="detail">Editor, SGE 6-Layer, 9 Invarianten — identisch</span></div></li>
+      </ul>
+    </div>
+
+    <!-- CommitGuard -->
+    <div class="cat-block">
+      <div class="cat-label">
+        <span class="icon">🛡️</span>
+        <span>COMMITGUARD — HANDSCHRIFT-AUTH</span>
+      </div>
+      <ul class="cat-items">
+        <li><span class="bullet b-yellow">★</span><div><strong>Handschriftliche Zusagen authentifizieren</strong><br><span class="detail">Foto vom Servietten-Vertrag → forensisch validiert</span></div></li>
+        <li><span class="bullet b-yellow">★</span><div><strong>Anti-Deepfake (PixWindi PRNU)</strong><br><span class="detail">Sensor-DNA Analyse — echtes Foto oder Fälschung?</span></div></li>
+        <li><span class="bullet b-yellow">★</span><div><strong>Finanzielle Liquidation</strong><br><span class="detail">Dokument (Verbo) + Zahlung (Aktion) verknüpfen</span></div></li>
+        <li><span class="bullet b-yellow">★</span><div><strong>Forensisches PDF</strong><br><span class="detail">Unveränderliches PDF mit Dual-Proof-Hash</span></div></li>
+      </ul>
+    </div>
+
+    <!-- Controller Dashboard -->
+    <div class="cat-block">
+      <div class="cat-label">
+        <span class="icon">📊</span>
+        <span>CONTROLLER DASHBOARD</span>
+      </div>
+      <ul class="cat-items">
+        <li><span class="bullet b-yellow">★</span><div><strong>Risiko-Übersicht nach Impact (R1–R5)</strong><br><span class="detail">Visueller Überblick aller Dokumente nach Risikostufe</span></div></li>
+        <li><span class="bullet b-yellow">★</span><div><strong>SGE-Score Monitoring</strong><br><span class="detail">Echtzeit-Status aller Governance-Prüfungen</span></div></li>
+        <li><span class="bullet b-yellow">★</span><div><strong>Governance Flow-Baum</strong><br><span class="detail">Wer hat was geprüft, wann, mit welchem Ergebnis</span></div></li>
+        <li><span class="bullet b-yellow">★</span><div><strong>Export: CSV + JSON + PDF</strong><br><span class="detail">Berichte für Audits und Compliance-Nachweise</span></div></li>
+      </ul>
+    </div>
+
+    <!-- ISP Hub -->
+    <div class="cat-block">
+      <div class="cat-label">
+        <span class="icon">🏗️</span>
+        <span>ISP HUB — INSTITUTIONAL PROFILES</span>
+      </div>
+      <ul class="cat-items">
+        <li><span class="bullet b-yellow">★</span><div><strong>17 vorgefertigte ISPs</strong><br><span class="detail">Deutsche Bahn, Bundesregierung, VerpackG, ECB, und mehr</span></div></li>
+        <li><span class="bullet b-yellow">★</span><div><strong>3 Governance-Stufen je ISP</strong><br><span class="detail">LOW / MEDIUM / HIGH — pro Profil konfiguriert</span></div></li>
+        <li><span class="bullet b-yellow">★</span><div><strong>Identity License Management</strong><br><span class="detail">authorized / model_only / pending / expired / revoked</span></div></li>
+        <li><span class="bullet b-yellow">★</span><div><strong>Branding & Custom Templates</strong><br><span class="detail">Logo, Farben, Schriftarten pro Organisation</span></div></li>
+      </ul>
+    </div>
+
+    <!-- Twin Digital -->
+    <div class="cat-block">
+      <div class="cat-label">
+        <span class="icon">🔮</span>
+        <span>TWIN DIGITAL — SIMULATION</span>
+      </div>
+      <ul class="cat-items">
+        <li><span class="bullet b-yellow">★</span><div><strong>"Was wäre wenn?" — Szenario-Engine</strong><br><span class="detail">Entscheidungen simulieren, bevor sie real werden</span></div></li>
+        <li><span class="bullet b-yellow">★</span><div><strong>Risiko-Prognose bei Änderungen</strong><br><span class="detail">Klausel ändern → neuer SGE-Score sofort sichtbar</span></div></li>
+        <li><span class="bullet b-yellow">★</span><div><strong>Vergleich: Ist vs. Soll</strong><br><span class="detail">Aktuelle Version gegen simulierte Änderung</span></div></li>
+      </ul>
+    </div>
+
+    <!-- Capacity -->
+    <div class="cat-block">
+      <div class="cat-label">
+        <span class="icon">👥</span>
+        <span>KAPAZITÄT</span>
+      </div>
+      <ul class="cat-items">
+        <li><span class="bullet b-yellow">★</span><div><strong>Bis zu 25 Benutzer</strong><br><span class="detail">Teams, Abteilungen, externe Berater</span></div></li>
+        <li><span class="bullet b-yellow">★</span><div><strong>Virtue Receipts (Erweitert)</strong><br><span class="detail">Hash + Categories + Governance + Decision + Flags</span></div></li>
+        <li><span class="bullet b-yellow">★</span><div><strong>Priority Support</strong><br><span class="detail">E-Mail + Chat — 24h Antwortzeit</span></div></li>
+        <li><span class="bullet b-yellow">★</span><div><strong>API-Zugang (REST)</strong><br><span class="detail">Integration in bestehende Systeme</span></div></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="env-foot">
+    <div class="env-price">
+      <span class="amount" style="color:var(--yellow)">€25–40</span>
+      <span class="unit">/ Benutzer · Monat</span>
+    </div>
+    <div class="env-target">KMU · Compliance-Teams · Controller</div>
+    <div class="env-users">MAX 25 USERS</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     ENVELOPE 3 — RED (COCKPIT / FLYING HIGH)
+     ═══════════════════════════════════════════════ -->
+<div class="envelope red">
+  <div class="env-head">
+    <div class="env-head-left">
+      <div class="env-icon ri">🎯</div>
+      <div class="env-meta">
+        <h2>COCKPIT — Flying High</h2>
+        <div class="subtitle">Maximale Höhe. Volle Kontrolle. Zero Turbulenz.</div>
+      </div>
+    </div>
+    <div class="env-altitude alt-red">🔴 ENTERPRISE</div>
+  </div>
+
+  <div class="env-body">
+
+    <!-- Everything from YELLOW plus... -->
+    <div class="cat-block">
+      <div class="cat-label">
+        <span class="icon">✈️</span>
+        <span>ALLES AUS SALA VIP +</span>
+      </div>
+      <ul class="cat-items">
+        <li><span class="bullet b-yellow">✓</span><div><strong>Komplettes VIP-Paket inklusive</strong><br><span class="detail">CommitGuard, Dashboard, ISP Hub, Twin Digital — alles</span></div></li>
+      </ul>
+    </div>
+
+    <!-- PulseWatch -->
+    <div class="cat-block">
+      <div class="cat-label">
+        <span class="icon">💓</span>
+        <span>PULSEWATCH — ECHTZEIT-MONITORING</span>
+      </div>
+      <ul class="cat-items">
+        <li><span class="bullet b-red">◆</span><div><strong>Dokumenten-Arrhythmie-Erkennung</strong><br><span class="detail">Anomalien im Governance-Flow in Echtzeit erkennen</span></div></li>
+        <li><span class="bullet b-red">◆</span><div><strong>Puls-Rate des Governance-Systems</strong><br><span class="detail">Wie "gesund" ist Ihr Dokumentenfluss?</span></div></li>
+        <li><span class="bullet b-red">◆</span><div><strong>Alerting & Eskalation</strong><br><span class="detail">Automatische Benachrichtigung bei R4/R5 Events</span></div></li>
+        <li><span class="bullet b-red">◆</span><div><strong>Historische Trend-Analyse</strong><br><span class="detail">Risk-Entwicklung über Wochen, Monate, Quartale</span></div></li>
+      </ul>
+    </div>
+
+    <!-- Compliance Agent -->
+    <div class="cat-block">
+      <div class="cat-label">
+        <span class="icon">📜</span>
+        <span>COMPLIANCE AGENT</span>
+      </div>
+      <ul class="cat-items">
+        <li><span class="bullet b-red">◆</span><div><strong>EU AI Act — Vollautomatische Prüfung</strong><br><span class="detail">Artikel-Mapping, Risikokategorie, Konformitätsbewertung</span></div></li>
+        <li><span class="bullet b-red">◆</span><div><strong>DSGVO / GDPR Compliance Check</strong><br><span class="detail">Datenschutz-Analyse in jedem Dokument</span></div></li>
+        <li><span class="bullet b-red">◆</span><div><strong>BSI C5 + ISO 27001</strong><br><span class="detail">Sicherheitsstandards automatisch validiert</span></div></li>
+        <li><span class="bullet b-red">◆</span><div><strong>Audit-Ready Reports</strong><br><span class="detail">Ein Klick → Compliance-Bericht für Prüfer</span></div></li>
+      </ul>
+    </div>
+
+    <!-- Forensic Ledger -->
+    <div class="cat-block">
+      <div class="cat-label">
+        <span class="icon">🔐</span>
+        <span>FORENSIC LEDGER — MERKLE TREE</span>
+      </div>
+      <ul class="cat-items">
+        <li><span class="bullet b-red">◆</span><div><strong>Vollständiger Merkle Tree</strong><br><span class="detail">Kryptographische Beweiskette für jede Entscheidung</span></div></li>
+        <li><span class="bullet b-red">◆</span><div><strong>Virtue Receipts (Forensisch)</strong><br><span class="detail">Hash + Categories + Governance + Decision + Flags + Chain</span></div></li>
+        <li><span class="bullet b-red">◆</span><div><strong>Git-Integration</strong><br><span class="detail">Jedes PDF unveränderlich im forensischen Repository</span></div></li>
+        <li><span class="bullet b-red">◆</span><div><strong>Proof-of-Decision</strong><br><span class="detail">Kognitiver Kontext: Warum wurde so entschieden?</span></div></li>
+      </ul>
+    </div>
+
+    <!-- Enterprise Features -->
+    <div class="cat-block">
+      <div class="cat-label">
+        <span class="icon">🏛️</span>
+        <span>ENTERPRISE EXKLUSIV</span>
+      </div>
+      <ul class="cat-items">
+        <li><span class="bullet b-red">◆</span><div><strong>Multi-ISP Custom Profiles</strong><br><span class="detail">Eigene institutionelle Profile erstellen und verwalten</span></div></li>
+        <li><span class="bullet b-red">◆</span><div><strong>SSO / LDAP Integration</strong><br><span class="detail">Active Directory, SAML 2.0, OAuth 2.0</span></div></li>
+        <li><span class="bullet b-red">◆</span><div><strong>On-Premise Option</strong><br><span class="detail">Deployment auf Ihrer eigenen Infrastruktur (Hetzner DE)</span></div></li>
+        <li><span class="bullet b-red">◆</span><div><strong>Dedicated Success Manager</strong><br><span class="detail">Persönlicher Ansprechpartner, SLA-garantiert</span></div></li>
+      </ul>
+    </div>
+
+    <!-- Capacity -->
+    <div class="cat-block">
+      <div class="cat-label">
+        <span class="icon">♾️</span>
+        <span>KAPAZITÄT</span>
+      </div>
+      <ul class="cat-items">
+        <li><span class="bullet b-red">◆</span><div><strong>Unbegrenzte Benutzer</strong><br><span class="detail">Ganze Organisationen, Konzerne, Behörden</span></div></li>
+        <li><span class="bullet b-red">◆</span><div><strong>Multi-Standort / Multi-Abteilung</strong><br><span class="detail">Governance-Mesh über mehrere Einheiten</span></div></li>
+        <li><span class="bullet b-red">◆</span><div><strong>Custom API + Webhooks</strong><br><span class="detail">SAP, Salesforce, Legacy-Systeme — alles anbindbar</span></div></li>
+        <li><span class="bullet b-red">◆</span><div><strong>24/7 Premium Support</strong><br><span class="detail">Telefon + Chat + dedizierter Kanal</span></div></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="env-foot">
+    <div class="env-price">
+      <span class="amount" style="color:var(--red)">€80–120</span>
+      <span class="unit">/ Benutzer · Monat</span>
+    </div>
+    <div class="env-target">Konzerne · Behörden · Finanzinstitute</div>
+    <div class="env-users">UNLIMITED USERS</div>
+  </div>
+</div>
+
+</div><!-- /envelopes -->
+
+<!-- ═══════════════════════════════════════════════
+     COMPARISON TABLE
+     ═══════════════════════════════════════════════ -->
+<div class="compare-strip">
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th style="width:40%">FEATURE</th>
+        <th class="th-green">🟢 ONBOARD</th>
+        <th class="th-yellow">🟡 SALA VIP</th>
+        <th class="th-red">🔴 COCKPIT</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="feat-name">W-a4Desk BABEL Editor</td><td class="check">✓ Voll</td><td class="check">✓ Voll</td><td class="check">✓ Voll</td></tr>
+      <tr><td class="feat-name">SGE 6-Layer Analyse</td><td class="check">✓ Voll</td><td class="check">✓ Voll</td><td class="check">✓ Voll</td></tr>
+      <tr><td class="feat-name">9 Invarianten (I1–I9)</td><td class="check">✓ Voll</td><td class="check">✓ Voll</td><td class="check">✓ Voll</td></tr>
+      <tr><td class="feat-name">Zero-Knowledge Architektur</td><td class="check">✓ Voll</td><td class="check">✓ Voll</td><td class="check">✓ Voll</td></tr>
+      <tr><td class="feat-name">Trilingual DE/EN/PT</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td class="feat-name">Governance Receipt</td><td class="check">✓ Basic</td><td class="gold-check">★ Erweitert</td><td class="gold-check">★ Forensisch</td></tr>
+      <tr><td class="feat-name">CommitGuard</td><td class="nope">—</td><td class="gold-check">★</td><td class="gold-check">★</td></tr>
+      <tr><td class="feat-name">Controller Dashboard</td><td class="nope">—</td><td class="gold-check">★</td><td class="gold-check">★</td></tr>
+      <tr><td class="feat-name">ISP Hub (17 Profile)</td><td>1 Basis</td><td class="gold-check">★ Alle 17</td><td class="gold-check">★ + Custom</td></tr>
+      <tr><td class="feat-name">Twin Digital</td><td class="nope">—</td><td class="gold-check">★</td><td class="gold-check">★</td></tr>
+      <tr><td class="feat-name">PulseWatch Monitoring</td><td class="nope">—</td><td class="nope">—</td><td class="gold-check">★</td></tr>
+      <tr><td class="feat-name">Compliance Agent</td><td class="nope">—</td><td class="nope">—</td><td class="gold-check">★</td></tr>
+      <tr><td class="feat-name">Forensic Ledger (Merkle)</td><td class="nope">—</td><td class="nope">—</td><td class="gold-check">★</td></tr>
+      <tr><td class="feat-name">API-Zugang</td><td class="nope">—</td><td class="gold-check">★ REST</td><td class="gold-check">★ + Webhooks</td></tr>
+      <tr><td class="feat-name">SSO / On-Premise</td><td class="nope">—</td><td class="nope">—</td><td class="gold-check">★</td></tr>
+      <tr><td class="feat-name">Benutzer</td><td>3</td><td>25</td><td>♾️</td></tr>
+      <tr><td class="feat-name">Support</td><td>Community</td><td>Priority</td><td>24/7 Dedicated</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ── FOOTER ──────────────────────────────────── -->
+<footer class="page-footer">
+  Three Dragons Protocol — <span class="fg">Guardian</span> · Architect · Witness — I1-I9 ACTIVE — "AI processes. Human decides. WINDI guarantees."
+</footer>
+
+</body>
+</html>

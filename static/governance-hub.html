@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WINDI Governance Hub | 8-Agent Constellation</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <style>
+        /* ═══════════════════════════════════════════════════════════════
+           WINDI Governance Hub — Noir Theme
+           "AI processes. Human decides. WINDI guarantees."
+           ═══════════════════════════════════════════════════════════════ */
+
+        :root {
+            --noir-bg: #0a0a0a;
+            --noir-surface: #141414;
+            --noir-surface-hover: #1a1a1a;
+            --noir-border: #2a2a2a;
+            --noir-gold: #d4a847;
+            --noir-gold-dim: #a68535;
+            --noir-text: #e0e0e0;
+            --noir-text-dim: #888888;
+            --noir-success: #4ade80;
+            --noir-warning: #fbbf24;
+            --noir-danger: #f87171;
+            --noir-info: #60a5fa;
+            --noir-critical: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--noir-bg);
+            color: var(--noir-text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* ─── Header ─────────────────────────────────────── */
+        .hub-header {
+            background: linear-gradient(180deg, #141414 0%, #0a0a0a 100%);
+            border-bottom: 1px solid var(--noir-border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .hub-header-inner {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .hub-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .hub-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--noir-gold);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .hub-logo-text h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--noir-text);
+        }
+
+        .hub-logo-text span {
+            font-size: 0.75rem;
+            color: var(--noir-text-dim);
+        }
+
+        .hub-nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .hub-nav a {
+            color: var(--noir-text-dim);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .hub-nav a:hover {
+            background: var(--noir-surface);
+            color: var(--noir-text);
+        }
+
+        .hub-nav a.active {
+            background: var(--noir-gold);
+            color: #000;
+        }
+
+        /* ─── Status Bar ─────────────────────────────────── */
+        .hub-status-bar {
+            background: var(--noir-surface);
+            border-bottom: 1px solid var(--noir-border);
+            padding: 0.75rem 2rem;
+        }
+
+        .hub-status-inner {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .constellation-status {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.operational { background: var(--noir-success); }
+        .status-indicator.degraded { background: var(--noir-warning); }
+        .status-indicator.critical { background: var(--noir-danger); }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-text {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-meta {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.8rem;
+            color: var(--noir-text-dim);
+        }
+
+        .status-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* ─── Main Content ─────────────────────────────────── */
+        .hub-main {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+        }
+
+        /* ─── Module Grid ─────────────────────────────────── */
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .module-card {
+            background: var(--noir-surface);
+            border: 1px solid var(--noir-border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .module-card:hover {
+            border-color: var(--noir-gold-dim);
+            transform: translateY(-2px);
+        }
+
+        .module-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--noir-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .module-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .module-title-icon {
+            font-size: 1.25rem;
+        }
+
+        .module-title h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--noir-text);
+        }
+
+        .module-badge {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            background: var(--noir-bg);
+            color: var(--noir-text-dim);
+        }
+
+        .module-body {
+            padding: 1.25rem;
+            min-height: 200px;
+        }
+
+        /* ─── Module 1: Constellation Registry ─────────────── */
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .agent-card {
+            background: var(--noir-bg);
+            border: 1px solid var(--noir-border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .agent-card:hover {
+            border-color: var(--noir-gold-dim);
+        }
+
+        .agent-icon {
+            font-size: 1.5rem;
+        }
+
+        .agent-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .agent-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--noir-text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .agent-version {
+            font-size: 0.7rem;
+            color: var(--noir-text-dim);
+        }
+
+        .agent-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .agent-status.operational { background: var(--noir-success); }
+        .agent-status.silent { background: var(--noir-danger); }
+
+        /* ─── Module 2: Live Queue ─────────────────────────── */
+        .queue-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .queue-item {
+            background: var(--noir-bg);
+            border: 1px solid var(--noir-border);
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .queue-item-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .queue-item-id {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.8rem;
+            color: var(--noir-gold);
+        }
+
+        .queue-item-status {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .queue-item-status.open { background: var(--noir-info); color: #fff; }
+        .queue-item-status.routed { background: var(--noir-warning); color: #000; }
+        .queue-item-status.acknowledged { background: var(--noir-success); color: #000; }
+
+        .queue-empty {
+            text-align: center;
+            padding: 2rem;
+            color: var(--noir-text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* ─── Module 3: Forensic Health ─────────────────────── */
+        .forensic-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .forensic-check {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--noir-bg);
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .forensic-check-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+
+        .forensic-check-icon.pass { background: var(--noir-success); color: #000; }
+        .forensic-check-icon.fail { background: var(--noir-danger); color: #fff; }
+        .forensic-check-icon.unknown { background: var(--noir-text-dim); color: #fff; }
+
+        .forensic-summary {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: var(--noir-bg);
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .forensic-merkle {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.75rem;
+            color: var(--noir-gold);
+        }
+
+        /* ─── Module 4: Predictive Signals ─────────────────── */
+        .rhythm-display {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .rhythm-status {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .rhythm-status.normal { color: var(--noir-success); }
+        .rhythm-status.elevated { color: var(--noir-warning); }
+        .rhythm-status.critical { color: var(--noir-danger); }
+
+        .rhythm-confidence {
+            font-size: 0.8rem;
+            color: var(--noir-text-dim);
+        }
+
+        .patterns-list {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .pattern-item {
+            background: var(--noir-bg);
+            border-radius: 4px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* ─── Module 5: Reports & Seals ─────────────────────── */
+        .reports-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .report-item {
+            background: var(--noir-bg);
+            border: 1px solid var(--noir-border);
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .report-item:hover {
+            border-color: var(--noir-gold-dim);
+        }
+
+        .report-info h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--noir-text);
+        }
+
+        .report-info span {
+            font-size: 0.7rem;
+            color: var(--noir-text-dim);
+        }
+
+        .report-seal {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.7rem;
+            color: var(--noir-gold);
+            background: var(--noir-bg);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        /* ─── Module 6: State Viewer ─────────────────────────── */
+        .state-viewer {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.75rem;
+            background: var(--noir-bg);
+            border-radius: 6px;
+            padding: 1rem;
+            max-height: 250px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            color: var(--noir-text-dim);
+        }
+
+        .state-viewer .key { color: var(--noir-gold); }
+        .state-viewer .string { color: var(--noir-success); }
+        .state-viewer .number { color: var(--noir-info); }
+        .state-viewer .boolean { color: var(--noir-warning); }
+
+        /* ─── Wide Module (Full Width) ─────────────────────── */
+        .module-card.wide {
+            grid-column: span 2;
+        }
+
+        /* ─── Three Pillars Section ─────────────────────────── */
+        .three-pillars {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pillar-card {
+            background: var(--noir-surface);
+            border: 1px solid var(--noir-border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pillar-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--noir-gold);
+        }
+
+        .pillar-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .pillar-name {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--noir-gold);
+            margin-bottom: 0.25rem;
+        }
+
+        .pillar-agent {
+            font-size: 0.8rem;
+            color: var(--noir-text-dim);
+        }
+
+        /* ─── Human Action Required ─────────────────────────── */
+        .human-actions {
+            background: linear-gradient(135deg, #1a1510 0%, #0a0a0a 100%);
+            border: 1px solid var(--noir-gold-dim);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .human-actions-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .human-actions-header h3 {
+            font-size: 1rem;
+            color: var(--noir-gold);
+        }
+
+        .human-actions-count {
+            background: var(--noir-gold);
+            color: #000;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+        }
+
+        .action-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .action-item {
+            background: var(--noir-surface);
+            border: 1px solid var(--noir-border);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .action-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .action-severity {
+            width: 4px;
+            height: 40px;
+            border-radius: 2px;
+        }
+
+        .action-severity.critical { background: var(--noir-critical); }
+        .action-severity.high { background: var(--noir-warning); }
+        .action-severity.medium { background: var(--noir-info); }
+
+        .action-details h4 {
+            font-size: 0.9rem;
+            color: var(--noir-text);
+        }
+
+        .action-details span {
+            font-size: 0.75rem;
+            color: var(--noir-text-dim);
+        }
+
+        .action-button {
+            background: var(--noir-gold);
+            color: #000;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-button:hover {
+            background: #e5b958;
+        }
+
+        /* ─── Footer ─────────────────────────────────────────── */
+        .hub-footer {
+            border-top: 1px solid var(--noir-border);
+            padding: 1rem 2rem;
+            text-align: center;
+            color: var(--noir-text-dim);
+            font-size: 0.75rem;
+        }
+
+        .hub-footer a {
+            color: var(--noir-gold);
+            text-decoration: none;
+        }
+
+        /* ─── Loading Spinner ─────────────────────────────────── */
+        .loading-spinner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--noir-border);
+            border-top-color: var(--noir-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ─── Responsive ─────────────────────────────────────── */
+        @media (max-width: 1200px) {
+            .module-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .module-card.wide {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .module-grid {
+                grid-template-columns: 1fr;
+            }
+            .module-card.wide {
+                grid-column: span 1;
+            }
+            .three-pillars {
+                grid-template-columns: 1fr;
+            }
+            .hub-header-inner {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="hub-header">
+        <div class="hub-header-inner">
+            <div class="hub-logo">
+                <div class="hub-logo-icon">H</div>
+                <div class="hub-logo-text">
+                    <h1>Governance Hub</h1>
+                    <span>8-Agent Constellation Dashboard</span>
+                </div>
+            </div>
+            <nav class="hub-nav">
+                <a href="/governance">Command Center</a>
+                <a href="/governance/hub" class="active">Hub</a>
+                <a href="/api/isp/audit">ISP Audit</a>
+                <a href="/governance/tutorial">Tutorial</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Status Bar -->
+    <div class="hub-status-bar">
+        <div class="hub-status-inner">
+            <div class="constellation-status">
+                <div class="status-indicator operational" id="status-indicator"></div>
+                <span class="status-text" id="status-text">OPERATIONAL</span>
+            </div>
+            <div class="status-meta">
+                <span id="agents-count">Agents: 8/8</span>
+                <span id="constellation-hash">Hash: --------</span>
+                <span id="last-update">Last update: --:--:--</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="hub-main">
+        <!-- Three Pillars -->
+        <section class="three-pillars">
+            <div class="pillar-card">
+                <div class="pillar-icon">📋</div>
+                <div class="pillar-name">CREATION</div>
+                <div class="pillar-agent">isp-manager</div>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">🔍</div>
+                <div class="pillar-name">VERIFICATION</div>
+                <div class="pillar-agent">sentinela</div>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">🎼</div>
+                <div class="pillar-name">RESOLUTION</div>
+                <div class="pillar-agent">maestro</div>
+            </div>
+        </section>
+
+        <!-- Human Actions Required -->
+        <section class="human-actions" id="human-actions" style="display: none;">
+            <div class="human-actions-header">
+                <span>⚠️</span>
+                <h3>Human Action Required</h3>
+                <span class="human-actions-count" id="actions-count">0</span>
+            </div>
+            <div class="action-list" id="action-list">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- Module Grid -->
+        <section class="module-grid">
+            <!-- Module 1: Constellation Registry -->
+            <div class="module-card wide">
+                <div class="module-header">
+                    <div class="module-title">
+                        <span class="module-title-icon">🌟</span>
+                        <h3>Agent Constellation</h3>
+                    </div>
+                    <span class="module-badge">8 AGENTS</span>
+                </div>
+                <div class="module-body">
+                    <div class="agent-grid" id="agent-grid">
+                        <div class="loading-spinner"><div class="spinner"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Module 2: Live Queue -->
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-title">
+                        <span class="module-title-icon">📥</span>
+                        <h3>Live Queue</h3>
+                    </div>
+                    <span class="module-badge" id="queue-badge">0 ACTIVE</span>
+                </div>
+                <div class="module-body">
+                    <div class="queue-list" id="queue-list">
+                        <div class="loading-spinner"><div class="spinner"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Module 3: Forensic Health -->
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-title">
+                        <span class="module-title-icon">🐕</span>
+                        <h3>Forensic Health</h3>
+                    </div>
+                    <span class="module-badge" id="forensic-badge">CHECKING</span>
+                </div>
+                <div class="module-body">
+                    <div id="forensic-content">
+                        <div class="loading-spinner"><div class="spinner"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Module 4: Predictive Signals -->
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-title">
+                        <span class="module-title-icon">💓</span>
+                        <h3>Predictive Signals</h3>
+                    </div>
+                    <span class="module-badge" id="pulse-badge">PULSE</span>
+                </div>
+                <div class="module-body">
+                    <div id="pulse-content">
+                        <div class="loading-spinner"><div class="spinner"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Module 5: Reports & Seals -->
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-title">
+                        <span class="module-title-icon">📊</span>
+                        <h3>Reports & Seals</h3>
+                    </div>
+                    <span class="module-badge" id="reports-badge">0 SEALED</span>
+                </div>
+                <div class="module-body">
+                    <div class="reports-list" id="reports-list">
+                        <div class="loading-spinner"><div class="spinner"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Module 6: State Viewer -->
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-title">
+                        <span class="module-title-icon">👁️</span>
+                        <h3>State Viewer</h3>
+                    </div>
+                    <span class="module-badge">READ-ONLY</span>
+                </div>
+                <div class="module-body">
+                    <div class="state-viewer" id="state-viewer">
+                        Loading state...
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="hub-footer">
+        <p>WINDI Governance Hub v1.0.0 | Three Dragons Protocol | <a href="/records/">Governance Records</a></p>
+        <p style="margin-top: 0.5rem; color: var(--noir-gold);">AI processes. Human decides. WINDI guarantees.</p>
+    </footer>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // WINDI Governance Hub — Frontend Logic
+        // ═══════════════════════════════════════════════════════════════
+
+        const API_BASE = '/api/hub';
+        let hubState = null;
+        let refreshInterval = null;
+
+        // ─── Initialize ───────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHubState();
+            // Auto-refresh every 30 seconds
+            refreshInterval = setInterval(loadHubState, 30000);
+        });
+
+        // ─── Load Hub State ───────────────────────────────────────────
+        async function loadHubState() {
+            try {
+                const response = await fetch(`${API_BASE}/state`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                hubState = await response.json();
+                updateUI();
+            } catch (error) {
+                console.error('Failed to load hub state:', error);
+                showError('Failed to connect to Hub API');
+            }
+        }
+
+        // ─── Update UI ────────────────────────────────────────────────
+        function updateUI() {
+            if (!hubState) return;
+
+            // Status bar
+            updateStatusBar();
+
+            // Modules
+            updateConstellationRegistry();
+            updateLiveQueue();
+            updateForensicHealth();
+            updatePredictiveSignals();
+            updateReportsSeals();
+            updateStateViewer();
+
+            // Human actions
+            loadAlerts();
+        }
+
+        // ─── Status Bar ───────────────────────────────────────────────
+        function updateStatusBar() {
+            const indicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            const agentsCount = document.getElementById('agents-count');
+            const hashEl = document.getElementById('constellation-hash');
+            const lastUpdate = document.getElementById('last-update');
+
+            const status = hubState.constellation_status || 'UNKNOWN';
+            indicator.className = `status-indicator ${status.toLowerCase()}`;
+            statusText.textContent = status;
+
+            agentsCount.textContent = `Agents: ${hubState.agents_responding}/${hubState.agents_total}`;
+            hashEl.textContent = `Hash: ${hubState.constellation_hash || '--------'}`;
+
+            const collected = new Date(hubState.collected_utc);
+            lastUpdate.textContent = `Last update: ${collected.toLocaleTimeString()}`;
+        }
+
+        // ─── Module 1: Constellation Registry ─────────────────────────
+        function updateConstellationRegistry() {
+            const grid = document.getElementById('agent-grid');
+            const registry = hubState.modules?.constellation_registry || {};
+            const agents = registry.agents || [];
+
+            if (agents.length === 0) {
+                grid.innerHTML = '<div class="queue-empty">No agents registered</div>';
+                return;
+            }
+
+            grid.innerHTML = agents.map(agent => `
+                <div class="agent-card" onclick="viewAgent('${agent.id}')">
+                    <span class="agent-icon">${agent.icon || '🤖'}</span>
+                    <div class="agent-info">
+                        <div class="agent-name">${agent.name}</div>
+                        <div class="agent-version">v${agent.version} | ${agent.shelf}</div>
+                    </div>
+                    <div class="agent-status ${agent.status === 'OPERATIONAL' ? 'operational' : 'silent'}"></div>
+                </div>
+            `).join('');
+        }
+
+        // ─── Module 2: Live Queue ─────────────────────────────────────
+        function updateLiveQueue() {
+            const list = document.getElementById('queue-list');
+            const badge = document.getElementById('queue-badge');
+            const queue = hubState.modules?.live_queue || {};
+            const cases = queue.active_cases || [];
+
+            badge.textContent = `${cases.length} ACTIVE`;
+
+            if (cases.length === 0) {
+                list.innerHTML = '<div class="queue-empty">No active cases - All clear</div>';
+                return;
+            }
+
+            list.innerHTML = cases.map(c => `
+                <div class="queue-item">
+                    <div class="queue-item-info">
+                        <span class="queue-item-id">${c.finding_id}</span>
+                        <span class="queue-item-status ${c.status.toLowerCase()}">${c.status}</span>
+                    </div>
+                    <span style="font-size: 0.75rem; color: var(--noir-text-dim);">${c.severity || 'medium'}</span>
+                </div>
+            `).join('');
+        }
+
+        // ─── Module 3: Forensic Health ────────────────────────────────
+        function updateForensicHealth() {
+            const content = document.getElementById('forensic-content');
+            const badge = document.getElementById('forensic-badge');
+            const forensic = hubState.modules?.forensic_health || {};
+
+            badge.textContent = forensic.status || 'UNKNOWN';
+            badge.style.background = forensic.status === 'PASS' ? 'var(--noir-success)' :
+                                     forensic.status === 'FAIL' ? 'var(--noir-danger)' : 'var(--noir-text-dim)';
+            badge.style.color = '#000';
+
+            const checks = forensic.checks || {};
+            const checkNames = {
+                'hash_chain': 'Hash Chain',
+                'receipt_completeness': 'Receipt Completeness',
+                'temporal_consistency': 'Temporal Consistency',
+                'merkle_integrity': 'Merkle Integrity',
+                'cross_references': 'Cross References'
+            };
+
+            content.innerHTML = `
+                <div class="forensic-grid">
+                    ${Object.entries(checkNames).map(([key, name]) => `
+                        <div class="forensic-check">
+                            <div class="forensic-check-icon ${checks[key] ? 'pass' : 'unknown'}">
+                                ${checks[key] ? '✓' : '?'}
+                            </div>
+                            <span>${name}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="forensic-summary">
+                    <span style="font-size: 0.8rem;">Merkle Root:</span>
+                    <span class="forensic-merkle">${forensic.merkle_root_truncated || '--------'}</span>
+                </div>
+            `;
+        }
+
+        // ─── Module 4: Predictive Signals ─────────────────────────────
+        function updatePredictiveSignals() {
+            const content = document.getElementById('pulse-content');
+            const badge = document.getElementById('pulse-badge');
+            const signals = hubState.modules?.predictive_signals || {};
+
+            const rhythm = signals.rhythm_status || 'UNKNOWN';
+            badge.textContent = rhythm;
+
+            content.innerHTML = `
+                <div class="rhythm-display">
+                    <div class="rhythm-status ${rhythm.toLowerCase()}">${rhythm}</div>
+                    <div class="rhythm-confidence">Confidence: ${signals.confidence || 'LOW'}</div>
+                </div>
+                <div class="patterns-list">
+                    ${(signals.patterns_detected || []).length > 0
+                        ? signals.patterns_detected.map(p => `
+                            <div class="pattern-item">
+                                <span>${p.type || 'Pattern'}</span>
+                                <span style="color: var(--noir-text-dim);">${p.severity || ''}</span>
+                            </div>
+                        `).join('')
+                        : '<div style="text-align: center; color: var(--noir-text-dim); font-size: 0.85rem;">No patterns detected - Baseline normal</div>'
+                    }
+                </div>
+            `;
+        }
+
+        // ─── Module 5: Reports & Seals ────────────────────────────────
+        function updateReportsSeals() {
+            const list = document.getElementById('reports-list');
+            const badge = document.getElementById('reports-badge');
+            const reports = hubState.modules?.reports_seals || {};
+            const sealed = reports.sealed_reports || [];
+
+            badge.textContent = `${sealed.length} SEALED`;
+
+            if (sealed.length === 0) {
+                list.innerHTML = '<div class="queue-empty">No governance reports yet</div>';
+                return;
+            }
+
+            list.innerHTML = sealed.slice(0, 5).map(r => `
+                <div class="report-item" onclick="viewReport('${r.file_path}')">
+                    <div class="report-info">
+                        <h4>${r.cycle_id || 'Report'}</h4>
+                        <span>${r.findings_count || 0} findings | ${new Date(r.generated_utc).toLocaleDateString()}</span>
+                    </div>
+                    <span class="report-seal">${r.seal_hash_truncated || '--------'}</span>
+                </div>
+            `).join('');
+        }
+
+        // ─── Module 6: State Viewer ───────────────────────────────────
+        function updateStateViewer() {
+            const viewer = document.getElementById('state-viewer');
+            const stateView = hubState.modules?.state_viewer || {};
+
+            // Format JSON with syntax highlighting
+            const formatted = JSON.stringify(stateView, null, 2)
+                .replace(/"([^"]+)":/g, '<span class="key">"$1"</span>:')
+                .replace(/: "([^"]+)"/g, ': <span class="string">"$1"</span>')
+                .replace(/: (\d+)/g, ': <span class="number">$1</span>')
+                .replace(/: (true|false)/g, ': <span class="boolean">$1</span>');
+
+            viewer.innerHTML = formatted;
+        }
+
+        // ─── Load Alerts ──────────────────────────────────────────────
+        async function loadAlerts() {
+            try {
+                const response = await fetch(`${API_BASE}/alerts`);
+                const data = await response.json();
+                updateHumanActions(data.alerts || []);
+            } catch (error) {
+                console.error('Failed to load alerts:', error);
+            }
+        }
+
+        function updateHumanActions(alerts) {
+            const section = document.getElementById('human-actions');
+            const countEl = document.getElementById('actions-count');
+            const list = document.getElementById('action-list');
+
+            if (alerts.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            countEl.textContent = alerts.length;
+
+            list.innerHTML = alerts.slice(0, 5).map(alert => `
+                <div class="action-item">
+                    <div class="action-info">
+                        <div class="action-severity ${alert.severity}"></div>
+                        <div class="action-details">
+                            <h4>${alert.message || alert.type}</h4>
+                            <span>${alert.source} | ${alert.id || 'N/A'}</span>
+                        </div>
+                    </div>
+                    <button class="action-button" onclick="handleAction('${alert.id}', '${alert.source}')">
+                        Review
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // ─── Actions ──────────────────────────────────────────────────
+        function viewAgent(agentId) {
+            window.open(`${API_BASE}/agent/${agentId}`, '_blank');
+        }
+
+        function viewReport(filePath) {
+            // Could open a modal or navigate to report view
+            console.log('View report:', filePath);
+        }
+
+        function handleAction(alertId, source) {
+            // Navigate to appropriate action page based on source
+            switch (source) {
+                case 'sentinela':
+                    window.location.href = '/governance?finding=' + alertId;
+                    break;
+                case 'sla-sentinel':
+                    window.location.href = '/governance?sla=' + alertId;
+                    break;
+                default:
+                    window.location.href = '/governance';
+            }
+        }
+
+        function showError(message) {
+            console.error(message);
+            // Could show a toast notification
+        }
+
+        // ─── Manual Refresh ───────────────────────────────────────────
+        function forceRefresh() {
+            fetch(`${API_BASE}/collect`, { method: 'POST' })
+                .then(() => loadHubState())
+                .catch(console.error);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,439 @@
+#!/usr/bin/env python3
+"""
+A4 Desk BABEL - Universal Multilingual Edition
+WINDI Publishing House - Torre de Babel Revertida
+"""
+import os, sys, json, hashlib, re, subprocess, tempfile
+from datetime import datetime, timezone
+from flask import Flask, request, jsonify, send_file, render_template_string
+from flask_cors import CORS
+import requests
+
+sys.path.insert(0, "/opt/windi/a4desk-editor")
+sys.path.insert(0, "/opt/windi/a4desk")
+
+try:
+    from strato_bridge import get_bridge, StratoBridge
+    BRIDGE_AVAILABLE = True
+    print("✅ Strato Bridge connected")
+except ImportError:
+    BRIDGE_AVAILABLE = False
+    print("⚠️ Strato Bridge not available - local mode")
+
+app = Flask(__name__)
+CORS(app)
+
+CONFIG = {
+    "port": int(os.getenv("WINDI_BABEL_PORT", 8085)),
+    "actor": "a4desk-babel-editor",
+    "domain": "document-production",
+    "trust_bus": "http://127.0.0.1:8081",
+    "gateway": "http://127.0.0.1:8082"
+}
+
+DOCUMENTS = {}
+TRANSLATIONS = {}
+_bridge = None
+
+def load_translations():
+    global TRANSLATIONS
+    try:
+        with open('/opt/windi/a4desk-editor/translations.json', 'r', encoding='utf-8') as f:
+            TRANSLATIONS = json.load(f)
+        print(f"✅ Loaded translations")
+    except:
+        TRANSLATIONS = {
+            "en": {"lang_name": "English", "flag": "🇬🇧", "principle": "AI processes. Human decides. WINDI guarantees.", "new_doc": "+ New Document", "title": "New Document", "start": "Start writing...", "author": "Author", "date": "Date", "reviewer": "Reviewer", "save": "Save", "finalize": "Finalize", "draft": "Draft", "validated": "Validated", "governance": "WINDI Governance", "human_only": "Human only", "status": "Status", "created": "Created", "saved": "Saved", "receipt_gen": "WINDI-RECEIPT generated!", "detected": "Detected"},
+            "de": {"lang_name": "Deutsch", "flag": "🇩🇪", "principle": "KI verarbeitet. Der Mensch entscheidet. WINDI garantiert.", "new_doc": "+ Neues Dokument", "title": "Neues Dokument", "start": "Beginnen Sie zu schreiben...", "author": "Autor", "date": "Datum", "reviewer": "Prüfer", "save": "Speichern", "finalize": "Abschließen", "draft": "Entwurf", "validated": "Validiert", "governance": "WINDI Governance", "human_only": "Nur Mensch", "status": "Status", "created": "Erstellt", "saved": "Gespeichert", "receipt_gen": "WINDI-RECEIPT erstellt!", "detected": "Erkannt"},
+            "pt": {"lang_name": "Português", "flag": "🇧🇷", "principle": "IA processa. Humano decide. WINDI garante.", "new_doc": "+ Novo Documento", "title": "Novo Documento", "start": "Comece a escrever...", "author": "Autor", "date": "Data", "reviewer": "Revisor", "save": "Salvar", "finalize": "Finalizar", "draft": "Rascunho", "validated": "Validado", "governance": "Governança WINDI", "human_only": "Somente humano", "status": "Status", "created": "Criado", "saved": "Salvo", "receipt_gen": "WINDI-RECEIPT gerado!", "detected": "Detectado"}
+        }
+
+load_translations()
+
+def get_langs():
+    return {k: v for k, v in TRANSLATIONS.items() if not k.startswith('_')}
+
+def t(key, lang):
+    langs = get_langs()
+    return langs.get(lang, {}).get(key) or TRANSLATIONS.get('en', {}).get(key, key)
+
+def detect_browser_lang(accept_lang):
+    if not accept_lang: return 'en'
+    for part in accept_lang.split(','):
+        code = part.split(';')[0].strip().lower()[:2]
+        if code in get_langs(): return code
+    return 'en'
+
+def detect_text_lang(text):
+    if not text or len(text) < 10: return None
+    patterns = {
+        'de': ['ich', 'sie', 'ist', 'und', 'der', 'die', 'das', 'nicht', 'bitte'],
+        'pt': ['você', 'voce', 'não', 'nao', 'para', 'como', 'obrigado'],
+        'en': ['the', 'is', 'are', 'have', 'has', 'for', 'with', 'hello']
+    }
+    words = set(re.findall(r'\b\w+\b', text.lower()))
+    scores = {lang: sum(1 for p in pats if p in words) for lang, pats in patterns.items()}
+    best = max(scores, key=scores.get)
+    return best if scores[best] > 0 else 'en'
+
+def register_event(action, payload):
+    try:
+        r = requests.post(f"{CONFIG['trust_bus']}/events", json={
+            "actor": CONFIG["actor"], "action": action, "payload": json.dumps(payload)
+        }, timeout=5)
+        return r.json() if r.status_code == 201 else {"status": "local"}
+    except:
+        return {"status": "local"}
+
+G6_PATTERNS = {
+    'en': [("You should ", "Consider: ")],
+    'de': [("Sie sollten ", "Erwägen Sie: ")],
+    'pt': [("Você deve ", "Considere: ")]
+}
+
+def apply_g6(text, lang):
+    for old, new in G6_PATTERNS.get(lang, []):
+        text = text.replace(old, new)
+    return text
+
+def make_receipt(doc_id, content, guardrails, lang):
+    ts = datetime.now(timezone.utc)
+    h = hashlib.sha256(json.dumps(content).encode()).hexdigest()[:12]
+    return {
+        "receipt_id": f"WINDI-BABEL-{ts.strftime('%d%b%y').upper()}-{h.upper()}",
+        "document_id": doc_id, "timestamp": ts.isoformat(), "hash": h,
+        "guardrails": guardrails, "language": lang,
+        "lang_name": t("lang_name", lang), "principle": t("principle", lang),
+        "bridge_status": "connected" if BRIDGE_AVAILABLE else "local"
+    }
+
+@app.route('/api/health')
+def health():
+    return jsonify({"status": "healthy", "service": "A4 Desk BABEL", "languages": list(get_langs().keys())})
+
+@app.route('/api/languages')
+def languages():
+    return jsonify({code: {"name": data.get("lang_name", code), "flag": data.get("flag", "🌍")} for code, data in get_langs().items()})
+
+@app.route('/api/translations')
+def translations():
+    return jsonify(TRANSLATIONS)
+
+@app.route('/api/detect', methods=['POST'])
+def detect():
+    text = (request.json or {}).get("text", "")
+    lang = detect_text_lang(text) or 'en'
+    return jsonify({"language": lang, "name": t("lang_name", lang), "flag": get_langs().get(lang, {}).get("flag", "🌍")})
+
+@app.route('/api/document', methods=['POST'])
+def create_doc():
+    data = request.json or {}
+    lang = data.get("lang", detect_browser_lang(request.headers.get('Accept-Language')))
+    doc_id = f"BABEL-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    doc = {"id": doc_id, "title": t("title", lang), "content": {"text": ""}, "human_fields": {}, "status": "draft", "language": lang, "created_at": datetime.now(timezone.utc).isoformat()}
+    DOCUMENTS[doc_id] = doc
+    register_event("DOCUMENT_CREATED", {"document_id": doc_id, "language": lang})
+    return jsonify({"document": doc, "message": t("created", lang)}), 201
+
+@app.route('/api/document/<doc_id>', methods=['GET'])
+def get_doc(doc_id):
+    return jsonify(DOCUMENTS.get(doc_id)) if doc_id in DOCUMENTS else (jsonify({"error": "Not found"}), 404)
+
+@app.route('/api/document/<doc_id>', methods=['PUT'])
+def update_doc(doc_id):
+    if doc_id not in DOCUMENTS: return jsonify({"error": "Not found"}), 404
+    data = request.json
+    doc = DOCUMENTS[doc_id]
+    lang = data.get("lang", doc.get("language", "en"))
+    text = data.get("content", {}).get("text", "")
+    if not text.strip(): return jsonify({"error": "Empty content"}), 400
+    text = apply_g6(text, lang)
+    doc["content"] = {"text": text}
+    doc["human_fields"] = data.get("human_fields", {})
+    doc["language"] = lang
+    doc["updated_at"] = datetime.now(timezone.utc).isoformat()
+    register_event("DOCUMENT_UPDATED", {"document_id": doc_id, "language": lang})
+    return jsonify({"document": doc, "guardrails": ["G1","G2","G6"], "message": t("saved", lang)})
+
+@app.route('/api/document/<doc_id>/finalize', methods=['POST'])
+def finalize_doc(doc_id):
+    if doc_id not in DOCUMENTS: return jsonify({"error": "Not found"}), 404
+    doc = DOCUMENTS[doc_id]
+    lang = doc.get("language", "en")
+    if not doc.get("content", {}).get("text", "").strip(): return jsonify({"error": "Empty"}), 400
+    receipt = make_receipt(doc_id, doc["content"], ["G1","G2","G6","G7","G8"], lang)
+    doc["status"] = "finalized"
+    doc["receipt"] = receipt
+    return jsonify({"document": doc, "receipt": receipt, "message": t("receipt_gen", lang)})
+
+@app.route('/api/documents')
+def list_docs():
+    return jsonify({"documents": list(DOCUMENTS.values())})
+
+@app.route('/api/document/<doc_id>/export/<fmt>', methods=['GET'])
+def export_doc(doc_id, fmt):
+    if doc_id not in DOCUMENTS:
+        return jsonify({"error": "Not found"}), 404
+    if fmt not in ['docx', 'pdf', 'odt', 'rtf', 'html', 'md']:
+        return jsonify({"error": "Format not supported"}), 400
+    
+    doc = DOCUMENTS[doc_id]
+    lang = doc.get("language", "en")
+    text = doc.get("content", {}).get("text", "")
+    title = doc.get("title", "Document")
+    
+    html = f"<html><head><meta charset='utf-8'></head><body><h1>{title}</h1>"
+    if doc.get("receipt"):
+        r = doc["receipt"]
+        html += f"<div style='border:2px solid #1a365d;padding:10px;margin-bottom:20px;'>"
+        html += f"<b>🐉 WINDI-RECEIPT:</b> {r['receipt_id']}<br>"
+        html += f"<b>Hash:</b> {r['hash']}<br>"
+        html += f"<b>🌍 {r['lang_name']}</b><br>"
+        html += f"<em>{r['principle']}</em></div>"
+    html += f"<div>{text}</div></body></html>"
+    
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as f:
+            f.write(html)
+            infile = f.name
+        outfile = tempfile.mktemp(suffix=f'.{fmt}')
+        
+        if fmt == 'pdf':
+            subprocess.run(['wkhtmltopdf', '--encoding', 'utf-8', infile, outfile], check=True, capture_output=True)
+        else:
+            subprocess.run(['pandoc', infile, '-o', outfile], check=True, capture_output=True)
+        
+        register_event("DOCUMENT_EXPORTED", {"document_id": doc_id, "format": fmt, "language": lang})
+        return send_file(outfile, as_attachment=True, download_name=f"{title}.{fmt}")
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+EDITOR_HTML = '''<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A4 Desk BABEL - WINDI 🌍</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f7fafc;display:grid;grid-template-columns:260px 1fr 280px;min-height:100vh}
+.side{background:linear-gradient(135deg,#1a365d,#2c5282);color:#fff;padding:20px}
+.logo{font-size:1.5rem;font-weight:700;margin-bottom:5px}
+.tag{font-size:.7rem;opacity:.85;margin-bottom:12px}
+.bridge{font-size:.65rem;padding:5px 10px;border-radius:20px;margin-bottom:15px;display:inline-block;background:#38a169}
+.flags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:15px;padding:10px;background:rgba(255,255,255,.1);border-radius:8px}
+.flag{font-size:1.2rem;cursor:pointer;opacity:.5;transition:.2s;padding:3px 5px;border-radius:4px}
+.flag:hover{opacity:.8}
+.flag.active{opacity:1;background:rgba(255,255,255,.25)}
+.lang-count{font-size:.65rem;opacity:.6;margin-bottom:8px}
+.btn{width:100%;padding:12px;border:none;border-radius:6px;cursor:pointer;margin-bottom:8px;font-weight:600}
+.btn-new{background:#ed8936;color:#fff}
+.detected{font-size:.7rem;color:#ed8936;margin-top:10px;padding:10px;background:rgba(255,255,255,.1);border-radius:6px}
+.babel{font-size:.6rem;opacity:.5;margin-top:20px;text-align:center}
+.main{padding:25px}
+.title{font-size:1.6rem;border:none;background:transparent;width:100%;margin-bottom:15px;outline:none;color:#1a365d;font-weight:600}
+.editor{background:#fff;border:1px solid #e2e8f0;border-radius:8px;min-height:450px;padding:25px}
+#editor{min-height:400px;outline:none;line-height:1.8}
+#editor:empty::before{content:attr(data-placeholder);color:#a0aec0;font-style:italic}
+.panel{background:#fff;border-left:1px solid #e2e8f0;padding:20px}
+.panel h3{font-size:.95rem;color:#1a365d;border-bottom:2px solid #ed8936;padding-bottom:10px;margin-bottom:15px}
+.field{margin-bottom:15px}
+.field label{display:block;font-size:.75rem;font-weight:600;margin-bottom:5px;color:#2c5282}
+.field input{width:100%;padding:10px;border:2px solid #ed8936;border-radius:6px}
+.hint{font-size:.65rem;color:#718096}
+.status{padding:12px;border-radius:6px;margin-bottom:15px;background:#fef3c7;border-left:4px solid #d97706}
+.status.ok{background:#d1fae5;border-left-color:#38a169}
+.receipt{background:#f7fafc;padding:15px;border-radius:8px;font-family:monospace;font-size:.75rem;margin-top:12px;display:none;border:1px solid #e2e8f0}
+.btn-save{background:#1a365d;color:#fff}
+.btn-final{background:#38a169;color:#fff}
+.export-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.btn-export{flex:1;min-width:60px;padding:8px;font-size:.75rem;background:#805ad5;color:#fff;border:none;border-radius:6px;cursor:pointer}
+.llm-panel{background:#1a365d;border-top:3px solid #ed8936;padding:15px;margin-top:20px}
+.llm-title{color:#ed8936;font-size:1rem;margin-bottom:10px}
+.llm-messages{background:#0d1b2a;border-radius:8px;padding:15px;min-height:120px;max-height:200px;overflow-y:auto;margin-bottom:10px}
+.llm-msg{margin-bottom:10px;padding:8px;border-radius:6px}
+.llm-user{background:#2c5282;text-align:right;color:#fff}
+.llm-windi{background:#1a365d;border:1px solid #ed8936;color:#fff}
+.llm-input{display:flex;gap:10px}
+.llm-input input{flex:1;padding:10px;border:1px solid #ed8936;border-radius:6px;background:#0d1b2a;color:#fff}
+.llm-input button{padding:10px 20px;background:#ed8936;color:#000;border:none;border-radius:6px;cursor:pointer;font-weight:bold}
+.llm-text{white-space:pre-wrap;margin:0;font-family:inherit;background:transparent}
+.llm-receipt{font-size:.65rem;color:#718096;margin-top:5px}
+.btn-insert{margin-top:8px;padding:5px 10px;background:#38a169;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:.75rem}
+.toast{position:fixed;bottom:20px;right:20px;padding:15px 25px;border-radius:8px;color:#fff;background:#38a169;z-index:999}
+</style></head>
+<body>
+<aside class="side">
+<div class="logo">🐉 A4 Desk BABEL</div>
+<div class="tag" id="principle"></div>
+<div class="bridge">🔗 Sandbox-Core</div>
+<div class="lang-count" id="langCount"></div>
+<div class="flags" id="flags"></div>
+<button class="btn btn-new" id="btnNew" onclick="newDoc()"></button>
+<div class="detected" id="detected"></div>
+<div class="babel">🗼 Torre de Babel Revertida<br>Universal • Open • Community</div>
+</aside>
+<main class="main">
+<input class="title" id="docTitle" placeholder="">
+<div class="editor"><div id="editor" contenteditable="true" oninput="onType()" data-placeholder=""></div></div>
+<div class="llm-panel">
+<div class="llm-title">🤖 WINDI LLM</div>
+<div class="llm-messages" id="llmMessages"></div>
+<div class="llm-input">
+<input type="text" id="llmInput" placeholder="Ask WINDI LLM..." onkeypress="if(event.key==='Enter')sendLLM()">
+<button onclick="sendLLM()">Send</button>
+</div>
+</div>
+</main>
+<aside class="panel">
+<h3 id="panelTitle"></h3>
+<div class="status" id="status"><b id="lblStatus"></b> <span id="statusText"></span></div>
+<div class="field"><label id="lblAuthor"></label><input id="author"><div class="hint" id="hintHuman"></div></div>
+<div class="field"><label id="lblDate"></label><input type="date" id="date"></div>
+<div class="field"><label id="lblReviewer"></label><input id="reviewer"></div>
+<button class="btn btn-save" id="btnSave" onclick="saveDoc()"></button>
+<button class="btn btn-final" id="btnFinal" onclick="finalizeDoc()"></button>
+<div class="export-row">
+<button class="btn-export" onclick="exportDoc('odt')">📄ODT</button>
+<button class="btn-export" onclick="exportDoc('docx')">📘DOCX</button>
+<button class="btn-export" onclick="exportDoc('rtf')">📝RTF</button>
+<button class="btn-export" onclick="exportDoc('html')">🌐HTML</button>
+<button class="btn-export" onclick="exportDoc('pdf')">📕PDF</button>
+<button class="btn-export" onclick="exportDoc('md')">📋MD</button>
+</div>
+<div class="receipt" id="receipt"></div>
+</aside>
+<script>
+let TR={},lang='en',docId=null,langs={};
+async function init(){
+const[r1,r2]=await Promise.all([fetch('/api/languages'),fetch('/api/translations')]);
+langs=await r1.json();TR=await r2.json();
+renderFlags();lang=navigator.language?.slice(0,2)||'en';if(!langs[lang])lang='en';
+setLang(lang);newDoc();
+document.getElementById('langCount').textContent='🌍 '+Object.keys(langs).length+' languages';}
+function renderFlags(){
+const el=document.getElementById('flags');el.innerHTML='';
+for(const[code,data]of Object.entries(langs)){
+const span=document.createElement('span');span.className='flag';span.dataset.lang=code;
+span.textContent=data.flag;span.title=data.name;span.onclick=()=>setLang(code);
+el.appendChild(span);}}
+function setLang(l){
+lang=l;document.querySelectorAll('.flag').forEach(f=>f.classList.toggle('active',f.dataset.lang===l));
+const T=TR[l]||TR.en||{};
+document.getElementById('principle').textContent=T.principle||'';
+document.getElementById('btnNew').textContent=T.new_doc||'+ New';
+document.getElementById('lblAuthor').textContent=T.author||'Author';
+document.getElementById('lblDate').textContent=T.date||'Date';
+document.getElementById('lblReviewer').textContent=T.reviewer||'Reviewer';
+document.getElementById('btnSave').textContent='💾 '+(T.save||'Save');
+document.getElementById('btnFinal').textContent='✅ '+(T.finalize||'Finalize');
+document.getElementById('panelTitle').textContent='🛡️ '+(T.governance||'Governance');
+document.getElementById('hintHuman').textContent='🔒 '+(T.human_only||'Human only');
+document.getElementById('lblStatus').textContent=(T.status||'Status')+':';
+document.getElementById('statusText').textContent=T.draft||'Draft';
+document.getElementById('docTitle').placeholder=T.title||'Title';
+document.getElementById('editor').dataset.placeholder=T.start||'Start writing...';}
+let typeTimer;function onType(){clearTimeout(typeTimer);typeTimer=setTimeout(detectText,600);}
+async function detectText(){
+const text=document.getElementById('editor').innerText;if(text.length<10)return;
+const r=await fetch('/api/detect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
+const d=await r.json();document.getElementById('detected').innerHTML='🔍 '+(TR[lang]?.detected||'Detected')+': <b>'+d.flag+' '+d.name+'</b>';}
+async function newDoc(){
+const r=await fetch('/api/document',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lang})});
+const d=await r.json();docId=d.document.id;
+document.getElementById('docTitle').value=TR[lang]?.title||'New Document';
+document.getElementById('editor').innerHTML='';
+document.getElementById('receipt').style.display='none';
+document.getElementById('status').className='status';
+document.getElementById('statusText').textContent=TR[lang]?.draft||'Draft';
+document.getElementById('detected').innerHTML='';
+toast(TR[lang]?.created||'Created');}
+async function saveDoc(){
+if(!docId)return;
+const content={text:document.getElementById('editor').innerText};
+const hf={author:document.getElementById('author').value,date:document.getElementById('date').value,reviewer:document.getElementById('reviewer').value};
+const r=await fetch('/api/document/'+docId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({content,human_fields:hf,lang})});
+if(r.ok){document.getElementById('status').className='status ok';document.getElementById('statusText').textContent=(TR[lang]?.validated||'Validated')+' ✓';toast(TR[lang]?.saved||'Saved!');}
+else{const e=await r.json();toast('⚠️ '+e.error);}}
+async function finalizeDoc(){
+if(!docId)return;await saveDoc();
+const r=await fetch('/api/document/'+docId+'/finalize',{method:'POST'});
+if(r.ok){const d=await r.json();
+document.getElementById('receipt').style.display='block';
+document.getElementById('receipt').innerHTML='<b>'+d.receipt.receipt_id+'</b><br>Hash: '+d.receipt.hash+'<br>🌍 '+d.receipt.lang_name+'<br><em>'+d.receipt.principle+'</em>';
+toast(TR[lang]?.receipt_gen||'Receipt generated!');}
+else{const e=await r.json();toast('⚠️ '+e.error);}}
+function exportDoc(fmt){if(docId)window.location.href='/api/document/'+docId+'/export/'+fmt;}
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);}
+async function sendLLM(){
+const input=document.getElementById('llmInput');
+const msg=input.value.trim();
+if(!msg)return;
+const editorText=document.getElementById('editor').innerText;
+const box=document.getElementById('llmMessages');
+box.innerHTML+='<div class="llm-msg llm-user">'+msg+'</div>';
+input.value='';
+box.innerHTML+='<div class="llm-msg llm-windi">⏳ Thinking...</div>';
+box.scrollTop=box.scrollHeight;
+try{
+const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,context:editorText,dragon:'claude'})});
+const d=await r.json();
+box.lastChild.remove();
+if(d.response){
+const respId='resp-'+Date.now();
+box.innerHTML+='<div class="llm-msg llm-windi" id="'+respId+'"><pre class="llm-text">'+d.response+'</pre><div class="llm-receipt">'+d.receipt+'</div><button class="btn-insert" onclick="insertToEditor(\''+respId+'\')">📝 Insert</button></div>';
+}else{
+box.innerHTML+='<div class="llm-msg llm-windi">⚠️ '+d.error+'</div>';
+}
+}catch(e){box.lastChild.innerHTML='⚠️ Error: '+e;}
+box.scrollTop=box.scrollHeight;}
+function insertToEditor(respId){
+const resp=document.getElementById(respId);
+if(!resp)return;
+const text=resp.innerText.replace(/📝 Insert$/,'').replace(/WINDI-.*$/,'').trim();
+const editor=document.getElementById('editor');
+editor.innerHTML+='<br><br>'+text;
+toast('✅ Inserted!');}
+init();
+</script>
+</body></html>'''
+
+# ═══════════════════════════════════════════════════════════════════
+# WINDI LLM CHAT - Gateway Connection
+# ═══════════════════════════════════════════════════════════════════
+
+@app.route('/api/chat', methods=['POST'])
+def api_chat():
+    data = request.json or {}
+    message = data.get('message', '')
+    dragon = data.get('dragon', 'claude')
+    if not message:
+        return jsonify({"error": "No message"}), 400
+    try:
+        r = requests.post(f"{CONFIG['gateway']}/api/chat",
+            json={"message": message, "dragon": dragon}, timeout=30)
+        return jsonify(r.json())
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/dragons')
+def api_dragons():
+    try:
+        r = requests.get(f"{CONFIG['gateway']}/api/dragons", timeout=5)
+        return jsonify(r.json())
+    except:
+        return jsonify({"dragons": {}})
+
+
+@app.route('/')
+def index():
+    return render_template_string(EDITOR_HTML)
+
+if __name__ == '__main__':
+    print("""
+    ╔═══════════════════════════════════════════════════════════════════╗
+    ║   🐉 A4 Desk BABEL - Universal Multilingual Edition 🌍            ║
+    ║   "Torre de Babel Revertida"                                      ║
+    ╠═══════════════════════════════════════════════════════════════════╣
+    ║   🌐 http://0.0.0.0:8085                                          ║
+    ╚═══════════════════════════════════════════════════════════════════╝
+    """)
+    app.run(host='0.0.0.0', port=CONFIG["port"], debug=True)

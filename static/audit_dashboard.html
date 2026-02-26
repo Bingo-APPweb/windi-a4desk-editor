@@ -1,0 +1,1243 @@
+<!--
+  WINDI ISP Agent — Audit Dashboard
+  ===================================
+  Noir/Klar theme toggle | Trilingual EN/DE/PT
+  Integrates into Command Center /governance/
+  Fetches live data from: /api/gov/agents/isp-manager/*
+  
+  Version: 1.1.0 | 08 Feb 2026
+  Design System: Bricolage Grotesque + Outfit + JetBrains Mono
+  Principle: AI processes. Human decides. WINDI guarantees.
+-->
+<!DOCTYPE html>
+<html lang="en" data-theme="noir" data-lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WINDI — ISP Agent Audit</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ════════════════════════════════════════════════════════
+     WINDI DESIGN SYSTEM — DUAL THEME
+     ════════════════════════════════════════════════════════ */
+
+  /* ─── NOIR Theme (default) ─────────────────────────── */
+  [data-theme="noir"] {
+    --bg: #0a0a0a;
+    --bg-elevated: #111111;
+    --surface: #141414;
+    --card: #1a1a1a;
+    --card-hover: #1f1f1f;
+    --border: #2a2a2a;
+    --border-hover: #3a3a3a;
+    --border-subtle: #1e1e1e;
+    --text: #e8e8e8;
+    --text-secondary: #b0b0b0;
+    --text-muted: #888;
+    --text-dim: #555;
+    --gold: #c9a84c;
+    --gold-bright: #e0c068;
+    --gold-dim: #8a7535;
+    --gold-bg: rgba(201, 168, 76, 0.04);
+    --gold-border: rgba(201, 168, 76, 0.15);
+    --overlay: rgba(0, 0, 0, 0.75);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.6);
+    --gradient-hero: linear-gradient(135deg, #141414 0%, #1a1a1a 50%, #141414 100%);
+    --gradient-gold: linear-gradient(90deg, var(--gold), var(--gold-dim), transparent);
+    --scrollbar-track: #0a0a0a;
+    --scrollbar-thumb: #333;
+  }
+
+  /* ─── KLAR Theme (light) ───────────────────────────── */
+  [data-theme="klar"] {
+    --bg: #f5f3ef;
+    --bg-elevated: #ffffff;
+    --surface: #ffffff;
+    --card: #fafaf8;
+    --card-hover: #f0eeea;
+    --border: #e0ddd6;
+    --border-hover: #ccc8be;
+    --border-subtle: #eae7e0;
+    --text: #1a1816;
+    --text-secondary: #4a4640;
+    --text-muted: #7a756d;
+    --text-dim: #a09a90;
+    --gold: #9a7b2e;
+    --gold-bright: #b8922e;
+    --gold-dim: #7a6225;
+    --gold-bg: rgba(154, 123, 46, 0.04);
+    --gold-border: rgba(154, 123, 46, 0.18);
+    --overlay: rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+    --gradient-hero: linear-gradient(135deg, #ffffff 0%, #fafaf8 50%, #ffffff 100%);
+    --gradient-gold: linear-gradient(90deg, var(--gold), var(--gold-dim), transparent);
+    --scrollbar-track: #f0eeea;
+    --scrollbar-thumb: #ccc8be;
+  }
+
+  /* ─── Shared Semantic Colors ───────────────────────── */
+  :root {
+    --grade-a: #22c55e;
+    --grade-b: #3b82f6;
+    --grade-c: #eab308;
+    --grade-d: #f97316;
+    --grade-f: #ef4444;
+    --high: #ef4444;
+    --high-bg: rgba(239, 68, 68, 0.07);
+    --high-border: rgba(239, 68, 68, 0.2);
+    --medium: #f59e0b;
+    --medium-bg: rgba(245, 158, 11, 0.07);
+    --medium-border: rgba(245, 158, 11, 0.2);
+    --low: #22c55e;
+    --low-bg: rgba(34, 197, 94, 0.07);
+    --low-border: rgba(34, 197, 94, 0.2);
+    --font-display: 'Bricolage Grotesque', sans-serif;
+    --font-body: 'Outfit', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  /* ─── Reset & Base ─────────────────────────────────── */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-weight: 400;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background 0.35s ease, color 0.35s ease;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+  ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+
+  /* ════════════════════════════════════════════════════════
+     TOP BAR — Theme + Language Controls
+     ════════════════════════════════════════════════════════ */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 24px;
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: background 0.35s ease, border-color 0.35s ease;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .topbar-logo {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--gold);
+    letter-spacing: -0.01em;
+  }
+
+  .topbar-sep {
+    width: 1px;
+    height: 18px;
+    background: var(--border);
+  }
+
+  .topbar-subtitle {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ─── Toggle Pill (Theme & Language) ───────────────── */
+  .toggle-group {
+    display: inline-flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .toggle-btn {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 500;
+    padding: 5px 10px;
+    background: transparent;
+    color: var(--text-dim);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.02em;
+  }
+
+  .toggle-btn:hover {
+    color: var(--text-muted);
+    background: var(--card);
+  }
+
+  .toggle-btn.active {
+    background: var(--gold);
+    color: #0a0a0a;
+    font-weight: 600;
+  }
+
+  [data-theme="klar"] .toggle-btn.active {
+    color: #fff;
+  }
+
+  /* ════════════════════════════════════════════════════════
+     LAYOUT
+     ════════════════════════════════════════════════════════ */
+  .audit-container {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 28px 24px 48px;
+  }
+
+  /* ─── I9 Banner ────────────────────────────────────── */
+  .i9-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 20px;
+    background: var(--gold-bg);
+    border: 1px solid var(--gold-border);
+    border-radius: 8px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+    line-height: 1.5;
+    transition: all 0.35s ease;
+  }
+
+  .i9-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+  .i9-banner strong { color: var(--gold); font-weight: 600; }
+
+  /* ─── Header ───────────────────────────────────────── */
+  .audit-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    transition: border-color 0.35s ease;
+  }
+
+  .audit-header h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--gold);
+    letter-spacing: -0.02em;
+  }
+
+  .audit-header .version-tag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    font-weight: 400;
+    margin-left: 10px;
+    padding: 2px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    vertical-align: middle;
+  }
+
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* ─── Buttons ──────────────────────────────────────── */
+  .btn {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn:hover { border-color: var(--gold-dim); background: var(--card); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .btn-primary {
+    background: var(--gold);
+    color: #0a0a0a;
+    border-color: var(--gold);
+    font-weight: 600;
+  }
+  .btn-primary:hover { background: var(--gold-bright); border-color: var(--gold-bright); }
+  [data-theme="klar"] .btn-primary { color: #fff; }
+
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ════════════════════════════════════════════════════════
+     GRADE HERO
+     ════════════════════════════════════════════════════════ */
+  .grade-hero {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 28px;
+    margin-bottom: 28px;
+    padding: 24px 28px;
+    background: var(--gradient-hero);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.35s ease;
+  }
+
+  .grade-hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--gradient-gold);
+  }
+
+  .grade-circle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .grade-ring {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    border: 3px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: border-color 0.4s ease;
+  }
+
+  .grade-ring.active { border-color: var(--grade-color, var(--border)); }
+
+  .grade-letter {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 3.5rem;
+    line-height: 1;
+    transition: color 0.4s ease;
+  }
+
+  .grade-score {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .grade-label {
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-top: 10px;
+  }
+
+  .grade-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    align-content: center;
+  }
+
+  .stat-box {
+    text-align: center;
+    padding: 16px 10px;
+    background: var(--card);
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle);
+    transition: all 0.35s ease;
+  }
+
+  .stat-box:hover { border-color: var(--border-hover); }
+
+  .stat-number {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.7rem;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 6px;
+  }
+
+  /* ════════════════════════════════════════════════════════
+     PROFILE GRID
+     ════════════════════════════════════════════════════════ */
+  .section-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.35s ease;
+  }
+
+  .section-title .count {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    background: var(--card);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-subtle);
+  }
+
+  .level-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .level-column {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.35s ease;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .level-header {
+    padding: 11px 16px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.35s ease;
+  }
+
+  .level-header .dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+
+  .level-header.high { color: var(--high); background: var(--high-bg); }
+  .level-header.high .dot { background: var(--high); }
+  .level-header.medium { color: var(--medium); background: var(--medium-bg); }
+  .level-header.medium .dot { background: var(--medium); }
+  .level-header.low { color: var(--low); background: var(--low-bg); }
+  .level-header.low .dot { background: var(--low); }
+
+  .level-badge {
+    font-size: 0.68rem;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: rgba(128,128,128,0.1);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .profile-list { padding: 6px; }
+
+  .profile-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    border-radius: 6px;
+    font-size: 0.84rem;
+    transition: background 0.15s ease;
+    cursor: pointer;
+  }
+
+  .profile-item:hover { background: var(--card-hover); }
+
+  .profile-name { font-weight: 500; color: var(--text); transition: color 0.35s ease; }
+
+  .profile-meta {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .profile-meta .license-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .license-ok { background: var(--low); }
+  .license-missing { background: var(--medium); }
+
+  /* ════════════════════════════════════════════════════════
+     ALERTS
+     ════════════════════════════════════════════════════════ */
+  .alerts-section { margin-bottom: 28px; }
+
+  .alert-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .alert-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.84rem;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .alert-item:hover { border-color: var(--border-hover); }
+
+  .alert-code {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .alert-code.warning { color: var(--medium); background: var(--medium-bg); border: 1px solid var(--medium-border); }
+  .alert-code.violation { color: var(--high); background: var(--high-bg); border: 1px solid var(--high-border); }
+
+  .alert-text { color: var(--text-secondary); flex: 1; }
+
+  .alert-count-badge {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  .empty-alerts {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-dim);
+    font-size: 0.84rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  /* ════════════════════════════════════════════════════════
+     RECEIPT
+     ════════════════════════════════════════════════════════ */
+  .receipt-section { margin-bottom: 28px; }
+
+  .receipt-card {
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.35s ease;
+  }
+
+  .receipt-card::after {
+    content: 'FORENSIC';
+    position: absolute;
+    top: 14px; right: 18px;
+    font-size: 0.58rem;
+    letter-spacing: 0.15em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+  }
+
+  .receipt-row {
+    display: flex;
+    gap: 16px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .receipt-row:last-child { border-bottom: none; }
+  .receipt-key { color: var(--text-dim); min-width: 130px; flex-shrink: 0; }
+  .receipt-value { color: var(--gold); word-break: break-all; }
+
+  /* ════════════════════════════════════════════════════════
+     MODAL
+     ════════════════════════════════════════════════════════ */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--overlay);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    width: 92%;
+    max-width: 540px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.35s ease;
+  }
+
+  .modal h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--gold);
+    margin-bottom: 16px;
+    font-size: 1.05rem;
+  }
+
+  .modal pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 380px;
+    overflow-y: auto;
+  }
+
+  .modal .close-btn { margin-top: 16px; width: 100%; justify-content: center; }
+
+  /* ════════════════════════════════════════════════════════
+     TIMESTAMP FOOTER
+     ════════════════════════════════════════════════════════ */
+  .timestamp-footer {
+    text-align: center;
+    padding: 20px;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border-subtle);
+    margin-top: 16px;
+    transition: all 0.35s ease;
+  }
+
+  .timestamp-footer .principle {
+    color: var(--gold-dim);
+    font-style: italic;
+    margin-top: 4px;
+  }
+
+  /* ════════════════════════════════════════════════════════
+     RESPONSIVE
+     ════════════════════════════════════════════════════════ */
+  @media (max-width: 900px) {
+    .grade-hero { grid-template-columns: 1fr; text-align: center; }
+    .grade-stats { grid-template-columns: repeat(2, 1fr); }
+    .level-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 600px) {
+    .audit-header { flex-direction: column; gap: 14px; align-items: flex-start; }
+    .topbar { flex-direction: column; gap: 8px; padding: 8px 16px; }
+    .topbar-right { flex-wrap: wrap; justify-content: center; }
+    .audit-container { padding: 20px 16px 40px; }
+    .grade-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════ TOP BAR ════════════ -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-logo">🐉 WINDI</span>
+    <span class="topbar-sep"></span>
+    <span class="topbar-subtitle" data-i18n="topbar_subtitle">ISP Agent Audit Dashboard</span>
+  </div>
+  <div class="topbar-right">
+    <!-- Navigation Links -->
+    <div class="toggle-group" style="gap: 4px;">
+      <a href="/governance/hub" class="toggle-btn" style="text-decoration:none;background:rgba(58,138,212,0.15);border-color:#3a8ad4;">Hub</a>
+      <a href="/governance" class="toggle-btn" style="text-decoration:none;background:rgba(201,168,76,0.15);border-color:#c9a84c;">Dashboard</a>
+    </div>
+    <!-- Theme Toggle -->
+    <div class="toggle-group">
+      <button class="toggle-btn active" onclick="setTheme('noir')" id="btnNoir">NOIR</button>
+      <button class="toggle-btn" onclick="setTheme('klar')" id="btnKlar">KLAR</button>
+    </div>
+    <!-- Language Toggle -->
+    <div class="toggle-group">
+      <button class="toggle-btn active" onclick="setLang('en')" id="btnEN">EN</button>
+      <button class="toggle-btn" onclick="setLang('de')" id="btnDE">DE</button>
+      <button class="toggle-btn" onclick="setLang('pt')" id="btnPT">PT</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ MAIN CONTENT ════════════ -->
+<div class="audit-container">
+
+  <!-- I9 Banner -->
+  <div class="i9-banner">
+    <span class="i9-icon">🛡️</span>
+    <span data-i18n="i9_banner"><strong>Invariante I9</strong> — Audit is read-only. The agent NEVER modifies profiles. Human decides.</span>
+  </div>
+
+  <!-- Header -->
+  <div class="audit-header">
+    <h1>
+      <span data-i18n="header_title">ISP Agent Audit</span>
+      <span class="version-tag" id="agentVersion">v1.0.1</span>
+    </h1>
+    <div class="header-actions">
+      <button class="btn" onclick="loadAll()" id="btnRefresh">
+        ↻ <span data-i18n="btn_refresh">Refresh</span>
+      </button>
+      <button class="btn btn-primary" onclick="runAudit()" id="btnAudit">
+        <span data-i18n="btn_audit">Run Audit</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Grade Hero -->
+  <div class="grade-hero">
+    <div class="grade-circle">
+      <div class="grade-ring" id="gradeRing">
+        <div class="grade-letter" id="gradeLetter" style="color: var(--text-dim);">—</div>
+        <div class="grade-score" id="gradeScore">—/100</div>
+      </div>
+      <div class="grade-label" data-i18n="grade_label">Ecosystem Grade</div>
+    </div>
+    <div class="grade-stats">
+      <div class="stat-box">
+        <div class="stat-number" id="statProfiles">17</div>
+        <div class="stat-label" data-i18n="stat_profiles">Profiles</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" id="statTemplates">199</div>
+        <div class="stat-label">Templates</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" style="color: var(--grade-a);" id="statViolations">0</div>
+        <div class="stat-label" data-i18n="stat_violations">Violations</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" style="color: var(--medium);" id="statWarnings">8</div>
+        <div class="stat-label" data-i18n="stat_warnings">Warnings</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Grid -->
+  <div class="profiles-section">
+    <div class="section-title">
+      <span data-i18n="section_profiles">Profile Distribution</span>
+      <span class="count" id="profileCount">17 profiles</span>
+    </div>
+    <div class="level-grid">
+      <div class="level-column">
+        <div class="level-header high">
+          <span><span class="dot"></span>HIGH</span>
+          <span class="level-badge" id="highCount">3</span>
+        </div>
+        <div class="profile-list" id="highProfiles"></div>
+      </div>
+      <div class="level-column">
+        <div class="level-header medium">
+          <span><span class="dot"></span>MEDIUM</span>
+          <span class="level-badge" id="mediumCount">5</span>
+        </div>
+        <div class="profile-list" id="mediumProfiles"></div>
+      </div>
+      <div class="level-column">
+        <div class="level-header low">
+          <span><span class="dot"></span>LOW</span>
+          <span class="level-badge" id="lowCount">9</span>
+        </div>
+        <div class="profile-list" id="lowProfiles"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div class="alerts-section">
+    <div class="section-title">
+      <span data-i18n="section_alerts">Active Alerts</span>
+      <span class="count" id="alertCount">8</span>
+    </div>
+    <div class="alert-list" id="alertList"></div>
+  </div>
+
+  <!-- Receipt -->
+  <div class="receipt-section">
+    <div class="section-title" data-i18n="section_receipt">Latest Forensic Receipt</div>
+    <div class="receipt-card">
+      <div class="receipt-row">
+        <span class="receipt-key">Receipt ID</span>
+        <span class="receipt-value" id="receiptId">WINDI-AGENT-ISP-08FEB26-090650-a29aa19a</span>
+      </div>
+      <div class="receipt-row">
+        <span class="receipt-key">Timestamp</span>
+        <span class="receipt-value" id="receiptTime">2026-02-08T09:06:50Z</span>
+      </div>
+      <div class="receipt-row">
+        <span class="receipt-key">Grade</span>
+        <span class="receipt-value" id="receiptGrade">C (84)</span>
+      </div>
+      <div class="receipt-row">
+        <span class="receipt-key" data-i18n="receipt_profiles">Profiles</span>
+        <span class="receipt-value" id="receiptProfiles">17</span>
+      </div>
+      <div class="receipt-row">
+        <span class="receipt-key">Auto Apply</span>
+        <span class="receipt-value" style="color: var(--grade-a);">FALSE (I9 ENFORCED)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timestamp Footer -->
+  <div class="timestamp-footer">
+    <div data-i18n="footer_scan">Last scan: <span id="footerTime">2026-02-08T09:06:50Z</span></div>
+    <div class="principle">"AI processes. Human decides. WINDI guarantees."</div>
+  </div>
+
+</div>
+
+<!-- ════════════ VALIDATE MODAL ════════════ -->
+<div class="modal-overlay" id="validateModal">
+  <div class="modal">
+    <h3><span data-i18n="modal_validate">Validate Profile</span>: <span id="modalProfileId"></span></h3>
+    <pre id="modalOutput">Loading...</pre>
+    <button class="btn close-btn" onclick="closeModal()"><span data-i18n="btn_close">Close</span></button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// TRILINGUAL DICTIONARY
+// ══════════════════════════════════════════════════════════════
+const i18n = {
+  en: {
+    topbar_subtitle: "ISP Agent Audit Dashboard",
+    i9_banner: '<strong>Invariante I9</strong> — Audit is read-only. The agent NEVER modifies profiles. Human decides.',
+    header_title: "ISP Agent Audit",
+    btn_refresh: "Refresh",
+    btn_audit: "Run Audit",
+    grade_label: "Ecosystem Grade",
+    stat_profiles: "Profiles",
+    stat_violations: "Violations",
+    stat_warnings: "Warnings",
+    section_profiles: "Profile Distribution",
+    section_alerts: "Active Alerts",
+    section_receipt: "Latest Forensic Receipt",
+    receipt_profiles: "Profiles",
+    footer_scan: "Last scan",
+    modal_validate: "Validate Profile",
+    btn_close: "Close",
+    alert_empty: "✓ No active alerts",
+    running_audit: "Running Audit...",
+    loading: "Loading...",
+    click_validate: "Click to validate"
+  },
+  de: {
+    topbar_subtitle: "ISP-Agent Audit-Dashboard",
+    i9_banner: '<strong>Invariante I9</strong> — Audit ist schreibgeschützt. Der Agent ändert NIEMALS Profile. Der Mensch entscheidet.',
+    header_title: "ISP-Agent Audit",
+    btn_refresh: "Aktualisieren",
+    btn_audit: "Audit starten",
+    grade_label: "Ökosystem-Note",
+    stat_profiles: "Profile",
+    stat_violations: "Verstöße",
+    stat_warnings: "Warnungen",
+    section_profiles: "Profilverteilung",
+    section_alerts: "Aktive Warnmeldungen",
+    section_receipt: "Letzter Forensischer Beleg",
+    receipt_profiles: "Profile",
+    footer_scan: "Letzter Scan",
+    modal_validate: "Profil validieren",
+    btn_close: "Schließen",
+    alert_empty: "✓ Keine aktiven Warnmeldungen",
+    running_audit: "Audit läuft...",
+    loading: "Laden...",
+    click_validate: "Klicken zum Validieren"
+  },
+  pt: {
+    topbar_subtitle: "Painel de Auditoria do Agente ISP",
+    i9_banner: '<strong>Invariante I9</strong> — Auditoria é somente leitura. O agente NUNCA modifica perfis. Humano decide.',
+    header_title: "Auditoria do Agente ISP",
+    btn_refresh: "Atualizar",
+    btn_audit: "Rodar Auditoria",
+    grade_label: "Nota do Ecossistema",
+    stat_profiles: "Perfis",
+    stat_violations: "Violações",
+    stat_warnings: "Avisos",
+    section_profiles: "Distribuição de Perfis",
+    section_alerts: "Alertas Ativos",
+    section_receipt: "Último Recibo Forense",
+    receipt_profiles: "Perfis",
+    footer_scan: "Último scan",
+    modal_validate: "Validar Perfil",
+    btn_close: "Fechar",
+    alert_empty: "✓ Nenhum alerta ativo",
+    running_audit: "Executando Auditoria...",
+    loading: "Carregando...",
+    click_validate: "Clique para validar"
+  }
+};
+
+let currentLang = 'en';
+
+// ══════════════════════════════════════════════════════════════
+// THEME SWITCHING
+// ══════════════════════════════════════════════════════════════
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('btnNoir').classList.toggle('active', theme === 'noir');
+  document.getElementById('btnKlar').classList.toggle('active', theme === 'klar');
+  localStorage.setItem('windi-theme', theme);
+}
+
+// ══════════════════════════════════════════════════════════════
+// LANGUAGE SWITCHING
+// ══════════════════════════════════════════════════════════════
+function setLang(lang) {
+  currentLang = lang;
+  document.documentElement.setAttribute('data-lang', lang);
+  document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+  document.getElementById('btnDE').classList.toggle('active', lang === 'de');
+  document.getElementById('btnPT').classList.toggle('active', lang === 'pt');
+  localStorage.setItem('windi-lang', lang);
+
+  // Update all i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (i18n[lang] && i18n[lang][key]) {
+      el.innerHTML = i18n[lang][key];
+    }
+  });
+
+  // Re-render dynamic content that has translations
+  renderAlerts(lastAlerts);
+}
+
+function t(key) {
+  return (i18n[currentLang] && i18n[currentLang][key]) || i18n.en[key] || key;
+}
+
+// ══════════════════════════════════════════════════════════════
+// PROFILE DATA (from last audit — 08 Feb 2026)
+// ══════════════════════════════════════════════════════════════
+const PROFILES = {
+  HIGH: [
+    { id: 'bafin',          name: 'BaFin',      templates: 15, keywords: '123k', license: false },
+    { id: 'bis-regulatory', name: 'BIS',         templates: 15, keywords: '86k',  license: false },
+    { id: 'ecb',            name: 'ECB',         templates: 15, keywords: '109k', license: false }
+  ],
+  MEDIUM: [
+    { id: 'aok',              name: 'AOK',        templates: 12, keywords: '96k',  license: false },
+    { id: 'bundesagentur',    name: 'BA',         templates: 15, keywords: '108k', license: false },
+    { id: 'bundesregierung',  name: 'BReg',       templates: 15, keywords: '92k',  license: false },
+    { id: 'bayern',           name: 'Bayern',     templates: 10, keywords: '61k',  license: false },
+    { id: 'sparkasse',        name: 'Sparkasse',  templates: 12, keywords: '101k', license: false }
+  ],
+  LOW: [
+    { id: 'adac',           name: 'ADAC',       templates: 8,  keywords: '49k',  license: true },
+    { id: 'deutsche-bahn',  name: 'DB',          templates: 12, keywords: '94k',  license: true },
+    { id: 'dhl',            name: 'DHL',         templates: 8,  keywords: '49k',  license: true },
+    { id: 'hwk',            name: 'HWK',         templates: 10, keywords: '35k',  license: true },
+    { id: 'ihk',            name: 'IHK',         templates: 8,  keywords: '23k',  license: true },
+    { id: 'siemens',        name: 'Siemens',     templates: 12, keywords: '70k',  license: true },
+    { id: 'kempten',        name: 'Kempten',     templates: 10, keywords: '61k',  license: true },
+    { id: 'stadtwerke',     name: 'Stadtwerke',  templates: 10, keywords: '71k',  license: true },
+    { id: 'tuev',           name: 'TÜV',         templates: 12, keywords: '67k',  license: true }
+  ]
+};
+
+const KNOWN_ALERTS = [
+  { code: 'ISP-W003', type: 'warning', count: 8, text: 'Missing identity_license (HIGH/MEDIUM profiles)' },
+];
+
+let lastAlerts = KNOWN_ALERTS;
+
+// ══════════════════════════════════════════════════════════════
+// GRADE COLORS
+// ══════════════════════════════════════════════════════════════
+function gradeColor(g) {
+  return { A:'var(--grade-a)', B:'var(--grade-b)', C:'var(--grade-c)', D:'var(--grade-d)', F:'var(--grade-f)' }[g] || 'var(--text-dim)';
+}
+
+function setGrade(letter, score) {
+  const el = document.getElementById('gradeLetter');
+  const ring = document.getElementById('gradeRing');
+  el.textContent = letter;
+  el.style.color = gradeColor(letter);
+  ring.style.borderColor = gradeColor(letter);
+  ring.classList.add('active');
+  document.getElementById('gradeScore').textContent = `${score}/100`;
+  document.getElementById('receiptGrade').textContent = `${letter} (${score})`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER PROFILES
+// ══════════════════════════════════════════════════════════════
+function renderProfiles(containerId, profiles) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = profiles.map(p => `
+    <div class="profile-item" onclick="validateProfile('${p.id}')" title="${t('click_validate')} ${p.name}">
+      <span class="profile-name">${p.name}</span>
+      <span class="profile-meta">
+        <span class="license-dot ${p.license ? 'license-ok' : 'license-missing'}"
+              title="${p.license ? 'identity_license ✓' : 'identity_license missing'}"></span>
+        ${p.templates}t · ${p.keywords}
+      </span>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER ALERTS
+// ══════════════════════════════════════════════════════════════
+function renderAlerts(alerts) {
+  lastAlerts = alerts;
+  const el = document.getElementById('alertList');
+
+  if (!alerts || alerts.length === 0) {
+    el.innerHTML = `<div class="empty-alerts">${t('alert_empty')}</div>`;
+    document.getElementById('alertCount').textContent = '0';
+    return;
+  }
+
+  document.getElementById('alertCount').textContent = alerts.length;
+  el.innerHTML = alerts.map(a => `
+    <div class="alert-item">
+      <span class="alert-code ${a.type}">${a.code}</span>
+      <span class="alert-text">${esc(a.text)}</span>
+      ${a.count > 1 ? `<span class="alert-count-badge">×${a.count}</span>` : ''}
+    </div>
+  `).join('');
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ══════════════════════════════════════════════════════════════
+// API CALLS
+// ══════════════════════════════════════════════════════════════
+const API_BASE = window.location.port === '8085'
+  ? '/api/gov/agents'
+  : (window.location.port === '8080'
+    ? '/api/agents'
+    : '/api/gov/agents');
+
+async function apiFetch(endpoint, opts = {}) {
+  try {
+    const resp = await fetch(`${API_BASE}${endpoint}`, {
+      headers: { 'Content-Type': 'application/json' },
+      ...opts
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return await resp.json();
+  } catch (err) {
+    console.warn(`API [${endpoint}]:`, err.message);
+    return null;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// LOAD ALL DATA
+// ══════════════════════════════════════════════════════════════
+async function loadAll() {
+  const btn = document.getElementById('btnRefresh');
+  btn.disabled = true;
+
+  // Render known profiles immediately
+  renderProfiles('highProfiles', PROFILES.HIGH);
+  renderProfiles('mediumProfiles', PROFILES.MEDIUM);
+  renderProfiles('lowProfiles', PROFILES.LOW);
+
+  document.getElementById('highCount').textContent = PROFILES.HIGH.length;
+  document.getElementById('mediumCount').textContent = PROFILES.MEDIUM.length;
+  document.getElementById('lowCount').textContent = PROFILES.LOW.length;
+
+  const total = PROFILES.HIGH.length + PROFILES.MEDIUM.length + PROFILES.LOW.length;
+  document.getElementById('profileCount').textContent = `${total} ${t('stat_profiles').toLowerCase()}`;
+  document.getElementById('statProfiles').textContent = total;
+
+  const totalT = [...PROFILES.HIGH, ...PROFILES.MEDIUM, ...PROFILES.LOW].reduce((s, p) => s + p.templates, 0);
+  document.getElementById('statTemplates').textContent = totalT;
+
+  // Set last known grade
+  setGrade('C', 84);
+  renderAlerts(KNOWN_ALERTS);
+
+  // Try live API
+  const status = await apiFetch('/isp-manager/status');
+  if (status) {
+    document.getElementById('agentVersion').textContent = `v${status.version || '1.0.1'} — ${status.status || 'operational'}`;
+  }
+
+  const receipts = await apiFetch('/isp-manager/receipts?limit=1');
+  if (receipts?.receipts?.[0]?.data) {
+    const r = receipts.receipts[0].data;
+    if (r.grade) setGrade(r.grade, r.score || r.audit_score || 84);
+    if (r.receipt_id) document.getElementById('receiptId').textContent = r.receipt_id;
+    if (r.timestamp) {
+      document.getElementById('receiptTime').textContent = r.timestamp;
+      document.getElementById('footerTime').textContent = r.timestamp;
+    }
+  }
+
+  btn.disabled = false;
+}
+
+// ══════════════════════════════════════════════════════════════
+// RUN AUDIT
+// ══════════════════════════════════════════════════════════════
+async function runAudit() {
+  const btn = document.getElementById('btnAudit');
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span> ${t('running_audit')}`;
+
+  const data = await apiFetch('/isp-manager/audit', { method: 'POST' });
+
+  if (data?.success && data.audit) {
+    const a = data.audit;
+    if (a.grade) setGrade(a.grade, a.score || 84);
+    if (a.total_profiles) document.getElementById('statProfiles').textContent = a.total_profiles;
+    document.getElementById('statViolations').textContent = a.violations || 0;
+    document.getElementById('statWarnings').textContent = a.warnings || 0;
+    if (a.receipt_id) document.getElementById('receiptId').textContent = a.receipt_id;
+    if (a.alerts) {
+      const parsed = a.alerts.map(line => {
+        const match = typeof line === 'string' ? line.match(/(ISP-[VW]\d+|TR-[VW]\d+|GM-[VW]\d+)/) : null;
+        return {
+          code: match ? match[1] : 'UNKNOWN',
+          type: (match && match[1].includes('-V')) ? 'violation' : 'warning',
+          count: 1,
+          text: typeof line === 'string' ? line : JSON.stringify(line)
+        };
+      });
+      renderAlerts(parsed);
+    }
+
+    if (data.receipt) {
+      const r = data.receipt;
+      if (r.receipt_id) document.getElementById('receiptId').textContent = r.receipt_id;
+      if (r.timestamp) {
+        document.getElementById('receiptTime').textContent = r.timestamp;
+        document.getElementById('footerTime').textContent = r.timestamp;
+      }
+    }
+  } else {
+    console.warn('Audit returned:', data);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = `<span data-i18n="btn_audit">${t('btn_audit')}</span>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// VALIDATE PROFILE
+// ══════════════════════════════════════════════════════════════
+async function validateProfile(ispId) {
+  document.getElementById('validateModal').classList.add('active');
+  document.getElementById('modalProfileId').textContent = ispId;
+  document.getElementById('modalOutput').textContent = t('loading');
+
+  const data = await apiFetch('/isp-manager/validate', {
+    method: 'POST',
+    body: JSON.stringify({ isp_id: ispId })
+  });
+
+  document.getElementById('modalOutput').textContent = data
+    ? (data.output || data.errors || JSON.stringify(data, null, 2))
+    : 'Error: Could not reach agent API.\nEnsure Governance API is running on :8080.';
+}
+
+function closeModal() {
+  document.getElementById('validateModal').classList.remove('active');
+}
+
+document.getElementById('validateModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // Restore preferences
+  const savedTheme = localStorage.getItem('windi-theme') || 'noir';
+  const savedLang = localStorage.getItem('windi-lang') || 'en';
+  setTheme(savedTheme);
+  setLang(savedLang);
+  loadAll();
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+  if (e.ctrlKey && e.key === 'k') { e.preventDefault(); setTheme(document.documentElement.getAttribute('data-theme') === 'noir' ? 'klar' : 'noir'); }
+});
+</script>
+</body>
+</html>

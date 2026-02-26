@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>WINDI Governance — Tutorial v2.0</title>
+<meta name="description" content="Complete tutorial for the WINDI Governance Command Center — Pre-AI Governance Layer for institutional document governance.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2306060c'/%3E%3Ctext x='50' y='70' font-size='50' text-anchor='middle' fill='%23c9a227'%3E🐉%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200;12..96,400;12..96,600;12..96,800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void: #06060c; --surface-0: #0a0a14; --surface-1: #0f0f1c; --surface-2: #15152a; --surface-3: #1c1c36;
+  --gold: #c9a227; --gold-bright: #e2be3a; --gold-dim: #8a7020; --gold-glow: rgba(201,162,39,0.15); --gold-glow-strong: rgba(201,162,39,0.3); --gold-line: rgba(201,162,39,0.25);
+  --text-primary: #e8e6e0; --text-secondary: #9896a4; --text-tertiary: #5e5c6e; --text-inverse: #0a0a14;
+  --signal-core: #d44a5a; --signal-core-dim: rgba(212,74,90,0.15); --signal-flow: #d49a3a; --signal-flow-dim: rgba(212,154,58,0.15); --signal-gov: #3a8ad4; --signal-gov-dim: rgba(58,138,212,0.15); --signal-safe: #3ab87a; --signal-safe-dim: rgba(58,184,122,0.15);
+  --border-subtle: rgba(255,255,255,0.06); --border-medium: rgba(255,255,255,0.1); --border-gold: rgba(201,162,39,0.2);
+  --font-display: 'Bricolage Grotesque', Georgia, serif; --font-body: 'Outfit', -apple-system, sans-serif; --font-mono: 'JetBrains Mono', monospace;
+  --radius-sm: 6px; --radius-md: 12px; --radius-lg: 20px;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { font-size: 15px; scroll-behavior: smooth; }
+body { font-family: var(--font-body); background: var(--void); color: var(--text-primary); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+::selection { background: var(--gold); color: var(--void); }
+
+/* ═══ HEADER ═══ */
+.t-header { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 14px; padding: 10px 24px; background: rgba(10,10,20,0.88); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-subtle); }
+.t-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.t-logo-icon { font-size: 1.4rem; }
+.t-logo-text { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+.t-logo-sub { font-size: 0.6rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; }
+.t-lang { display: flex; gap: 4px; margin-left: 16px; }
+.t-lang-btn { padding: 4px 10px; border-radius: 16px; border: 1px solid var(--border-subtle); background: transparent; color: var(--text-secondary); font-size: 0.72rem; cursor: pointer; transition: all 0.2s; font-family: var(--font-body); }
+.t-lang-btn:hover { border-color: var(--gold-dim); color: var(--text-primary); }
+.t-lang-btn.active { background: var(--gold); color: var(--text-inverse); border-color: var(--gold); }
+.t-header-right { margin-left: auto; display: flex; gap: 8px; }
+.t-header-link { padding: 6px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-medium); background: var(--surface-2); color: var(--text-secondary); font-size: 0.75rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+.t-header-link:hover { background: var(--gold-glow); color: var(--gold); border-color: var(--border-gold); }
+
+/* ═══ CONTENT ═══ */
+.t-content { max-width: 900px; margin: 0 auto; padding: 32px 24px 80px; }
+
+/* ═══ HERO ═══ */
+.t-hero { text-align: center; padding: 48px 0 40px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 40px; }
+.t-hero h1 { font-family: var(--font-display); font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; }
+.t-hero h1 span { color: var(--gold); }
+.t-hero p { font-size: 0.92rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto; }
+.t-version { display: inline-block; padding: 3px 10px; background: var(--gold-glow); border: 1px solid var(--border-gold); border-radius: 12px; font-family: var(--font-mono); font-size: 0.68rem; color: var(--gold); margin-top: 12px; }
+
+/* ═══ TOC ═══ */
+.t-toc { background: var(--surface-1); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 24px 28px; margin-bottom: 40px; }
+.t-toc-title { font-family: var(--font-display); font-size: 0.82rem; font-weight: 600; color: var(--gold); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; }
+.t-toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.t-toc-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: var(--radius-sm); font-size: 0.82rem; color: var(--text-secondary); text-decoration: none; transition: all 0.15s; }
+.t-toc-item:hover { background: var(--surface-2); color: var(--text-primary); }
+.t-toc-num { font-family: var(--font-mono); font-size: 0.68rem; color: var(--gold-dim); min-width: 24px; }
+.t-toc-new { padding: 1px 6px; border-radius: 8px; background: var(--signal-safe-dim); color: var(--signal-safe); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.04em; }
+
+/* ═══ SECTIONS ═══ */
+.t-section { margin-bottom: 48px; padding-top: 20px; }
+.t-section-num { font-family: var(--font-mono); font-size: 0.72rem; color: var(--gold-dim); letter-spacing: 0.06em; margin-bottom: 6px; }
+.t-section h2 { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; margin-bottom: 16px; }
+.t-section h3 { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; color: var(--gold); margin: 24px 0 10px; }
+.t-section p { margin-bottom: 14px; color: var(--text-primary); }
+
+/* Trilingual blocks */
+.t-tri { display: none; }
+.t-tri.active { display: block; }
+
+/* Principle box */
+.t-principle { background: var(--surface-1); border: 1px solid var(--border-gold); border-radius: var(--radius-md); padding: 20px 24px; margin: 20px 0; text-align: center; position: relative; overflow: hidden; }
+.t-principle::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--gold), var(--gold-dim), transparent); }
+.t-principle-icon { font-size: 1.6rem; margin-bottom: 6px; }
+.t-principle-text { font-family: var(--font-display); font-size: 1.05rem; font-weight: 600; color: var(--gold-bright); }
+.t-principle-sub { font-size: 0.78rem; color: var(--text-tertiary); margin-top: 4px; }
+
+/* Level cards */
+.t-levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
+.t-level { background: var(--surface-1); border: 2px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px; text-align: center; transition: all 0.2s; }
+.t-level:hover { transform: translateY(-2px); }
+.t-level.low { border-color: rgba(58,184,122,0.3); } .t-level.low:hover { border-color: var(--signal-safe); }
+.t-level.medium { border-color: rgba(212,154,58,0.3); } .t-level.medium:hover { border-color: var(--signal-flow); }
+.t-level.high { border-color: rgba(212,74,90,0.3); } .t-level.high:hover { border-color: var(--signal-core); }
+.t-level-icon { font-size: 1.8rem; margin-bottom: 8px; }
+.t-level-name { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+.t-level.low .t-level-name { color: var(--signal-safe); }
+.t-level.medium .t-level-name { color: var(--signal-flow); }
+.t-level.high .t-level-name { color: var(--signal-core); }
+.t-level-desc { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; }
+.t-level-profile { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-tertiary); margin-top: 8px; }
+
+/* Steps */
+.t-steps { margin: 20px 0; }
+.t-step { display: flex; gap: 16px; margin-bottom: 16px; }
+.t-step-num { width: 32px; height: 32px; flex-shrink: 0; background: var(--gold-glow); border: 1px solid var(--border-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--gold); }
+.t-step-content h4 { font-family: var(--font-display); font-size: 0.92rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.t-step-content p { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0; }
+
+/* Feature grid */
+.t-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin: 20px 0; }
+.t-feature { background: var(--surface-1); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px 18px; }
+.t-feature-icon { font-size: 1.2rem; margin-bottom: 6px; }
+.t-feature-name { font-family: var(--font-display); font-size: 0.88rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.t-feature-desc { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; }
+
+/* Code block */
+.t-code { background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px 18px; margin: 14px 0; overflow-x: auto; }
+.t-code code { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-primary); line-height: 1.7; white-space: pre; }
+.t-code-label { font-family: var(--font-mono); font-size: 0.65rem; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+
+/* Architecture diagram */
+.t-arch { background: var(--surface-1); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px; margin: 20px 0; font-family: var(--font-mono); font-size: 0.72rem; line-height: 1.5; color: var(--text-secondary); white-space: pre; overflow-x: auto; }
+
+/* Tip box */
+.t-tip { background: var(--signal-gov-dim); border: 1px solid rgba(58,138,212,0.2); border-left: 3px solid var(--signal-gov); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 12px 16px; margin: 16px 0; font-size: 0.85rem; color: var(--text-primary); }
+.t-tip strong { color: var(--signal-gov); }
+
+/* Warning box */
+.t-warn { background: var(--signal-flow-dim); border: 1px solid rgba(212,154,58,0.2); border-left: 3px solid var(--signal-flow); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 12px 16px; margin: 16px 0; font-size: 0.85rem; }
+.t-warn strong { color: var(--signal-flow); }
+
+/* Table */
+.t-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+.t-table th { padding: 10px 14px; background: var(--surface-2); font-size: 0.72rem; font-weight: 600; color: var(--gold); text-transform: uppercase; letter-spacing: 0.04em; text-align: left; border-bottom: 1px solid var(--border-medium); }
+.t-table td { padding: 10px 14px; font-size: 0.82rem; border-bottom: 1px solid var(--border-subtle); }
+.t-table tr:hover td { background: var(--surface-1); }
+
+/* Badge */
+.t-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; }
+.t-badge-safe { background: var(--signal-safe-dim); color: var(--signal-safe); }
+.t-badge-flow { background: var(--signal-flow-dim); color: var(--signal-flow); }
+.t-badge-core { background: var(--signal-core-dim); color: var(--signal-core); }
+.t-badge-gov { background: var(--signal-gov-dim); color: var(--signal-gov); }
+.t-badge-new { background: var(--signal-safe-dim); color: var(--signal-safe); }
+
+/* Footer */
+.t-footer { text-align: center; padding: 32px 0; border-top: 1px solid var(--border-subtle); margin-top: 48px; }
+.t-footer-dragon { font-size: 2rem; margin-bottom: 12px; }
+.t-footer-principle { font-family: var(--font-display); font-size: 0.95rem; font-weight: 600; color: var(--gold); }
+.t-footer-sub { font-size: 0.72rem; color: var(--text-tertiary); margin-top: 8px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .t-levels { grid-template-columns: 1fr; }
+  .t-toc-grid { grid-template-columns: 1fr; }
+  .t-features { grid-template-columns: 1fr; }
+  .t-hero h1 { font-size: 1.5rem; }
+  .t-header { flex-wrap: wrap; gap: 8px; }
+  .t-lang { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="t-header">
+  <a href="/governance/tutorial" class="t-logo">
+    <span class="t-logo-icon">🐉</span>
+    <div>
+      <div class="t-logo-text">WINDI</div>
+      <div class="t-logo-sub">Pre-AI Governance Layer</div>
+    </div>
+  </a>
+  <div class="t-lang">
+    <button class="t-lang-btn active" onclick="setLang('de')">🇩🇪 DE</button>
+    <button class="t-lang-btn" onclick="setLang('en')">🇬🇧 EN</button>
+    <button class="t-lang-btn" onclick="setLang('pt')">🇧🇷 PT</button>
+  </div>
+  <div class="t-header-right">
+    <a href="/governance/hub" class="t-header-link" style="color:#3a8ad4;"><i class="fas fa-satellite"></i> Hub</a>
+    <a href="/governance" class="t-header-link"><i class="fas fa-tachometer-alt"></i> Command Center</a>
+    <a href="/" class="t-header-link"><i class="fas fa-edit"></i> A4 Desk</a>
+  </div>
+</header>
+
+<div class="t-content">
+
+<!-- HERO -->
+<div class="t-hero">
+  <h1 class="t-tri de active">Governance <span>Command Center</span> — Anleitung</h1>
+  <h1 class="t-tri en">Governance <span>Command Center</span> — Tutorial</h1>
+  <h1 class="t-tri pt">Governance <span>Command Center</span> — Tutorial</h1>
+  <p class="t-tri de active">Erfahren Sie, wie Sie das WINDI-Governance-System nutzen — vom täglichen Briefing über die Dokumenterzeugung bis zur forensischen Compliance.</p>
+  <p class="t-tri en">Learn how to use the WINDI governance system — from daily briefings to document generation to forensic compliance.</p>
+  <p class="t-tri pt">Aprenda a utilizar o sistema de governança WINDI — do briefing diário à geração de documentos e conformidade forense.</p>
+  <div class="t-version">Tutorial v2.0 — 06.02.2026</div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="t-toc">
+  <div class="t-toc-title t-tri de active">Inhaltsverzeichnis</div>
+  <div class="t-toc-title t-tri en">Table of Contents</div>
+  <div class="t-toc-title t-tri pt">Índice</div>
+  <div class="t-toc-grid">
+    <a href="#s01" class="t-toc-item"><span class="t-toc-num">01</span> <span class="t-tri de active">Grundprinzip</span><span class="t-tri en">Core Principle</span><span class="t-tri pt">Princípio</span></a>
+    <a href="#s02" class="t-toc-item"><span class="t-toc-num">02</span> <span class="t-tri de active">Drei Stufen</span><span class="t-tri en">Three Levels</span><span class="t-tri pt">Três Níveis</span></a>
+    <a href="#s03" class="t-toc-item"><span class="t-toc-num">03</span> <span class="t-tri de active">Command Center</span><span class="t-tri en">Command Center</span><span class="t-tri pt">Command Center</span> <span class="t-toc-new">NEU</span></a>
+    <a href="#s04" class="t-toc-item"><span class="t-toc-num">04</span> <span class="t-tri de active">Tägliches Briefing</span><span class="t-tri en">Daily Briefing</span><span class="t-tri pt">Briefing Diário</span> <span class="t-toc-new">NEU</span></a>
+    <a href="#s05" class="t-toc-item"><span class="t-toc-num">05</span> <span class="t-tri de active">War Room</span><span class="t-tri en">War Room</span><span class="t-tri pt">War Room</span> <span class="t-toc-new">NEU</span></a>
+    <a href="#s06" class="t-toc-item"><span class="t-toc-num">06</span> <span class="t-tri de active">Dokument erstellen</span><span class="t-tri en">Generate Documents</span><span class="t-tri pt">Gerar Documentos</span></a>
+    <a href="#s07" class="t-toc-item"><span class="t-toc-num">07</span> <span class="t-tri de active">Audit & Registry</span><span class="t-tri en">Audit & Registry</span><span class="t-tri pt">Auditoria & Registro</span></a>
+    <a href="#s08" class="t-toc-item"><span class="t-toc-num">08</span> <span class="t-tri de active">Compliance</span><span class="t-tri en">Compliance</span><span class="t-tri pt">Conformidade</span></a>
+    <a href="#s09" class="t-toc-item"><span class="t-toc-num">09</span> <span class="t-tri de active">Identity License</span><span class="t-tri en">Identity License</span><span class="t-tri pt">Identity License</span> <span class="t-toc-new">NEU</span></a>
+    <a href="#s10" class="t-toc-item"><span class="t-toc-num">10</span> <span class="t-tri de active">WSG Surface Guard</span><span class="t-tri en">WSG Surface Guard</span><span class="t-tri pt">WSG Surface Guard</span> <span class="t-toc-new">NEU</span></a>
+    <a href="#s11" class="t-toc-item"><span class="t-toc-num">11</span> <span class="t-tri de active">API-Beispiele</span><span class="t-tri en">API Examples</span><span class="t-tri pt">Exemplos de API</span></a>
+    <a href="#s12" class="t-toc-item"><span class="t-toc-num">12</span> <span class="t-tri de active">Architektur</span><span class="t-tri en">Architecture</span><span class="t-tri pt">Arquitetura</span></a>
+  </div>
+</div>
+
+<!-- ═══════════ 01 — CORE PRINCIPLE ═══════════ -->
+<section class="t-section" id="s01">
+  <div class="t-section-num">01</div>
+  <div class="t-tri de active">
+    <h2>Was ist WINDI-Governance?</h2>
+    <p>WINDI ist eine <strong>Pre-AI Governance Layer</strong> — eine Schicht, die <em>vor</em> der KI-Verarbeitung greift. Bevor ein Dokument erstellt wird, prüft WINDI ob alle Governance-Anforderungen erfüllt sind. Fehlen Pflichtfelder, wird das Dokument blockiert.</p>
+    <p>Das System arbeitet nach dem Prinzip der <strong>proportionalen Governance</strong>: Je sensibler das Dokument, desto strenger die Prüfung. Ein internes Memo braucht keine forensische Versiegelung. Ein Regulierungsbericht braucht jede Sicherheitsebene.</p>
+  </div>
+  <div class="t-tri en">
+    <h2>What is WINDI Governance?</h2>
+    <p>WINDI is a <strong>Pre-AI Governance Layer</strong> — a system that intervenes <em>before</em> AI processing. Before any document is generated, WINDI validates that all governance requirements are met. If mandatory fields are missing, the document is blocked.</p>
+    <p>The system works on the principle of <strong>proportional governance</strong>: the more sensitive the document, the stricter the validation. An internal memo doesn't need forensic sealing. A regulatory report needs every security layer.</p>
+  </div>
+  <div class="t-tri pt">
+    <h2>O que é Governança WINDI?</h2>
+    <p>WINDI é uma <strong>Camada de Governança Pré-IA</strong> — um sistema que intervém <em>antes</em> do processamento da IA. Antes de qualquer documento ser gerado, WINDI valida se todos os requisitos estão cumpridos. Se campos obrigatórios estiverem faltando, o documento é bloqueado.</p>
+    <p>O sistema opera pelo princípio da <strong>governança proporcional</strong>: quanto mais sensível o documento, mais rígida a validação. Um memorando interno não precisa de selagem forense. Um relatório regulatório precisa de cada camada de segurança.</p>
+  </div>
+  <div class="t-principle">
+    <div class="t-principle-icon">🔒</div>
+    <div class="t-principle-text t-tri de active">KI verarbeitet. Mensch entscheidet. WINDI garantiert.</div>
+    <div class="t-principle-text t-tri en">AI processes. Human decides. WINDI guarantees.</div>
+    <div class="t-principle-text t-tri pt">IA processa. Humano decide. WINDI garante.</div>
+    <div class="t-principle-sub t-tri de active">Das Grundprinzip jeder WINDI-Entscheidung</div>
+    <div class="t-principle-sub t-tri en">The foundational principle behind every WINDI decision</div>
+    <div class="t-principle-sub t-tri pt">O princípio fundacional por trás de cada decisão WINDI</div>
+  </div>
+</section>
+
+<!-- ═══════════ 02 — THREE LEVELS ═══════════ -->
+<section class="t-section" id="s02">
+  <div class="t-section-num">02</div>
+  <div class="t-tri de active"><h2>LOW — MEDIUM — HIGH</h2></div>
+  <div class="t-tri en"><h2>LOW — MEDIUM — HIGH</h2></div>
+  <div class="t-tri pt"><h2>LOW — MEDIUM — HIGH</h2></div>
+  <div class="t-levels">
+    <div class="t-level low">
+      <div class="t-level-icon">🟢</div>
+      <div class="t-level-name">LOW</div>
+      <div class="t-tri de active"><div class="t-level-desc">Tägliche Betriebsdokumente. Keine Metadaten erforderlich. Governance unsichtbar im Arbeitsalltag.</div></div>
+      <div class="t-tri en"><div class="t-level-desc">Day-to-day operational documents. No metadata required. Governance invisible in daily workflow.</div></div>
+      <div class="t-tri pt"><div class="t-level-desc">Documentos operacionais do dia a dia. Sem metadados obrigatórios. Governança invisível no fluxo de trabalho.</div></div>
+      <div class="t-level-profile">Profil: Deutsche Bahn</div>
+    </div>
+    <div class="t-level medium">
+      <div class="t-level-icon">🟡</div>
+      <div class="t-level-name">MEDIUM</div>
+      <div class="t-tri de active"><div class="t-level-desc">Institutionelle Dokumente mit 7 Pflichtfeldern. Identity License: <span class="t-badge t-badge-flow">model_only</span> — Verantwortung dokumentiert.</div></div>
+      <div class="t-tri en"><div class="t-level-desc">Institutional documents with 7 mandatory fields. Identity License: <span class="t-badge t-badge-flow">model_only</span> — Responsibility documented.</div></div>
+      <div class="t-tri pt"><div class="t-level-desc">Documentos institucionais com 7 campos obrigatórios. Identity License: <span class="t-badge t-badge-flow">model_only</span> — Responsabilidade documentada.</div></div>
+      <div class="t-level-profile">Profil: Bundesregierung · 7 Felder</div>
+    </div>
+    <div class="t-level high">
+      <div class="t-level-icon">🔴</div>
+      <div class="t-level-name">HIGH</div>
+      <div class="t-tri de active"><div class="t-level-desc">Regulierungsdokumente mit 10 SDMX-Feldern, Submission-ID, kryptografischer Versiegelung und forensischem Register.</div></div>
+      <div class="t-tri en"><div class="t-level-desc">Regulatory documents with 10 SDMX-aligned fields, submission ID, cryptographic sealing and forensic registry.</div></div>
+      <div class="t-tri pt"><div class="t-level-desc">Documentos regulatórios com 10 campos SDMX, ID de submissão, selagem criptográfica e registro forense.</div></div>
+      <div class="t-level-profile">Profil: BIS-Style · 10 Felder + Hash + Registry</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 03 — COMMAND CENTER (NEW) ═══════════ -->
+<section class="t-section" id="s03">
+  <div class="t-section-num">03 <span class="t-badge t-badge-new">NEU / NEW / NOVO</span></div>
+  <div class="t-tri de active">
+    <h2>Das Governance Command Center</h2>
+    <p>Das Command Center (<code>/governance</code>) ist die zentrale Steuerungsoberfläche für alle Governance-Operationen. Es ersetzt das alte dreiseitige Dashboard durch eine einheitliche Oberfläche mit sechs Registerkarten.</p>
+    <h3>Sechs Registerkarten</h3>
+  </div>
+  <div class="t-tri en">
+    <h2>The Governance Command Center</h2>
+    <p>The Command Center (<code>/governance</code>) is the central control interface for all governance operations. It replaces the old three-page dashboard with a unified interface featuring six tabs.</p>
+    <h3>Six Tabs</h3>
+  </div>
+  <div class="t-tri pt">
+    <h2>O Governance Command Center</h2>
+    <p>O Command Center (<code>/governance</code>) é a interface central de controle para todas as operações de governança. Ele substitui o antigo dashboard de três páginas por uma interface unificada com seis abas.</p>
+    <h3>Seis Abas</h3>
+  </div>
+  <div class="t-features">
+    <div class="t-feature"><div class="t-feature-icon">📊</div><div class="t-feature-name">Overview</div><div class="t-tri de active"><div class="t-feature-desc">Statistiken, Service Health aller 6 Dienste, System-Status auf einen Blick.</div></div><div class="t-tri en"><div class="t-feature-desc">Statistics, service health for all 6 services, system status at a glance.</div></div><div class="t-tri pt"><div class="t-feature-desc">Estatísticas, saúde de todos os 6 serviços, status do sistema de relance.</div></div></div>
+    <div class="t-feature"><div class="t-feature-icon">📰</div><div class="t-feature-name">Briefing</div><div class="t-tri de active"><div class="t-feature-desc">Täglicher Governance-Bericht in DE/EN mit Metadaten und Hash-Verifizierung.</div></div><div class="t-tri en"><div class="t-feature-desc">Daily governance report in DE/EN with metadata and hash verification.</div></div><div class="t-tri pt"><div class="t-feature-desc">Relatório diário de governança em DE/EN com metadados e verificação de hash.</div></div></div>
+    <div class="t-feature"><div class="t-feature-icon">🛡️</div><div class="t-feature-name">War Room</div><div class="t-tri de active"><div class="t-feature-desc">Echtzeit-Eventlog, ISP-Monitor und Chain Integrity. Kontrolle wie ein Fluglotse.</div></div><div class="t-tri en"><div class="t-feature-desc">Real-time event log, ISP monitor and chain integrity. Control like an air traffic controller.</div></div><div class="t-tri pt"><div class="t-feature-desc">Log de eventos em tempo real, monitor ISP e integridade da cadeia. Controle como controlador de tráfego.</div></div></div>
+    <div class="t-feature"><div class="t-feature-icon">➕</div><div class="t-feature-name">Generate</div><div class="t-tri de active"><div class="t-feature-desc">Governance-Hüllen für LOW/MEDIUM/HIGH erzeugen mit Metadaten-Formularen.</div></div><div class="t-tri en"><div class="t-feature-desc">Create governance envelopes for LOW/MEDIUM/HIGH with metadata forms.</div></div><div class="t-tri pt"><div class="t-feature-desc">Criar envelopes de governança LOW/MEDIUM/HIGH com formulários de metadados.</div></div></div>
+    <div class="t-feature"><div class="t-feature-icon">🔍</div><div class="t-feature-name">Audit</div><div class="t-tri de active"><div class="t-feature-desc">Vollständiges Register aller Submissions mit Hash, Level und Zeitstempel.</div></div><div class="t-tri en"><div class="t-feature-desc">Complete registry of all submissions with hash, level and timestamp.</div></div><div class="t-tri pt"><div class="t-feature-desc">Registro completo de todas as submissões com hash, nível e timestamp.</div></div></div>
+    <div class="t-feature"><div class="t-feature-icon">✅</div><div class="t-feature-name">Compliance</div><div class="t-tri de active"><div class="t-feature-desc">9 Invarianten, EU AI Act Alignment, Infrastruktur-Checks in Echtzeit.</div></div><div class="t-tri en"><div class="t-feature-desc">9 Invariants, EU AI Act alignment, real-time infrastructure checks.</div></div><div class="t-tri pt"><div class="t-feature-desc">9 Invariantes, alinhamento EU AI Act, verificações de infraestrutura em tempo real.</div></div></div>
+  </div>
+  <div class="t-tip">
+    <strong class="t-tri de active">Tipp:</strong><strong class="t-tri en">Tip:</strong><strong class="t-tri pt">Dica:</strong>
+    <span class="t-tri de active"> URL-Hashes ermöglichen direkten Zugriff: <code>/governance#warroom</code>, <code>/governance#briefing</code>, etc.</span>
+    <span class="t-tri en"> URL hashes allow direct access: <code>/governance#warroom</code>, <code>/governance#briefing</code>, etc.</span>
+    <span class="t-tri pt"> Hashes na URL permitem acesso direto: <code>/governance#warroom</code>, <code>/governance#briefing</code>, etc.</span>
+  </div>
+</section>
+
+<!-- ═══════════ 04 — BRIEFING (NEW) ═══════════ -->
+<section class="t-section" id="s04">
+  <div class="t-section-num">04 <span class="t-badge t-badge-new">NEU</span></div>
+  <div class="t-tri de active">
+    <h2>Tägliches Governance-Briefing</h2>
+    <p>Das Briefing-Tab zeigt den täglichen Governance-Bericht — automatisch generiert aus allen aktiven Diensten. Es enthält eine zweisprachige Zusammenfassung (DE/EN), Metadaten wie Report-ID, Hash, Ledger-Referenz und Systemstatus.</p>
+    <p>Der Bericht wird vom <strong>Day-by-Day Server</strong> (:8090) aggregiert und aktualisiert sich automatisch. Er fasst zusammen: wie viele Dokumente in der Audit-Kette sind, welche ISP-Profile geladen sind, ob HIGH-Level Einträge zur Prüfung markiert sind.</p>
+  </div>
+  <div class="t-tri en">
+    <h2>Daily Governance Briefing</h2>
+    <p>The Briefing tab shows the daily governance report — automatically generated from all active services. It contains a bilingual summary (DE/EN), metadata such as Report ID, hash, ledger reference and system status.</p>
+    <p>The report is aggregated by the <strong>Day-by-Day Server</strong> (:8090) and updates automatically. It summarizes: how many documents are in the audit chain, which ISP profiles are loaded, whether HIGH-level items are flagged for review.</p>
+  </div>
+  <div class="t-tri pt">
+    <h2>Briefing Diário de Governança</h2>
+    <p>A aba Briefing mostra o relatório diário de governança — gerado automaticamente a partir de todos os serviços ativos. Contém um resumo bilíngue (DE/EN), metadados como ID do relatório, hash, referência do ledger e status do sistema.</p>
+    <p>O relatório é agregado pelo <strong>Day-by-Day Server</strong> (:8090) e atualiza automaticamente. Resume: quantos documentos estão na cadeia de auditoria, quais perfis ISP estão carregados, se itens HIGH estão sinalizados para revisão.</p>
+  </div>
+</section>
+
+<!-- ═══════════ 05 — WAR ROOM (NEW) ═══════════ -->
+<section class="t-section" id="s05">
+  <div class="t-section-num">05 <span class="t-badge t-badge-new">NEU</span></div>
+  <div class="t-tri de active">
+    <h2>War Room — Echtzeit-Überwachung</h2>
+    <p>Der War Room ist das operative Kontrollzentrum. Die WINDI-Metapher: <strong>Vom Feuerwehrmann zum Fluglotsen.</strong> Statt nach dem Vorfall zu analysieren, überwacht der War Room in Echtzeit.</p>
+    <h3>Drei Komponenten</h3>
+  </div>
+  <div class="t-tri en">
+    <h2>War Room — Real-Time Monitoring</h2>
+    <p>The War Room is the operational control center. The WINDI metaphor: <strong>From firefighter to air traffic controller.</strong> Instead of analyzing after the incident, the War Room monitors in real-time.</p>
+    <h3>Three Components</h3>
+  </div>
+  <div class="t-tri pt">
+    <h2>War Room — Monitoramento em Tempo Real</h2>
+    <p>O War Room é o centro de controle operacional. A metáfora WINDI: <strong>De bombeiro para controlador de tráfego.</strong> Em vez de analisar após o incidente, o War Room monitora em tempo real.</p>
+    <h3>Três Componentes</h3>
+  </div>
+  <div class="t-features">
+    <div class="t-feature"><div class="t-feature-icon">📜</div><div class="t-feature-name t-tri de active">Governance Event Log</div><div class="t-feature-name t-tri en">Governance Event Log</div><div class="t-feature-name t-tri pt">Log de Eventos</div><div class="t-tri de active"><div class="t-feature-desc">Chronologische Liste aller Governance-Aktionen mit Severity-Indikatoren (grün/gelb/rot).</div></div><div class="t-tri en"><div class="t-feature-desc">Chronological list of all governance actions with severity indicators (green/amber/red).</div></div><div class="t-tri pt"><div class="t-feature-desc">Lista cronológica de todas as ações de governança com indicadores de severidade (verde/âmbar/vermelho).</div></div></div>
+    <div class="t-feature"><div class="t-feature-icon">🏛️</div><div class="t-feature-name t-tri de active">ISP-Monitor</div><div class="t-feature-name t-tri en">ISP Monitor</div><div class="t-feature-name t-tri pt">Monitor ISP</div><div class="t-tri de active"><div class="t-feature-desc">Aktive Institutional Style Profiles mit Level-Badges und Ladestatus.</div></div><div class="t-tri en"><div class="t-feature-desc">Active Institutional Style Profiles with level badges and load status.</div></div><div class="t-tri pt"><div class="t-feature-desc">Perfis ISP ativos com badges de nível e status de carregamento.</div></div></div>
+    <div class="t-feature"><div class="t-feature-icon">🔗</div><div class="t-feature-name t-tri de active">Chain Integrity</div><div class="t-feature-name t-tri en">Chain Integrity</div><div class="t-feature-name t-tri pt">Integridade da Cadeia</div><div class="t-tri de active"><div class="t-feature-desc">Gesamtanzahl versiegelter Einträge und kryptografische Verifizierung der Merkle-Tree-Kette.</div></div><div class="t-tri en"><div class="t-feature-desc">Total sealed entries and cryptographic verification of the Merkle tree chain.</div></div><div class="t-tri pt"><div class="t-feature-desc">Total de entradas seladas e verificação criptográfica da cadeia Merkle tree.</div></div></div>
+  </div>
+</section>
+
+<!-- ═══════════ 06 — GENERATE ═══════════ -->
+<section class="t-section" id="s06">
+  <div class="t-section-num">06</div>
+  <div class="t-tri de active">
+    <h2>Dokument erstellen</h2>
+    <p>Die Generate-Seite erstellt eine Governance-Hülle in drei Schritten:</p>
+  </div>
+  <div class="t-tri en">
+    <h2>Generate Documents</h2>
+    <p>The Generate page creates a governance envelope in three steps:</p>
+  </div>
+  <div class="t-tri pt">
+    <h2>Gerar Documentos</h2>
+    <p>A página Generate cria um envelope de governança em três passos:</p>
+  </div>
+  <div class="t-steps">
+    <div class="t-step"><div class="t-step-num">1</div><div class="t-step-content"><h4 class="t-tri de active">Stufe wählen</h4><h4 class="t-tri en">Select Level</h4><h4 class="t-tri pt">Selecionar Nível</h4><p class="t-tri de active">Klicken Sie auf die LOW-, MEDIUM- oder HIGH-Karte. Das bestimmt Metadaten-Anforderungen und Schutzprofil.</p><p class="t-tri en">Click the LOW, MEDIUM or HIGH card. This determines metadata requirements and protection profile.</p><p class="t-tri pt">Clique no card LOW, MEDIUM ou HIGH. Isso determina os requisitos de metadados e perfil de proteção.</p></div></div>
+    <div class="t-step"><div class="t-step-num">2</div><div class="t-step-content"><h4 class="t-tri de active">Metadaten ausfüllen</h4><h4 class="t-tri en">Fill Metadata</h4><h4 class="t-tri pt">Preencher Metadados</h4><p class="t-tri de active">MEDIUM: 7 Felder. HIGH: 10 Felder. LOW: keine Metadaten nötig. Pflichtfelder sind mit * markiert.</p><p class="t-tri en">MEDIUM: 7 fields. HIGH: 10 fields. LOW: no metadata needed. Required fields marked with *.</p><p class="t-tri pt">MEDIUM: 7 campos. HIGH: 10 campos. LOW: sem metadados. Campos obrigatórios marcados com *.</p></div></div>
+    <div class="t-step"><div class="t-step-num">3</div><div class="t-step-content"><h4 class="t-tri de active">Governance-Hülle generieren</h4><h4 class="t-tri en">Generate Governance Envelope</h4><h4 class="t-tri pt">Gerar Envelope de Governança</h4><p class="t-tri de active">Der goldene Button startet die Prüfung. Ergebnis: <span class="t-badge t-badge-safe">APPROVED</span> oder <span class="t-badge t-badge-core">BLOCKED</span> mit Begründung.</p><p class="t-tri en">The gold button triggers validation. Result: <span class="t-badge t-badge-safe">APPROVED</span> or <span class="t-badge t-badge-core">BLOCKED</span> with reason.</p><p class="t-tri pt">O botão dourado dispara a validação. Resultado: <span class="t-badge t-badge-safe">APPROVED</span> ou <span class="t-badge t-badge-core">BLOCKED</span> com motivo.</p></div></div>
+  </div>
+</section>
+
+<!-- ═══════════ 07 — AUDIT ═══════════ -->
+<section class="t-section" id="s07">
+  <div class="t-section-num">07</div>
+  <div class="t-tri de active">
+    <h2>Audit &amp; Registry</h2>
+    <p>Die Audit-Seite zeigt das vollständige Register aller Governance-Submissions. Jeder Eintrag enthält: Registration-ID, Datum, Governance-Level, Dokumenttyp, Status und SHA-256 Hash.</p>
+    <p>Bei HIGH-Dokumenten wird zusätzlich die kryptografische Versiegelung und der Eintrag im Forensic Ledger angezeigt.</p>
+  </div>
+  <div class="t-tri en">
+    <h2>Audit &amp; Registry</h2>
+    <p>The Audit page shows the complete registry of all governance submissions. Each entry contains: Registration ID, date, governance level, document type, status and SHA-256 hash.</p>
+    <p>For HIGH documents, the cryptographic seal and forensic ledger entry are also displayed.</p>
+  </div>
+  <div class="t-tri pt">
+    <h2>Auditoria &amp; Registro</h2>
+    <p>A página de Auditoria mostra o registro completo de todas as submissões de governança. Cada entrada contém: ID de Registro, data, nível de governança, tipo de documento, status e hash SHA-256.</p>
+    <p>Para documentos HIGH, a selagem criptográfica e a entrada no Forensic Ledger também são exibidas.</p>
+  </div>
+</section>
+
+<!-- ═══════════ 08 — COMPLIANCE ═══════════ -->
+<section class="t-section" id="s08">
+  <div class="t-section-num">08</div>
+  <div class="t-tri de active">
+    <h2>Compliance — Invarianten &amp; EU AI Act</h2>
+    <p>Die Compliance-Seite prüft drei Dimensionen in Echtzeit:</p>
+    <h3>9 WINDI-Invarianten (I1–I9, inkl. I9 — UNWIDERRUFLICH)</h3>
+    <p>Prinzipien, die niemals verletzt werden dürfen: Soberania, Non-Opacity, Transparência, Jurisdição, No Fabrication, Conflict Structuring, Institutional, No Depth Punishment.</p>
+    <h3>EU AI Act Alignment</h3>
+    <p>Abgleich mit Art. 9 (Risikomanagement), Art. 11 (Technische Dokumentation), Art. 13 (Transparenz), Art. 14 (Menschliche Aufsicht), Art. 15 (Genauigkeit), Art. 17 (Qualitätsmanagement).</p>
+    <h3>Infrastruktur</h3>
+    <p>Server-Standort Deutschland 🇩🇪, EU-Jurisdiktion, Zero-Knowledge-Architektur, Forensic Ledger, SGE Engine, WSG Surface Guard — alles live geprüft.</p>
+  </div>
+  <div class="t-tri en">
+    <h2>Compliance — Invariants &amp; EU AI Act</h2>
+    <p>The Compliance page checks three dimensions in real-time:</p>
+    <h3>9 WINDI Invariants (I1–I9, incl. I9 — IRREMEDIABLE)</h3>
+    <p>Principles that must never be violated: Soberania, Non-Opacity, Transparência, Jurisdição, No Fabrication, Conflict Structuring, Institutional, No Depth Punishment.</p>
+    <h3>EU AI Act Alignment</h3>
+    <p>Mapping to Art. 9 (Risk Management), Art. 11 (Technical Documentation), Art. 13 (Transparency), Art. 14 (Human Oversight), Art. 15 (Accuracy), Art. 17 (Quality Management).</p>
+    <h3>Infrastructure</h3>
+    <p>Server location Germany 🇩🇪, EU jurisdiction, Zero-Knowledge Architecture, Forensic Ledger, SGE Engine, WSG Surface Guard — all checked live.</p>
+  </div>
+  <div class="t-tri pt">
+    <h2>Conformidade — Invariantes &amp; EU AI Act</h2>
+    <p>A página de Conformidade verifica três dimensões em tempo real:</p>
+    <h3>9 Invariantes WINDI (I1–I9, incl. I9 — IRREMEDIÁVEL)</h3>
+    <p>Princípios que nunca podem ser violados: Soberania, Non-Opacity, Transparência, Jurisdição, No Fabrication, Conflict Structuring, Institutional, No Depth Punishment, Prohibition of Autonomy Escalation.</p>
+    <h3>Alinhamento EU AI Act</h3>
+    <p>Mapeamento com Art. 9 (Gestão de Risco), Art. 11 (Documentação Técnica), Art. 13 (Transparência), Art. 14 (Supervisão Humana), Art. 15 (Precisão), Art. 17 (Gestão de Qualidade).</p>
+    <h3>Infraestrutura</h3>
+    <p>Servidor na Alemanha 🇩🇪, jurisdição EU, Arquitetura Zero-Knowledge, Forensic Ledger, SGE Engine, WSG Surface Guard — tudo verificado ao vivo.</p>
+  </div>
+</section>
+
+<!-- ═══════════ 09 — IDENTITY LICENSE (NEW) ═══════════ -->
+<section class="t-section" id="s09">
+  <div class="t-section-num">09 <span class="t-badge t-badge-new">NEU</span></div>
+  <div class="t-tri de active">
+    <h2>Identity License System</h2>
+    <p>Das Identity License System kontrolliert, wie institutionelle Identitäten in generierten Dokumenten verwendet werden dürfen. Jedes ISP-Profil enthält eine <code>identity_license</code> mit einem von fünf Status:</p>
+  </div>
+  <div class="t-tri en">
+    <h2>Identity License System</h2>
+    <p>The Identity License System controls how institutional identities may be used in generated documents. Each ISP profile contains an <code>identity_license</code> with one of five statuses:</p>
+  </div>
+  <div class="t-tri pt">
+    <h2>Sistema Identity License</h2>
+    <p>O Sistema Identity License controla como identidades institucionais podem ser usadas em documentos gerados. Cada perfil ISP contém um <code>identity_license</code> com um dos cinco status:</p>
+  </div>
+  <table class="t-table">
+    <thead><tr><th>Status</th><th>Logo</th><th class="t-tri de active">Verhalten</th><th class="t-tri en">Behavior</th><th class="t-tri pt">Comportamento</th></tr></thead>
+    <tbody>
+      <tr><td><span class="t-badge t-badge-safe">authorized</span></td><td>✅</td><td class="t-tri de active">Vollständige Nutzung nach Scope</td><td class="t-tri en">Full usage per scope</td><td class="t-tri pt">Uso completo conforme escopo</td></tr>
+      <tr><td><span class="t-badge t-badge-flow">model_only</span></td><td>❌</td><td class="t-tri de active">Kein Logo + automatischer Disclaimer</td><td class="t-tri en">No logo + automatic disclaimer</td><td class="t-tri pt">Sem logo + disclaimer automático</td></tr>
+      <tr><td><span class="t-badge t-badge-gov">pending</span></td><td>❌</td><td class="t-tri de active">Genehmigung ausstehend</td><td class="t-tri en">Approval pending</td><td class="t-tri pt">Aprovação pendente</td></tr>
+      <tr><td><span class="t-badge t-badge-core">expired</span></td><td>❌</td><td class="t-tri de active">Lizenz abgelaufen — blockiert</td><td class="t-tri en">License expired — blocked</td><td class="t-tri pt">Licença expirada — bloqueado</td></tr>
+      <tr><td><span class="t-badge t-badge-core">revoked</span></td><td>❌</td><td class="t-tri de active">Lizenz widerrufen — blockiert</td><td class="t-tri en">License revoked — blocked</td><td class="t-tri pt">Licença revogada — bloqueado</td></tr>
+    </tbody>
+  </table>
+  <div class="t-warn">
+    <strong class="t-tri de active">Hinweis:</strong><strong class="t-tri en">Note:</strong><strong class="t-tri pt">Nota:</strong>
+    <span class="t-tri de active"> Bei <code>model_only</code> wird automatisch ein dreisprachiger Disclaimer eingefügt: „Dieses Dokument verwendet das Governance-Modell der Institution, ist aber nicht von ihr autorisiert."</span>
+    <span class="t-tri en"> With <code>model_only</code>, a trilingual disclaimer is automatically inserted: "This document uses the institution's governance model but is not authorized by them."</span>
+    <span class="t-tri pt"> Com <code>model_only</code>, um disclaimer trilíngue é inserido automaticamente: "Este documento usa o modelo de governança da instituição, mas não é autorizado por ela."</span>
+  </div>
+</section>
+
+<!-- ═══════════ 10 — WSG SURFACE GUARD (NEW) ═══════════ -->
+<section class="t-section" id="s10">
+  <div class="t-section-num">10 <span class="t-badge t-badge-new">NEU</span></div>
+  <div class="t-tri de active">
+    <h2>WSG — WINDI Surface Guard</h2>
+    <p>Der WINDI Surface Guard (WSG) ist die Frontend-Sicherheitsschicht des BABEL Editors. Er schützt die Benutzeroberfläche gegen DOM-Manipulation, Overlay-Angriffe und Wertänderungen.</p>
+    <h3>Drei Verteidigungsebenen</h3>
+  </div>
+  <div class="t-tri en">
+    <h2>WSG — WINDI Surface Guard</h2>
+    <p>The WINDI Surface Guard (WSG) is the frontend security layer of the BABEL Editor. It protects the user interface against DOM manipulation, overlay attacks and value mutations.</p>
+    <h3>Three Defense Layers</h3>
+  </div>
+  <div class="t-tri pt">
+    <h2>WSG — WINDI Surface Guard</h2>
+    <p>O WINDI Surface Guard (WSG) é a camada de segurança frontend do Editor BABEL. Ele protege a interface contra manipulação DOM, ataques de overlay e mutações de valor.</p>
+    <h3>Três Camadas de Defesa</h3>
+  </div>
+  <div class="t-features">
+    <div class="t-feature"><div class="t-feature-icon">🔧</div><div class="t-feature-name">Service Worker</div><div class="t-tri de active"><div class="t-feature-desc">Verifiziert Manifest-Signaturen und Asset-Integrität bei jedem Laden.</div></div><div class="t-tri en"><div class="t-feature-desc">Verifies manifest signatures and asset integrity on every load.</div></div><div class="t-tri pt"><div class="t-feature-desc">Verifica assinaturas de manifesto e integridade de assets a cada carregamento.</div></div></div>
+    <div class="t-feature"><div class="t-feature-icon">👁️</div><div class="t-feature-name">DOM Sentinel</div><div class="t-tri de active"><div class="t-feature-desc">Event-gesteuerte Überwachung: erkennt und entfernt bösartige Overlays und Mutationen automatisch.</div></div><div class="t-tri en"><div class="t-feature-desc">Event-driven monitoring: detects and removes malicious overlays and mutations automatically.</div></div><div class="t-tri pt"><div class="t-feature-desc">Monitoramento event-driven: detecta e remove overlays maliciosos e mutações automaticamente.</div></div></div>
+    <div class="t-feature"><div class="t-feature-icon">🛡️</div><div class="t-feature-name">Status Badge</div><div class="t-tri de active"><div class="t-feature-desc">Grünes Badge <span class="t-badge t-badge-safe">WSG Active</span> im Chat-Header zeigt aktiven Schutz. Klick zeigt Details.</div></div><div class="t-tri en"><div class="t-feature-desc">Green badge <span class="t-badge t-badge-safe">WSG Active</span> in chat header shows active protection. Click shows details.</div></div><div class="t-tri pt"><div class="t-feature-desc">Badge verde <span class="t-badge t-badge-safe">WSG Active</span> no header do chat mostra proteção ativa. Clique mostra detalhes.</div></div></div>
+  </div>
+</section>
+
+<!-- ═══════════ 11 — API EXAMPLES ═══════════ -->
+<section class="t-section" id="s11">
+  <div class="t-section-num">11</div>
+  <div class="t-tri de active"><h2>API-Beispiele</h2><p>Das Command Center kommuniziert mit der WINDI Governance API. Direkte API-Aufrufe per curl:</p></div>
+  <div class="t-tri en"><h2>API Examples</h2><p>The Command Center communicates with the WINDI Governance API. Direct API calls via curl:</p></div>
+  <div class="t-tri pt"><h2>Exemplos de API</h2><p>O Command Center se comunica com a API de Governança WINDI. Chamadas diretas via curl:</p></div>
+
+  <div class="t-code"><div class="t-code-label">LOW — Approved instantly</div><code>curl -X POST /api/gov/generate \
+  -H "Content-Type: application/json" \
+  -d '{"governance_level": "LOW"}'
+→ {"status": "APPROVED", "governance_level": "LOW"}</code></div>
+
+  <div class="t-code"><div class="t-code-label">MEDIUM — Requires 7 fields</div><code>curl -X POST /api/gov/generate \
+  -H "Content-Type: application/json" \
+  -d '{"governance_level": "MEDIUM", "isp_profile": "bundesregierung",
+       "metadata": {"issuing_authority": "Bundesregierung", ...}}'
+→ {"status": "APPROVED", "governance_level": "MEDIUM"}</code></div>
+
+  <div class="t-code"><div class="t-code-label">Briefing — Daily report</div><code>curl /api/gov/briefing
+→ {"success": true, "data": {"reportId": "GBR-06-02-2026", ...}}</code></div>
+
+  <div class="t-code"><div class="t-code-label">Submissions — Audit registry</div><code>curl /api/gov/submissions
+→ {"submissions": [{"reg_id": "REG-20260201-0001", ...}]}</code></div>
+
+  <div class="t-code"><div class="t-code-label">Status — Engine health</div><code>curl /api/gov/status
+→ {"api": "WINDI Governance API v1.0", "status": "operational"}</code></div>
+</section>
+
+<!-- ═══════════ 12 — ARCHITECTURE ═══════════ -->
+<section class="t-section" id="s12">
+  <div class="t-section-num">12</div>
+  <div class="t-tri de active"><h2>Systemarchitektur</h2><p>WINDI besteht aus sechs Diensten auf dem Strato-Server in Deutschland:</p></div>
+  <div class="t-tri en"><h2>System Architecture</h2><p>WINDI consists of six services on the Strato server in Germany:</p></div>
+  <div class="t-tri pt"><h2>Arquitetura do Sistema</h2><p>WINDI consiste em seis serviços no servidor Strato na Alemanha:</p></div>
+
+  <table class="t-table">
+    <thead><tr><th>Port</th><th>Service</th><th class="t-tri de active">Beschreibung</th><th class="t-tri en">Description</th><th class="t-tri pt">Descrição</th></tr></thead>
+    <tbody>
+      <tr><td><code>:8080</code></td><td>Governance Core</td><td class="t-tri de active">Haupt-API: Validator, ISP Loader, Registry</td><td class="t-tri en">Main API: Validator, ISP Loader, Registry</td><td class="t-tri pt">API principal: Validator, ISP Loader, Registry</td></tr>
+      <tr><td><code>:8081</code></td><td>Trust Bus</td><td class="t-tri de active">Inter-Service-Vertrauensschicht</td><td class="t-tri en">Inter-service trust layer</td><td class="t-tri pt">Camada de confiança inter-serviços</td></tr>
+      <tr><td><code>:8083</code></td><td>SGE Engine</td><td class="t-tri de active">Semantic Governance Engine — 6-Schicht-Risikoerkennung</td><td class="t-tri en">Semantic Governance Engine — 6-layer risk detection</td><td class="t-tri pt">Semantic Governance Engine — detecção de risco em 6 camadas</td></tr>
+      <tr><td><code>:8085</code></td><td>A4 Desk BABEL</td><td class="t-tri de active">Editor + Chat + Export + Governance Dashboard</td><td class="t-tri en">Editor + Chat + Export + Governance Dashboard</td><td class="t-tri pt">Editor + Chat + Export + Governance Dashboard</td></tr>
+      <tr><td><code>:8090</code></td><td>Day-by-Day</td><td class="t-tri de active">Briefing + War Room + Dispatcher + PDF Virtue Receipt</td><td class="t-tri en">Briefing + War Room + Dispatcher + PDF Virtue Receipt</td><td class="t-tri pt">Briefing + War Room + Dispatcher + PDF Virtue Receipt</td></tr>
+      <tr><td><code>:8889</code></td><td>Cortex</td><td class="t-tri de active">WINDI Cortex — intelligente Steuerungsschicht</td><td class="t-tri en">WINDI Cortex — intelligent orchestration layer</td><td class="t-tri pt">WINDI Cortex — camada de orquestração inteligente</td></tr>
+    </tbody>
+  </table>
+
+  <div class="t-arch">┌────────────────────────────────────────────────────────────┐
+│         A4 Desk BABEL (:8085) + Command Center             │
+│   Editor · Chat · Export · Governance · WSG Surface Guard  │
+└────────────┬───────────────────┬───────────────────────────┘
+             │                   │
+     ┌───────▼───────┐   ┌──────▼──────┐
+     │ Governance API │   │ Day-by-Day  │
+     │    (:8080)     │   │   (:8090)   │
+     │ Validator      │   │ Briefing    │
+     │ ISP Loader     │   │ War Room    │
+     │ Registry       │   │ Dispatcher  │
+     │ Forensic Ledger│   │ PDF Receipt │
+     └───┬───────┬────┘   └─────────────┘
+         │       │
+   ┌─────▼──┐ ┌──▼──────┐ ┌────────────┐
+   │  SGE   │ │ Trust   │ │  Cortex    │
+   │ (:8083)│ │ (:8081) │ │  (:8889)   │
+   │ 6-Layer│ │ Bus     │ │ Orchestr.  │
+   └────────┘ └─────────┘ └────────────┘
+         │
+   ┌─────▼──────────────────────────────┐
+   │ ISP Profiles (/opt/windi/isp)      │
+   │ deutsche-bahn · bundesregierung    │
+   │ bis-style · _base · 17+ profiles   │
+   └────────────────────────────────────┘</div>
+</section>
+
+<!-- FOOTER -->
+<div class="t-footer">
+  <div class="t-footer-dragon">🐉</div>
+  <div class="t-footer-principle t-tri de active">KI verarbeitet. Mensch entscheidet. WINDI garantiert.</div>
+  <div class="t-footer-principle t-tri en">AI processes. Human decides. WINDI guarantees.</div>
+  <div class="t-footer-principle t-tri pt">IA processa. Humano decide. WINDI garante.</div>
+  <div class="t-footer-sub">WINDI SYSTEM — Kempten, Bavaria — EU AI Act Compliant</div>
+  <div class="t-footer-sub" style="margin-top:8px;">Tutorial v2.0 — 06.02.2026</div>
+</div>
+
+</div><!-- /t-content -->
+
+<!-- LANGUAGE SWITCH JS -->
+<script>
+let currentLang = 'de';
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.t-lang-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.t-lang-btn[onclick="setLang('${lang}')"]`).classList.add('active');
+  document.querySelectorAll('.t-tri').forEach(el => {
+    el.classList.remove('active');
+    if (el.classList.contains(lang)) el.classList.add('active');
+  });
+}
+</script>
+
+</body>
+</html>

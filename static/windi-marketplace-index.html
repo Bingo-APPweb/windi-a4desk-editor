@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WINDI — Marketplace</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0c0c;
+    --surface: #141414;
+    --border: #222;
+    --text: #f0efe8;
+    --text-sec: #8a8a82;
+    --text-dim: #555;
+    --gold: #c9a84c;
+    --gold-bright: #e0be5a;
+    --gold-dim: #8a7434;
+    --gold-glow: rgba(201,168,76,0.08);
+    --green: #4ade80;
+    --green-dim: rgba(74,222,128,0.1);
+    --radius: 14px;
+    --radius-lg: 20px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Outfit',sans-serif; background:var(--bg);
+    color:var(--text); min-height:100vh; -webkit-font-smoothing:antialiased;
+  }
+  body::before {
+    content:''; position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.02) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(201,168,76,0.02) 1px,transparent 1px);
+    background-size:60px 60px; pointer-events:none; z-index:0;
+  }
+
+  /* HEADER */
+  .header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 32px; border-bottom:1px solid var(--border);
+    position:relative; z-index:10;
+    background:rgba(12,12,12,0.9); backdrop-filter:blur(12px);
+  }
+  .header-left { display:flex; align-items:center; gap:12px; }
+  .logo-mark {
+    width:32px; height:32px; border-radius:50%;
+    background:linear-gradient(135deg,var(--gold),var(--gold-dim));
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Bricolage Grotesque',serif; font-weight:800; font-size:14px; color:#0c0c0c;
+  }
+  .logo-text { font-family:'Bricolage Grotesque',serif; font-weight:700; font-size:18px; letter-spacing:1px; }
+  .logo-divider { width:1px; height:20px; background:var(--border); margin:0 4px; }
+  .logo-sub { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--gold); letter-spacing:2px; }
+  .header-right { display:flex; align-items:center; gap:14px; }
+  .lang-switch { display:flex; gap:3px; }
+  .lang-btn {
+    padding:4px 10px; border:1px solid var(--border); border-radius:5px;
+    background:transparent; font-family:'JetBrains Mono',monospace;
+    font-size:10px; cursor:pointer; color:var(--text-dim); transition:all 0.2s;
+  }
+  .lang-btn.on { background:var(--gold); color:#0c0c0c; border-color:var(--gold); font-weight:600; }
+  .lang-btn:hover:not(.on) { border-color:var(--text-dim); color:var(--text-sec); }
+  .back-link {
+    font-size:13px; color:var(--text-sec); text-decoration:none;
+    display:flex; align-items:center; gap:6px; transition:color 0.2s;
+  }
+  .back-link:hover { color:var(--gold); }
+
+  /* HERO */
+  .hero { text-align:center; padding:72px 24px 24px; position:relative; z-index:1; }
+  .hero::before {
+    content:''; position:absolute; top:40px; left:50%; transform:translateX(-50%);
+    width:400px; height:200px;
+    background:radial-gradient(ellipse,rgba(201,168,76,0.06) 0%,transparent 70%);
+    pointer-events:none;
+  }
+  .hero-badge {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 16px; border-radius:20px;
+    background:var(--gold-glow); border:1px solid rgba(201,168,76,0.15);
+    font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--gold);
+    letter-spacing:2px; margin-bottom:24px;
+  }
+  .hero-badge .dot { width:6px; height:6px; border-radius:50%; background:var(--gold); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+  .hero h1 {
+    font-family:'Bricolage Grotesque',serif; font-weight:800;
+    font-size:42px; line-height:1.1; margin-bottom:14px; letter-spacing:-0.5px; position:relative;
+  }
+  .hero h1 .gold { color:var(--gold); }
+  .hero>p { font-size:16px; color:var(--text-sec); max-width:480px; margin:0 auto; line-height:1.6; }
+
+  /* GRID */
+  .portal-grid {
+    display:grid; grid-template-columns:repeat(2,1fr); gap:16px;
+    max-width:880px; margin:48px auto 0; padding:0 24px; position:relative; z-index:1;
+  }
+  .portal-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius-lg); overflow:hidden;
+    text-decoration:none; color:inherit; transition:all 0.3s;
+    display:flex; flex-direction:column;
+  }
+  .portal-card:hover { border-color:var(--gold); transform:translateY(-4px); box-shadow:0 12px 40px rgba(201,168,76,0.08); }
+  .portal-card:hover .card-bar { opacity:1; }
+  .portal-card:hover .card-arrow { transform:translateX(4px); opacity:1; }
+  .card-bar { height:3px; width:100%; opacity:0.4; transition:opacity 0.3s; }
+  .bar-green { background:linear-gradient(90deg,transparent,var(--green),transparent); }
+  .bar-gold { background:linear-gradient(90deg,transparent,var(--gold),transparent); }
+  .bar-blue { background:linear-gradient(90deg,transparent,#6ba3f7,transparent); }
+  .bar-red { background:linear-gradient(90deg,transparent,#f76b6b,transparent); }
+  .card-body { padding:28px 28px 24px; flex:1; display:flex; flex-direction:column; }
+  .card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:16px; }
+  .card-icon { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; }
+  .ci-eyes { background:rgba(74,222,128,0.08); border:1px solid rgba(74,222,128,0.12); }
+  .ci-fly { background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.12); }
+  .ci-env { background:rgba(107,163,247,0.08); border:1px solid rgba(107,163,247,0.12); }
+  .ci-mod { background:rgba(247,107,107,0.08); border:1px solid rgba(247,107,107,0.12); }
+  .card-arrow { color:var(--text-dim); font-size:18px; transition:all 0.3s; opacity:0.4; margin-top:4px; }
+  .card-body h2 { font-family:'Bricolage Grotesque',serif; font-weight:700; font-size:20px; margin-bottom:6px; }
+  .card-subtitle { font-size:14px; color:var(--text-sec); line-height:1.5; margin-bottom:20px; flex:1; }
+  .card-footer { display:flex; align-items:center; justify-content:space-between; padding-top:16px; border-top:1px solid var(--border); }
+  .card-tag { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1px; padding:3px 10px; border-radius:10px; }
+  .tag-live { background:var(--green-dim); color:var(--green); border:1px solid rgba(74,222,128,0.15); }
+  .tag-info { background:var(--gold-glow); color:var(--gold); border:1px solid rgba(201,168,76,0.15); }
+  .card-audience { font-size:11px; color:var(--text-dim); }
+
+  /* CTA */
+  .clone-cta { max-width:880px; margin:32px auto 0; padding:0 24px; position:relative; z-index:1; }
+  .clone-card {
+    background:linear-gradient(135deg,var(--surface) 0%,rgba(201,168,76,0.04) 100%);
+    border:1px solid rgba(201,168,76,0.2); border-radius:var(--radius-lg);
+    padding:32px 36px; display:flex; align-items:center; justify-content:space-between; gap:24px;
+    text-decoration:none; color:inherit; transition:all 0.3s;
+  }
+  .clone-card:hover { border-color:var(--gold); box-shadow:0 8px 32px rgba(201,168,76,0.1); transform:translateY(-2px); }
+  .clone-left { display:flex; align-items:center; gap:20px; }
+  .clone-icon {
+    width:56px; height:56px; border-radius:14px;
+    background:linear-gradient(135deg,rgba(201,168,76,0.15),rgba(201,168,76,0.05));
+    border:1px solid rgba(201,168,76,0.2);
+    display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0;
+  }
+  .clone-text h3 { font-family:'Bricolage Grotesque',serif; font-weight:700; font-size:18px; margin-bottom:4px; }
+  .clone-text p { font-size:13px; color:var(--text-sec); }
+  .clone-btn {
+    padding:10px 24px; background:var(--gold); color:#0c0c0c; border:none;
+    border-radius:10px; font-family:'Outfit',sans-serif;
+    font-weight:600; font-size:14px; cursor:pointer; white-space:nowrap; transition:all 0.2s;
+  }
+  .clone-btn:hover { background:var(--gold-bright); }
+
+  /* STATS */
+  .stats {
+    display:flex; align-items:center; justify-content:center; gap:48px;
+    padding:40px 24px; margin-top:48px;
+    border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+    position:relative; z-index:1;
+  }
+  .stat { text-align:center; }
+  .stat-num { font-family:'Bricolage Grotesque',serif; font-weight:800; font-size:28px; color:var(--gold); margin-bottom:2px; }
+  .stat-label { font-size:12px; color:var(--text-dim); letter-spacing:0.5px; }
+  .stat-divider { width:1px; height:40px; background:var(--border); }
+
+  /* PRINCIPLE */
+  .principle-section { text-align:center; padding:40px 24px 48px; position:relative; z-index:1; }
+  .principle-text { font-size:15px; letter-spacing:0.3px; }
+  .p-gold { color:var(--gold); font-weight:600; }
+  .p-white { color:var(--text); }
+  .p-green { color:var(--green); font-weight:600; }
+  .dragons-line { margin-top:12px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-dim); letter-spacing:1px; }
+
+  /* FOOTER */
+  .footer {
+    padding:16px 24px; border-top:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; position:relative; z-index:1;
+  }
+  .footer-left { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-dim); letter-spacing:0.5px; }
+  .footer-right { display:flex; gap:20px; }
+  .footer-link { font-size:12px; color:var(--text-dim); text-decoration:none; transition:color 0.2s; }
+  .footer-link:hover { color:var(--gold); }
+
+  /* RESPONSIVE */
+  @media(max-width:700px) {
+    .portal-grid { grid-template-columns:1fr; }
+    .hero h1 { font-size:30px; }
+    .clone-card { flex-direction:column; text-align:center; }
+    .clone-left { flex-direction:column; align-items:center; }
+    .stats { flex-wrap:wrap; gap:24px; }
+    .stat-divider { display:none; }
+    .footer { flex-direction:column; gap:10px; }
+  }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  .portal-card { animation:fadeUp 0.5s ease both; }
+  .portal-card:nth-child(1){animation-delay:0.1s}
+  .portal-card:nth-child(2){animation-delay:0.2s}
+  .portal-card:nth-child(3){animation-delay:0.3s}
+  .portal-card:nth-child(4){animation-delay:0.4s}
+  .clone-cta { animation:fadeUp 0.5s ease 0.5s both; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <div class="logo-mark">W</div>
+    <span class="logo-text">WINDI</span>
+    <div class="logo-divider"></div>
+    <span class="logo-sub">MARKETPLACE</span>
+  </div>
+  <div class="header-right">
+    <div class="lang-switch">
+      <button class="lang-btn on" onclick="setLang('de')">DE</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('pt')">PT</button>
+    </div>
+    <a href="/" class="back-link" id="back-link">← Zurück zum Clone</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-badge"><span class="dot"></span> DOCUMENT GOVERNANCE</div>
+  <h1 id="hero-title">Alles an <span class="gold">einem Ort.</span></h1>
+  <p id="hero-desc">Entdecken Sie WINDI — von der ersten Dokumentprüfung bis zur Enterprise-Governance. Vier Perspektiven, ein System.</p>
+</section>
+
+<div class="portal-grid">
+
+  <a href="/human-eyes" class="portal-card">
+    <div class="card-bar bar-green"></div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-icon ci-eyes">👁️</div>
+        <span class="card-arrow">→</span>
+      </div>
+      <h2>Human Eyes</h2>
+      <div class="card-subtitle" id="card-eyes">Ist Ihr Vertrag wirklich fair? Laden Sie ein Dokument hoch — in 10 Sekunden wissen Sie Bescheid. Kein Jurastudium nötig.</div>
+      <div class="card-footer">
+        <span class="card-tag tag-live">LIVE</span>
+        <span class="card-audience" id="aud-eyes">Für alle · Kunden · Investoren</span>
+      </div>
+    </div>
+  </a>
+
+  <a href="/flying" class="portal-card">
+    <div class="card-bar bar-gold"></div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-icon ci-fly">✈️</div>
+        <span class="card-arrow">→</span>
+      </div>
+      <h2>Flying Tiers</h2>
+      <div class="card-subtitle" id="card-fly">Onboard · Sala VIP · Cockpit — gleicher Flieger, verschiedene Flughöhen. Wählen Sie Ihre Governance-Altitude.</div>
+      <div class="card-footer">
+        <span class="card-tag tag-live">LIVE</span>
+        <span class="card-audience" id="aud-fly">Controller · Decision-Makers</span>
+      </div>
+    </div>
+  </a>
+
+  <a href="/envelopes" class="portal-card">
+    <div class="card-bar bar-blue"></div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-icon ci-env">📦</div>
+        <span class="card-arrow">→</span>
+      </div>
+      <h2>Inside the Envelopes</h2>
+      <div class="card-subtitle" id="card-env">Was steckt in jedem Umschlag? Grün, Gelb, Rot — Feature-für-Feature Vergleich aller Governance-Stufen.</div>
+      <div class="card-footer">
+        <span class="card-tag tag-info">DETAIL</span>
+        <span class="card-audience" id="aud-env">Compliance · DPO · Einkauf</span>
+      </div>
+    </div>
+  </a>
+
+  <a href="/modules" class="portal-card">
+    <div class="card-bar bar-red"></div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-icon ci-mod">🧩</div>
+        <span class="card-arrow">→</span>
+      </div>
+      <h2>ADD Modules</h2>
+      <div class="card-subtitle" id="card-mod">CommitGuard · PixWindi · Twin Digital · PulseWatch — spezialisierte Module für erweiterte Governance.</div>
+      <div class="card-footer">
+        <span class="card-tag tag-info">CATALOG</span>
+        <span class="card-audience" id="aud-mod">Tech-Teams · Architekten</span>
+      </div>
+    </div>
+  </a>
+
+</div>
+
+<div class="clone-cta">
+  <a href="/" class="clone-card">
+    <div class="clone-left">
+      <div class="clone-icon">🛡️</div>
+      <div class="clone-text">
+        <h3 id="cta-title">W-a4Desk — Jetzt starten</h3>
+        <p id="cta-desc">Dokument hochladen, sofort prüfen. Kostenlos, kein Account nötig.</p>
+      </div>
+    </div>
+    <button class="clone-btn" id="cta-btn">Dokument prüfen →</button>
+  </a>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-num">6</div><div class="stat-label" id="st-1">Analyse-Schichten</div></div>
+  <div class="stat-divider"></div>
+  <div class="stat"><div class="stat-num">9</div><div class="stat-label" id="st-2">Invarianten</div></div>
+  <div class="stat-divider"></div>
+  <div class="stat"><div class="stat-num">17</div><div class="stat-label">ISP Profile</div></div>
+  <div class="stat-divider"></div>
+  <div class="stat"><div class="stat-num">3</div><div class="stat-label" id="st-4">Sprachen</div></div>
+  <div class="stat-divider"></div>
+  <div class="stat"><div class="stat-num">0</div><div class="stat-label" id="st-5">Daten gespeichert</div></div>
+</div>
+
+<section class="principle-section">
+  <div class="principle-text">
+    <span class="p-gold" id="pr-1">KI verarbeitet.</span>
+    <span class="p-white" id="pr-2"> Mensch entscheidet.</span>
+    <span class="p-green" id="pr-3"> WINDI garantiert.</span>
+  </div>
+  <div class="dragons-line">THREE DRAGONS PROTOCOL — Guardian · Architect · Witness — I1-I9 ACTIVE</div>
+</section>
+
+<footer class="footer">
+  <div class="footer-left">WINDI © 2026 · Kempten, Germany 🇩🇪</div>
+  <div class="footer-right">
+    <a href="/human-eyes" class="footer-link">Human Eyes</a>
+    <a href="/flying" class="footer-link">Flying Tiers</a>
+    <a href="/envelopes" class="footer-link">Envelopes</a>
+    <a href="/modules" class="footer-link">Modules</a>
+  </div>
+</footer>
+
+<script>
+const T = {
+  de: {
+    'back-link': '← Zurück zum Clone',
+    'hero-title': 'Alles an <span class="gold">einem Ort.</span>',
+    'hero-desc': 'Entdecken Sie WINDI — von der ersten Dokumentprüfung bis zur Enterprise-Governance. Vier Perspektiven, ein System.',
+    'card-eyes': 'Ist Ihr Vertrag wirklich fair? Laden Sie ein Dokument hoch — in 10 Sekunden wissen Sie Bescheid. Kein Jurastudium nötig.',
+    'card-fly': 'Onboard · Sala VIP · Cockpit — gleicher Flieger, verschiedene Flughöhen. Wählen Sie Ihre Governance-Altitude.',
+    'card-env': 'Was steckt in jedem Umschlag? Grün, Gelb, Rot — Feature-für-Feature Vergleich aller Governance-Stufen.',
+    'card-mod': 'CommitGuard · PixWindi · Twin Digital · PulseWatch — spezialisierte Module für erweiterte Governance.',
+    'aud-eyes': 'Für alle · Kunden · Investoren',
+    'aud-fly': 'Controller · Decision-Makers',
+    'aud-env': 'Compliance · DPO · Einkauf',
+    'aud-mod': 'Tech-Teams · Architekten',
+    'cta-title': 'W-a4Desk — Jetzt starten',
+    'cta-desc': 'Dokument hochladen, sofort prüfen. Kostenlos, kein Account nötig.',
+    'cta-btn': 'Dokument prüfen →',
+    'st-1': 'Analyse-Schichten', 'st-2': 'Invarianten', 'st-4': 'Sprachen', 'st-5': 'Daten gespeichert',
+    'pr-1': 'KI verarbeitet.', 'pr-2': ' Mensch entscheidet.', 'pr-3': ' WINDI garantiert.'
+  },
+  en: {
+    'back-link': '← Back to Clone',
+    'hero-title': 'Everything in <span class="gold">one place.</span>',
+    'hero-desc': 'Discover WINDI — from your first document check to Enterprise Governance. Four perspectives, one system.',
+    'card-eyes': 'Is your contract really fair? Upload a document — in 10 seconds you\'ll know. No law degree needed.',
+    'card-fly': 'Onboard · VIP Lounge · Cockpit — same plane, different altitudes. Choose your Governance altitude.',
+    'card-env': 'What\'s inside each envelope? Green, Yellow, Red — feature-by-feature comparison of all governance tiers.',
+    'card-mod': 'CommitGuard · PixWindi · Twin Digital · PulseWatch — specialized modules for advanced governance.',
+    'aud-eyes': 'For everyone · Clients · Investors',
+    'aud-fly': 'Controllers · Decision-Makers',
+    'aud-env': 'Compliance · DPO · Procurement',
+    'aud-mod': 'Tech Teams · Architects',
+    'cta-title': 'W-a4Desk — Start now',
+    'cta-desc': 'Upload a document, check instantly. Free, no account needed.',
+    'cta-btn': 'Check document →',
+    'st-1': 'Analysis Layers', 'st-2': 'Invariants', 'st-4': 'Languages', 'st-5': 'Data stored',
+    'pr-1': 'AI processes.', 'pr-2': ' Human decides.', 'pr-3': ' WINDI guarantees.'
+  },
+  pt: {
+    'back-link': '← Voltar ao Clone',
+    'hero-title': 'Tudo em <span class="gold">um só lugar.</span>',
+    'hero-desc': 'Descubra o WINDI — da primeira verificação de documento à Governança Enterprise. Quatro perspectivas, um sistema.',
+    'card-eyes': 'O seu contrato é realmente justo? Faça upload — em 10 segundos você saberá. Sem precisar de advogado.',
+    'card-fly': 'Onboard · Sala VIP · Cockpit — mesmo avião, altitudes diferentes. Escolha sua altitude de Governança.',
+    'card-env': 'O que tem dentro de cada envelope? Verde, Amarelo, Vermelho — comparação completa de cada nível.',
+    'card-mod': 'CommitGuard · PixWindi · Twin Digital · PulseWatch — módulos especializados para governança avançada.',
+    'aud-eyes': 'Para todos · Clientes · Investidores',
+    'aud-fly': 'Controllers · Decisores',
+    'aud-env': 'Compliance · DPO · Compras',
+    'aud-mod': 'Times Tech · Arquitetos',
+    'cta-title': 'W-a4Desk — Comece agora',
+    'cta-desc': 'Faça upload do documento, verifique na hora. Gratuito, sem conta.',
+    'cta-btn': 'Verificar documento →',
+    'st-1': 'Camadas de Análise', 'st-2': 'Invariantes', 'st-4': 'Idiomas', 'st-5': 'Dados armazenados',
+    'pr-1': 'IA processa.', 'pr-2': ' Humano decide.', 'pr-3': ' WINDI garante.'
+  }
+};
+
+function setLang(lang) {
+  document.querySelectorAll('.lang-btn').forEach(b =>
+    b.classList.toggle('on', b.textContent.trim().toLowerCase() === lang)
+  );
+  const dict = T[lang];
+  if (!dict) return;
+  for (const [id, val] of Object.entries(dict)) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = val;
+  }
+  document.documentElement.lang = lang;
+  try { localStorage.setItem('windi-lang', lang); } catch(e) {}
+}
+
+// Restore
+try {
+  const s = localStorage.getItem('windi-lang');
+  if (s && T[s]) setLang(s);
+} catch(e) {}
+</script>
+
+</body>
+</html>

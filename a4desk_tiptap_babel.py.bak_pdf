@@ -1,0 +1,1447 @@
+#!/usr/bin/env python3
+"""
+A4 Desk BABEL - Tiptap Edition v3
+WINDI Publishing House - Torre de Babel Revertida
+
+VERSÃO 3.0 - 27 JAN 2026
+━━━━━━━━━━━━━━━━━━━━━━━━━
+MELHORIAS v3:
+✅ Sidebars colapsáveis (☰ e ⚙️)
+✅ Chat GRANDE como protagonista
+✅ Textarea multilinha no input
+✅ Layout responsivo mobile-first
+✅ Transições suaves
+
+Motor: ContentEditable + Custom Fields
+Persistência: SQLite
+"""
+import os
+import sys
+import json
+import hashlib
+import sqlite3
+import subprocess
+import tempfile
+from datetime import datetime, timezone
+from pathlib import Path
+from flask import Flask, request, jsonify, send_file, render_template_string
+
+# ============================================================================
+# WINDI TEMPLATE REGISTRY INTEGRATION v1.2.0
+# ============================================================================
+sys.path.insert(0, "/opt/windi/a4desk-editor/intent_parser")
+try:
+    from chat_integration import ChatIntentHandler
+    INTENT_HANDLER = ChatIntentHandler()
+    INTENT_PARSER_AVAILABLE = True
+    print("✓ Intent Parser v1.0.0 loaded")
+except Exception as e:
+    INTENT_PARSER_AVAILABLE = False
+    print(f"⚠ Intent Parser not available: {e}")
+import sys
+import os
+sys.path.insert(0, '/opt/windi/template_registry')
+sys.path.insert(0, '/opt/windi/a4desk-editor/intent_parser')
+try:
+    from chat_integration import ChatIntentHandler
+    INTENT_HANDLER = ChatIntentHandler()
+    INTENT_PARSER_AVAILABLE = True
+    print("Intent Parser v1.0.0 loaded")
+except Exception as e:
+    INTENT_PARSER_AVAILABLE = False
+    print(f"Intent Parser not available: {e}")
+
+# Carregar variáveis de ambiente
+from dotenv import load_dotenv
+load_dotenv('/etc/windi/secrets.env')
+
+try:
+    from api_endpoints import register_registry_endpoints
+    REGISTRY_AVAILABLE = True
+except ImportError as e:
+    REGISTRY_AVAILABLE = False
+    print(f"⚠️ Template Registry não disponível: {e}")
+from flask_cors import CORS
+import requests
+# WINDI Templates
+sys.path.insert(0, '/opt/windi/templates')
+try:
+    from bescheid_generator import generate_bescheid_pdf, BEISPIEL_BAUGENEHMIGUNG
+    BESCHEID_AVAILABLE = True
+except ImportError:
+    BESCHEID_AVAILABLE = False
+
+app = Flask(__name__)
+
+# Registrar Template Registry endpoints
+if REGISTRY_AVAILABLE:
+    register_registry_endpoints(app)
+CORS(app)
+
+# ============================================================================
+# CONFIGURAÇÃO
+# ============================================================================
+
+CONFIG = {
+    "port": int(os.getenv("WINDI_BABEL_PORT", 8085)),
+    "actor": "a4desk-babel-tiptap",
+    "domain": "document-production",
+    "trust_bus": "http://127.0.0.1:8081",
+    "gateway": "http://127.0.0.1:8082",
+    "db_path": "/opt/windi/data/babel_documents.db"
+}
+
+# ============================================================================
+# DATABASE - SQLite para persistência
+# ============================================================================
+
+def init_db():
+    """Inicializar banco de dados SQLite"""
+    os.makedirs(os.path.dirname(CONFIG["db_path"]), exist_ok=True)
+    conn = sqlite3.connect(CONFIG["db_path"])
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS documents (
+            id TEXT PRIMARY KEY,
+            title TEXT,
+            content TEXT,
+            human_fields TEXT,
+            status TEXT DEFAULT 'draft',
+            language TEXT DEFAULT 'de',
+            receipt TEXT,
+            created_at TEXT,
+            updated_at TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+    print("✅ SQLite database initialized")
+
+def get_db():
+    """Obter conexão com banco"""
+    conn = sqlite3.connect(CONFIG["db_path"])
+    conn.row_factory = sqlite3.Row
+    return conn
+
+init_db()
+
+# ============================================================================
+# TRADUÇÕES
+# ============================================================================
+
+TRANSLATIONS = {
+    "en": {"lang_name": "English", "flag": "🇬🇧", "principle": "AI processes. Human decides. WINDI guarantees.", "new_doc": "+ New Document", "title": "New Document", "start": "Start writing...", "author": "Author", "date": "Date", "reviewer": "Reviewer", "save": "Save", "finalize": "Finalize", "draft": "Draft", "validated": "Validated", "finalized": "Finalized", "governance": "WINDI Governance", "human_only": "Human only", "status": "Status", "created": "Created", "saved": "Saved", "receipt_gen": "WINDI-RECEIPT generated!", "delete": "Delete", "to_chat": "Back to Chat", "confirm_delete": "Delete this document?"},
+    "de": {"lang_name": "Deutsch", "flag": "🇩🇪", "principle": "KI verarbeitet. Der Mensch entscheidet. WINDI garantiert.", "new_doc": "+ Neues Dokument", "title": "Neues Dokument", "start": "Beginnen Sie zu schreiben...", "author": "Autor", "date": "Datum", "reviewer": "Prüfer", "save": "Speichern", "finalize": "Abschließen", "draft": "Entwurf", "validated": "Validiert", "finalized": "Abgeschlossen", "governance": "WINDI Governance", "human_only": "Nur Mensch", "status": "Status", "created": "Erstellt", "saved": "Gespeichert", "receipt_gen": "WINDI-RECEIPT erstellt!", "delete": "Löschen", "to_chat": "Zurück zum Chat", "confirm_delete": "Dieses Dokument löschen?"},
+    "pt": {"lang_name": "Português", "flag": "🇧🇷", "principle": "IA processa. Humano decide. WINDI garante.", "new_doc": "+ Novo Documento", "title": "Novo Documento", "start": "Comece a escrever...", "author": "Autor", "date": "Data", "reviewer": "Revisor", "save": "Salvar", "finalize": "Finalizar", "draft": "Rascunho", "validated": "Validado", "finalized": "Finalizado", "governance": "Governança WINDI", "human_only": "Somente humano", "status": "Status", "created": "Criado", "saved": "Salvo", "receipt_gen": "WINDI-RECEIPT gerado!", "delete": "Apagar", "to_chat": "Voltar ao Chat", "confirm_delete": "Apagar este documento?"},
+    "es": {"lang_name": "Español", "flag": "🇪🇸", "principle": "IA procesa. Humano decide. WINDI garantiza.", "new_doc": "+ Nuevo Documento", "title": "Nuevo Documento", "start": "Empiece a escribir...", "author": "Autor", "date": "Fecha", "reviewer": "Revisor", "save": "Guardar", "finalize": "Finalizar", "draft": "Borrador", "validated": "Validado", "finalized": "Finalizado", "governance": "Gobernanza WINDI", "human_only": "Solo humano", "status": "Estado", "created": "Creado", "saved": "Guardado", "receipt_gen": "WINDI-RECEIPT generado!", "delete": "Eliminar", "to_chat": "Volver al Chat", "confirm_delete": "¿Eliminar este documento?"},
+    "fr": {"lang_name": "Français", "flag": "🇫🇷", "principle": "L'IA traite. L'humain décide. WINDI garantit.", "new_doc": "+ Nouveau Document", "title": "Nouveau Document", "start": "Commencez à écrire...", "author": "Auteur", "date": "Date", "reviewer": "Réviseur", "save": "Enregistrer", "finalize": "Finaliser", "draft": "Brouillon", "validated": "Validé", "finalized": "Finalisé", "governance": "Gouvernance WINDI", "human_only": "Humain seul", "status": "Statut", "created": "Créé", "saved": "Enregistré", "receipt_gen": "WINDI-RECEIPT généré!", "delete": "Supprimer", "to_chat": "Retour au Chat", "confirm_delete": "Supprimer ce document?"},
+    "it": {"lang_name": "Italiano", "flag": "🇮🇹", "principle": "L'IA elabora. L'umano decide. WINDI garantisce.", "new_doc": "+ Nuovo Documento", "title": "Nuovo Documento", "start": "Inizia a scrivere...", "author": "Autore", "date": "Data", "reviewer": "Revisore", "save": "Salva", "finalize": "Finalizza", "draft": "Bozza", "validated": "Validato", "finalized": "Finalizzato", "governance": "Governance WINDI", "human_only": "Solo umano", "status": "Stato", "created": "Creato", "saved": "Salvato", "receipt_gen": "WINDI-RECEIPT generato!", "delete": "Elimina", "to_chat": "Torna alla Chat", "confirm_delete": "Eliminare questo documento?"},
+    "nl": {"lang_name": "Nederlands", "flag": "🇳🇱", "principle": "AI verwerkt. Mens beslist. WINDI garandeert.", "new_doc": "+ Nieuw Document", "title": "Nieuw Document", "start": "Begin met schrijven...", "author": "Auteur", "date": "Datum", "reviewer": "Reviewer", "save": "Opslaan", "finalize": "Afronden", "draft": "Concept", "validated": "Gevalideerd", "finalized": "Afgerond", "governance": "WINDI Governance", "human_only": "Alleen mens", "status": "Status", "created": "Gemaakt", "saved": "Opgeslagen", "receipt_gen": "WINDI-RECEIPT gegenereerd!", "delete": "Verwijderen", "to_chat": "Terug naar Chat", "confirm_delete": "Dit document verwijderen?"},
+    "pl": {"lang_name": "Polski", "flag": "🇵🇱", "principle": "AI przetwarza. Człowiek decyduje. WINDI gwarantuje.", "new_doc": "+ Nowy Dokument", "title": "Nowy Dokument", "start": "Zacznij pisać...", "author": "Autor", "date": "Data", "reviewer": "Recenzent", "save": "Zapisz", "finalize": "Zakończ", "draft": "Szkic", "validated": "Zwalidowany", "finalized": "Zakończony", "governance": "Zarządzanie WINDI", "human_only": "Tylko człowiek", "status": "Status", "created": "Utworzono", "saved": "Zapisano", "receipt_gen": "WINDI-RECEIPT wygenerowany!", "delete": "Usuń", "to_chat": "Wróć do Czatu", "confirm_delete": "Usunąć ten dokument?"}
+}
+
+def t(key, lang):
+    """Tradução com fallback"""
+    return TRANSLATIONS.get(lang, {}).get(key) or TRANSLATIONS.get('en', {}).get(key, key)
+
+# ============================================================================
+# FUNÇÕES AUXILIARES
+# ============================================================================
+
+def clean_for_export(text, lang='de'):
+    """Limpar texto para exportação - adiciona contexto de revisão"""
+    if not text:
+        return ""
+    text = text.replace('```', '')
+
+    confirm_phrases = {
+        'Entspricht diese Protokoll-Vorlage Ihren Anforderungen?',
+        'Entspricht das Ihren Anforderungen',
+        'Does this meet your requirements',
+        'Isso atende aos seus requisitos',
+        'Este formato de protocolo atende às suas necessidades?',
+        'Is this format suitable for your purpose?',
+        'Ist dieses Format für Ihren Zweck geeignet?'
+    }
+
+    context_msg = {
+        'de': '\n\n─────────────────────────────────────────\n⚠️ ENTWURF - NOCH NICHT ABGESCHLOSSEN\nSie sind einen Schritt vor dem Abschluss.\nBitte prüfen und "Abschließen" klicken.\n─────────────────────────────────────────',
+        'en': '\n\n─────────────────────────────────────────\n⚠️ DRAFT - NOT YET FINALIZED\nYou are one step before completion.\nPlease review and click "Finalize".\n─────────────────────────────────────────',
+        'pt': '\n\n─────────────────────────────────────────\n⚠️ RASCUNHO - AINDA NÃO FINALIZADO\nVocê está a um passo da conclusão.\nPor favor revise e clique em "Finalizar".\n─────────────────────────────────────────',
+        'es': '\n\n─────────────────────────────────────────\n⚠️ BORRADOR - AÚN NO FINALIZADO\nEstá a un paso de completar.\nPor favor revise y haga clic en "Finalizar".\n─────────────────────────────────────────',
+        'fr': '\n\n─────────────────────────────────────────\n⚠️ BROUILLON - PAS ENCORE FINALISÉ\nVous êtes à une étape de la fin.\nVeuillez vérifier et cliquer sur "Finaliser".\n─────────────────────────────────────────',
+        'it': '\n\n─────────────────────────────────────────\n⚠️ BOZZA - NON ANCORA FINALIZZATO\nSei a un passo dal completamento.\nPer favore rivedi e clicca su "Finalizza".\n─────────────────────────────────────────',
+        'nl': '\n\n─────────────────────────────────────────\n⚠️ CONCEPT - NOG NIET AFGEROND\nU bent één stap verwijderd van voltooiing.\nControleer en klik op "Afronden".\n─────────────────────────────────────────',
+        'pl': '\n\n─────────────────────────────────────────\n⚠️ SZKIC - JESZCZE NIE ZAKOŃCZONY\nJesteś o krok od ukończenia.\nProszę sprawdzić i kliknąć "Zakończ".\n─────────────────────────────────────────'
+    }
+
+    remove_phrases = [
+        'Die souveräne Entscheidung bleibt bei Ihnen',
+        'The sovereign decision remains with you',
+        'A decisão soberana permanece com você',
+        'La decisión soberana queda con usted',
+        'La décision souveraine vous appartient',
+        'La decisione sovrana spetta a te',
+        'De soevereine beslissing blijft bij u',
+        'Suwerenna decyzja należy do Ciebie',
+        'Human decides. I structure.',
+        'Der Mensch entscheidet. Ich strukturiere.',
+        'O humano decide. Eu estruturo.',
+        'A decisão é sua. Estou aqui para ajudar.'
+    ]
+
+    for phrase in remove_phrases:
+        text = text.replace(phrase, '')
+
+    for phrase in confirm_phrases:
+        if phrase in text:
+            text = text.replace(phrase, '')
+            text = text.strip() + context_msg.get(lang, context_msg['en'])
+            break
+
+    return text.strip()
+
+def make_receipt(doc_id, content, lang):
+    """Gerar WINDI-RECEIPT"""
+    ts = datetime.now(timezone.utc)
+    h = hashlib.sha256(json.dumps(content, ensure_ascii=False).encode()).hexdigest()[:12]
+    return {
+        "receipt_id": f"WINDI-BABEL-{ts.strftime('%d%b%y').upper()}-{h.upper()}",
+        "document_id": doc_id,
+        "timestamp": ts.isoformat(),
+        "hash": h,
+        "guardrails": ["G1", "G2", "G6", "G7", "G8"],
+        "language": lang,
+        "principle": t("principle", lang)
+    }
+
+# ============================================================================
+# API - DOCUMENTOS (CRUD com SQLite)
+# ============================================================================
+
+@app.route('/api/health')
+def health():
+    return jsonify({"status": "healthy", "service": "A4 Desk BABEL v3", "engine": "Tiptap", "storage": "SQLite"})
+
+@app.route('/api/document', methods=['POST'])
+def create_document():
+    """Criar novo documento"""
+    data = request.json or {}
+    lang = data.get('language', 'de')
+    now = datetime.now(timezone.utc).isoformat()
+    doc_id = f"BABEL-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO documents (id, title, content, human_fields, status, language, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (doc_id, t("title", lang), "", "{}", "draft", lang, now, now))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"id": doc_id, "title": t("title", lang), "status": "draft", "language": lang}), 201
+
+@app.route('/api/document/<doc_id>', methods=['GET'])
+def get_document(doc_id):
+    """Obter documento"""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM documents WHERE id = ?", (doc_id,))
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row:
+        return jsonify({"error": "Not found"}), 404
+
+    return jsonify({
+        "id": row["id"],
+        "title": row["title"],
+        "content": {"text": row["content"]},
+        "human_fields": json.loads(row["human_fields"] or "{}"),
+        "status": row["status"],
+        "language": row["language"],
+        "receipt": json.loads(row["receipt"]) if row["receipt"] else None,
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"]
+    })
+
+@app.route('/api/document/<doc_id>', methods=['PUT'])
+def update_document(doc_id):
+    """Atualizar documento"""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM documents WHERE id = ?", (doc_id,))
+    row = cursor.fetchone()
+
+    if not row:
+        conn.close()
+        return jsonify({"error": "Not found"}), 404
+
+    data = request.json or {}
+    title = data.get('title', row["title"])
+    content = data.get('content', {}).get('text', row["content"])
+    human_fields = json.dumps(data.get('human_fields', json.loads(row["human_fields"] or "{}")))
+    now = datetime.now(timezone.utc).isoformat()
+
+    cursor.execute("""
+        UPDATE documents SET title = ?, content = ?, human_fields = ?, status = 'validated', updated_at = ?
+        WHERE id = ?
+    """, (title, content, human_fields, now, doc_id))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"id": doc_id, "status": "validated", "message": "Saved"})
+
+@app.route('/api/document/<doc_id>/finalize', methods=['POST'])
+def finalize_document(doc_id):
+    """Finalizar documento e gerar WINDI-RECEIPT"""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM documents WHERE id = ?", (doc_id,))
+    row = cursor.fetchone()
+
+    if not row:
+        conn.close()
+        return jsonify({"error": "Not found"}), 404
+
+    content = {"text": row["content"], "human_fields": json.loads(row["human_fields"] or "{}")}
+    receipt = make_receipt(doc_id, content, row["language"])
+    now = datetime.now(timezone.utc).isoformat()
+
+    cursor.execute("""
+        UPDATE documents SET status = 'finalized', receipt = ?, updated_at = ?
+        WHERE id = ?
+    """, (json.dumps(receipt), now, doc_id))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"id": doc_id, "status": "finalized", "receipt": receipt})
+
+@app.route('/api/document/<doc_id>', methods=['DELETE'])
+def delete_document(doc_id):
+    """Deletar documento"""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM documents WHERE id = ?", (doc_id,))
+    conn.commit()
+    deleted = cursor.rowcount > 0
+    conn.close()
+    if deleted:
+        return jsonify({"success": True, "message": "Document deleted"})
+    return jsonify({"error": "Not found"}), 404
+
+@app.route('/api/documents', methods=['GET'])
+def list_documents():
+    """Listar todos os documentos"""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, title, status, language, created_at, updated_at FROM documents ORDER BY updated_at DESC")
+    rows = cursor.fetchall()
+    conn.close()
+
+    docs = [{"id": r["id"], "title": r["title"], "status": r["status"], "language": r["language"], "created_at": r["created_at"], "updated_at": r["updated_at"]} for r in rows]
+    return jsonify({"documents": docs})
+
+# ============================================================================
+# API - EXPORTAÇÃO (DOCX, PDF, ODT, RTF, HTML, MD)
+# ============================================================================
+
+@app.route('/api/document/<doc_id>/export/<fmt>', methods=['GET'])
+def export_document(doc_id, fmt):
+    """Exportar documento para vários formatos"""
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM documents WHERE id = ?", (doc_id,))
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row:
+        return jsonify({"error": "Not found"}), 404
+
+    if fmt not in ['docx', 'pdf', 'odt', 'rtf', 'html', 'md']:
+        return jsonify({"error": "Format not supported"}), 400
+
+    title = row["title"]
+    text = clean_for_export(row["content"], row["language"])
+
+    html_content = f"""<!DOCTYPE html>
+<html lang="{row['language']}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }}
+        h1 {{ color: #1a365d; border-bottom: 2px solid #3182ce; padding-bottom: 10px; }}
+        .content {{ white-space: pre-wrap; }}
+    </style>
+</head>
+<body>
+    <h1>{title}</h1>
+    <div class="content">{text.replace(chr(10), '<br>')}</div>
+</body>
+</html>"""
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False, encoding='utf-8') as f:
+        f.write(html_content)
+        html_path = f.name
+
+    try:
+        if fmt == 'html':
+            return send_file(html_path, as_attachment=True, download_name=f"{title}.html", mimetype='text/html')
+
+        output_path = html_path.replace('.html', f'.{fmt}')
+
+        if fmt == 'pdf':
+            cmd = ['wkhtmltopdf', '--encoding', 'UTF-8', '--quiet', html_path, output_path]
+        else:
+            cmd = ['pandoc', '-f', 'html', '-t', 'markdown' if fmt == 'md' else fmt,
+                   '-o', output_path, '--wrap=none', html_path]
+
+        result = subprocess.run(cmd, capture_output=True, text=True)
+
+        if result.returncode != 0:
+            return jsonify({"error": f"Conversion failed: {result.stderr}"}), 500
+
+        mime_types = {
+            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'pdf': 'application/pdf',
+            'odt': 'application/vnd.oasis.opendocument.text',
+            'rtf': 'application/rtf',
+            'md': 'text/markdown'
+        }
+
+        return send_file(output_path, as_attachment=True, download_name=f"{title}.{fmt}", mimetype=mime_types.get(fmt, 'application/octet-stream'))
+
+    finally:
+        if os.path.exists(html_path):
+            os.unlink(html_path)
+
+# ============================================================================
+
+@app.route('/api/document/<doc_id>/export/bescheid-pdf', methods=['GET'])
+def export_bescheid_pdf(doc_id):
+    """Exportar como Bescheid PDF com QR Codes WINDI"""
+    if not BESCHEID_AVAILABLE:
+        return jsonify({"error": "Bescheid generator not available"}), 500
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM documents WHERE id = ?", (doc_id,))
+    row = cursor.fetchone()
+    conn.close()
+    
+    if not row:
+        return jsonify({"error": "Not found"}), 404
+    
+    data = BEISPIEL_BAUGENEHMIGUNG.copy()
+    data['subject'] = row['title']
+    
+    pdf_bytes, receipt = generate_bescheid_pdf(data)
+    
+    output_path = f"/tmp/Bescheid_{doc_id}.pdf"
+    with open(output_path, 'wb') as f:
+        f.write(pdf_bytes)
+    
+    return send_file(output_path, as_attachment=True, 
+                     download_name=f"Bescheid_{receipt['id']}.pdf",
+                     mimetype='application/pdf')
+
+# API - LLM CHAT (integração com Gateway)
+# ============================================================================
+
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    """Enviar mensagem para o WINDI Agent via Gateway - com suporte a Bescheid"""
+    data = request.json or {}
+    message = data.get('message', '')
+    context = data.get('context', '')
+    dragon = data.get('dragon', 'claude')
+    
+    # === INTENT PARSER v1.0.0 ===
+    if INTENT_PARSER_AVAILABLE:
+        session_id = request.remote_addr
+        intent_result = INTENT_HANDLER.handle_message(message, session_id)
+        if intent_result['handled']:
+            return jsonify({
+                "response": intent_result['response'],
+                "action": intent_result['action'],
+                "template": intent_result.get('template'),
+            })
+    # === END INTENT PARSER ===
+
+    # Detectar pedido de Bescheid
+    msg_lower = message.lower()
+    if BESCHEID_AVAILABLE and ('bescheid' in msg_lower and ('baugenehmigung' in msg_lower or 'erstellen' in msg_lower)):
+        # Gerar Bescheid PDF
+        from bescheid_generator import generate_bescheid_pdf, BEISPIEL_BAUGENEHMIGUNG
+        import uuid
+        
+        bescheid_data = BEISPIEL_BAUGENEHMIGUNG.copy()
+        
+        # Extrair nome se mencionado
+        if 'antragsteller:' in msg_lower:
+            try:
+                name_part = message.split('ntragsteller:')[1].split(',')[0].strip()
+                bescheid_data['recipient_name'] = name_part
+            except:
+                pass
+        
+        pdf_bytes, receipt = generate_bescheid_pdf(bescheid_data)
+        
+        # Salvar PDF
+        pdf_filename = f"Bescheid_{receipt['id']}.pdf"
+        pdf_path = f"/opt/windi/a4desk-editor/static/{pdf_filename}"
+        with open(pdf_path, 'wb') as f:
+            f.write(pdf_bytes)
+        
+        return jsonify({
+            "response": f"""✅ **Bescheid erstellt!**
+
+📄 **Receipt:** {receipt['id']}
+🔐 **Hash:** {receipt['hash']}
+
+📥 [Download PDF](/static/{pdf_filename})
+
+---
+*KI verarbeitet. Der Mensch entscheidet. WINDI garantiert.*
+
+⚠️ **Nur Mensch:** Bitte prüfen Sie den TENOR und unterschreiben Sie das Dokument.""",
+            "receipt": receipt['id'],
+            "pdf_url": f"/static/{pdf_filename}"
+        })
+    
+    # Chat normal via Gateway
+    try:
+        resp = requests.post(f"{CONFIG['gateway']}/api/chat", json={
+            "message": message,
+            "context": context,
+            "dragon": dragon
+        }, timeout=60)
+        result = resp.json()
+        return jsonify(result)
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"Gateway error: {str(e)}"}), 503
+
+# ============================================================================
+# INTERFACE HTML v3 - Sidebars colapsáveis, Chat grande
+# ============================================================================
+
+BABEL_HTML = """<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A4 Desk BABEL v3 - WINDI Publishing House</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #1a365d; --primary-light: #2c5282; --accent: #3182ce;
+            --success: #38a169; --warning: #d69e2e; --danger: #e53e3e;
+            --bg: #f7fafc; --card: #ffffff; --text: #2d3748; --text-light: #718096;
+            --border: #e2e8f0; --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --sidebar-width: 280px;
+            --panel-width: 320px;
+        }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+        /* ============================================
+           LAYOUT PRINCIPAL - Flexível
+           ============================================ */
+        .app-container { display: flex; min-height: 100vh; }
+        
+        /* ============================================
+           SIDEBAR ESQUERDA - Colapsável
+           ============================================ */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .sidebar.collapsed {
+            width: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .sidebar-toggle {
+            position: fixed;
+            left: 10px;
+            top: 10px;
+            z-index: 1000;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+        .sidebar-toggle:hover { background: var(--accent); }
+        .sidebar.collapsed ~ .main-area .sidebar-toggle { left: 10px; }
+        
+        .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; margin-top: 40px; }
+        .logo i { font-size: 2rem; color: var(--accent); }
+        .logo h1 { font-size: 1.2rem; }
+        .logo small { display: block; font-size: 0.7rem; opacity: 0.7; }
+
+        .lang-bar { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
+        .lang-btn { background: var(--primary-light); border: none; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+        .lang-btn:hover, .lang-btn.active { background: var(--accent); }
+
+        .btn-new { width: 100%; padding: 12px; background: var(--success); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-bottom: 20px; transition: all 0.2s; }
+        .btn-new:hover { opacity: 0.9; }
+
+        .doc-list { max-height: calc(100vh - 350px); overflow-y: auto; }
+        .doc-item { padding: 12px; background: var(--primary-light); border-radius: 6px; margin-bottom: 8px; cursor: pointer; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; }
+        .doc-item:hover { background: var(--accent); }
+        .doc-item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .doc-item-delete { background: var(--danger); color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; }
+
+        .footer-info { position: absolute; bottom: 20px; left: 20px; right: 20px; font-size: 0.75rem; opacity: 0.7; }
+
+        /* ============================================
+           ÁREA PRINCIPAL - Editor + Chat
+           ============================================ */
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            transition: all 0.3s ease;
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            background: var(--card);
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .top-bar-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-left: 50px;
+        }
+        .top-bar-actions { display: flex; gap: 8px; margin-left: auto; }
+        .top-bar-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+        }
+        .btn-save { background: var(--primary); color: white; }
+        .btn-finalize { background: var(--success); color: white; }
+        .btn-delete { background: var(--danger); color: white; }
+        .btn-settings { background: var(--accent); color: white; }
+        .top-bar-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* Content Area - Split View */
+        .content-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        /* Editor Section */
+        .editor-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+            min-width: 300px;
+        }
+        
+        .title-input {
+            width: 100%;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border: none;
+            border-bottom: 2px solid var(--border);
+            padding: 10px 0;
+            margin-bottom: 15px;
+            color: var(--primary);
+            background: transparent;
+        }
+        .title-input:focus { outline: none; border-color: var(--accent); }
+
+        .editor-toolbar {
+            display: flex;
+            gap: 5px;
+            padding: 10px;
+            background: var(--bg);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .toolbar-btn {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .toolbar-btn:hover { background: var(--accent); color: white; }
+
+        #editor {
+            flex: 1;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            font-size: 1rem;
+            line-height: 1.8;
+            background: white;
+            overflow-y: auto;
+            min-height: 200px;
+        }
+        #editor:focus { outline: none; border-color: var(--accent); }
+
+        /* Campos editáveis */
+        .editable-field {
+            border: none;
+            border-bottom: 1px dashed var(--border);
+            background: transparent;
+            min-width: 100px;
+            padding: 2px 4px;
+            font-family: inherit;
+            font-size: inherit;
+            color: var(--primary);
+        }
+        .editable-field:hover { border-bottom-color: var(--accent); background: rgba(49, 130, 206, 0.05); }
+        .editable-field:focus { outline: none; border-bottom: 2px solid var(--accent); background: rgba(49, 130, 206, 0.1); }
+
+        /* ============================================
+           CHAT SECTION - Grande e proeminente
+           ============================================ */
+        .chat-section {
+            width: 45%;
+            min-width: 350px;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--border);
+            background: var(--card);
+        }
+        
+        .chat-header {
+            padding: 15px 20px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-header i { font-size: 1.5rem; }
+        .chat-header h2 { font-size: 1.1rem; font-weight: 600; }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: var(--bg);
+        }
+        .chat-msg {
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            max-width: 90%;
+            white-space: pre-wrap;
+        }
+        .chat-user {
+            background: var(--primary);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-ai {
+            background: white;
+            border: 1px solid var(--border);
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+            text-align: left;
+         }
+         .insert-btn
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .insert-btn:hover { opacity: 0.9; }
+
+        .chat-input-area {
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid var(--border);
+        }
+        .chat-textarea {
+            width: 100%;
+            min-height: 80px;
+            max-height: 200px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+        .chat-textarea:focus { outline: none; border-color: var(--accent); }
+        
+        .chat-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .chat-send {
+            padding: 10px 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chat-send:hover { opacity: 0.9; }
+        .chat-send-doc {
+            padding: 10px 20px;
+            background: var(--warning);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* ============================================
+           PANEL DIREITO - Colapsável (Settings)
+           ============================================ */
+        .settings-panel {
+            width: var(--panel-width);
+            background: var(--card);
+            border-left: 1px solid var(--border);
+            padding: 20px;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        .settings-panel.collapsed {
+            width: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .panel-toggle {
+            position: fixed;
+            right: 10px;
+            top: 10px;
+            z-index: 1000;
+            background: var(--accent);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+        }
+        .panel-toggle:hover { background: var(--primary); }
+
+        .panel-section { margin-bottom: 25px; }
+        .panel-title { font-size: 0.9rem; font-weight: 600; color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+
+        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .status-draft { background: #fef3c7; color: #92400e; }
+        .status-validated { background: #d1fae5; color: #065f46; }
+        .status-finalized { background: #dbeafe; color: #1e40af; }
+
+        .human-field { margin-bottom: 15px; }
+        .human-field label { display: block; font-size: 0.85rem; color: var(--text-light); margin-bottom: 5px; }
+        .human-field input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; }
+        .human-field small { color: var(--warning); font-size: 0.75rem; }
+
+        .export-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .btn-export { background: #805ad5; color: white; padding: 8px; font-size: 0.85rem; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-export:hover { opacity: 0.9; }
+
+        .receipt-box { background: var(--bg); border: 1px solid var(--success); border-radius: 8px; padding: 15px; font-family: monospace; font-size: 0.75rem; display: none; margin-top: 15px; }
+        .receipt-box.show { display: block; }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 20px; right: 20px; padding: 15px 25px; border-radius: 8px; color: white; font-weight: 600; z-index: 1000; animation: fadeIn 0.3s; }
+        .toast-success { background: var(--success); }
+        .toast-error { background: var(--danger); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ============================================
+           RESPONSIVO
+           ============================================ */
+        @media (max-width: 1200px) {
+            .chat-section { width: 40%; min-width: 300px; }
+        }
+        @media (max-width: 900px) {
+            .content-area { flex-direction: column; }
+            .chat-section { width: 100%; max-width: none; border-left: none; border-top: 1px solid var(--border); }
+            .editor-section { min-height: 300px; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- Toggle Sidebar -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()" title="Menu">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar Esquerda -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fas fa-landmark"></i>
+            <div>
+                <h1>A4 Desk BABEL</h1>
+                <small>WINDI Publishing House</small>
+            </div>
+        </div>
+
+        <div class="lang-bar" id="langBar"></div>
+
+        <button class="btn-new" onclick="newDoc()">
+            <i class="fas fa-plus"></i> <span data-t="new_doc">+ Neues Dokument</span>
+        </button>
+
+        <div class="doc-list" id="docList"></div>
+
+        <div class="footer-info">
+            <p>🌍 Universal • Open • Community</p>
+            <p style="margin-top: 10px;" data-t="principle">KI verarbeitet. Der Mensch entscheidet. WINDI garantiert.</p>
+        </div>
+    </aside>
+
+    <!-- Área Principal -->
+    <div class="main-area">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <span class="top-bar-title">A4 Desk BABEL v3</span>
+            <div id="statusBadge" class="status-badge status-draft" data-t="draft">Entwurf</div>
+            <div class="top-bar-actions">
+                <button class="top-bar-btn btn-save" onclick="saveDoc()">
+                    <i class="fas fa-save"></i> <span data-t="save">Speichern</span>
+                </button>
+                <button class="top-bar-btn btn-finalize" onclick="finalizeDoc()">
+                    <i class="fas fa-check"></i> <span data-t="finalize">Abschließen</span>
+                </button>
+                <button class="top-bar-btn btn-delete" onclick="deleteCurrentDoc()">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <button class="top-bar-btn btn-settings" onclick="togglePanel()">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Content: Editor + Chat -->
+        <div class="content-area">
+            <!-- Editor -->
+            <div class="editor-section">
+                <input type="text" class="title-input" id="docTitle" placeholder="Neues Dokument" data-t-placeholder="title">
+                
+                <div class="editor-toolbar">
+                    <button class="toolbar-btn" onclick="execCmd('bold')" title="Bold"><i class="fas fa-bold"></i></button>
+                    <button class="toolbar-btn" onclick="execCmd('italic')" title="Italic"><i class="fas fa-italic"></i></button>
+                    <button class="toolbar-btn" onclick="execCmd('underline')" title="Underline"><i class="fas fa-underline"></i></button>
+                    <button class="toolbar-btn" onclick="execCmd('insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
+                    <button class="toolbar-btn" onclick="execCmd('insertOrderedList')"><i class="fas fa-list-ol"></i></button>
+                    <button class="toolbar-btn" onclick="execCmd('formatBlock', 'h2')">H2</button>
+                    <button class="toolbar-btn" onclick="execCmd('formatBlock', 'h3')">H3</button>
+                </div>
+
+                <div id="editor" contenteditable="true" data-t-placeholder="start"></div>
+            </div>
+
+            <!-- Chat Grande -->
+            <div class="chat-section">
+                <div class="chat-header">
+                    <i class="fas fa-dragon"></i>
+                    <h2>WINDI LLM Chat</h2>
+                </div>
+                
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-msg chat-ai">
+                        Olá! Sou o WINDI LLM. Como posso ajudar com seu documento hoje?
+                    </div>
+                </div>
+                
+                <div class="chat-input-area">
+                    <textarea class="chat-textarea" id="chatInput" placeholder="Digite sua mensagem... (Enter para enviar, Shift+Enter para nova linha)"></textarea>
+                    <div class="chat-actions">
+                        <button class="chat-send-doc" onclick="sendDocToChat()" title="Enviar documento para revisão">
+                            <i class="fas fa-file-export"></i> Doc → Chat
+                        </button>
+                        <button class="chat-send" onclick="sendChat()">
+                            <i class="fas fa-paper-plane"></i> Enviar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Direito (Settings) - Colapsável -->
+    <aside class="settings-panel collapsed" id="settingsPanel">
+        <div class="panel-section">
+            <div class="panel-title"><i class="fas fa-shield-alt"></i> <span data-t="governance">WINDI Governance</span></div>
+        </div>
+
+        <div class="panel-section">
+            <div class="human-field">
+                <label data-t="author">Autor</label>
+                <input type="text" id="fieldAuthor">
+                <small>🔒 <span data-t="human_only">Nur Mensch</span></small>
+            </div>
+            <div class="human-field">
+                <label data-t="date">Datum</label>
+                <input type="date" id="fieldDate">
+                <small>🔒 <span data-t="human_only">Nur Mensch</span></small>
+            </div>
+            <div class="human-field">
+                <label data-t="reviewer">Prüfer</label>
+                <input type="text" id="fieldReviewer">
+                <small>🔒 <span data-t="human_only">Nur Mensch</span></small>
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <div class="panel-title"><i class="fas fa-file-export"></i> Export</div>
+            <div class="export-grid">
+                <button class="btn-export" onclick="exportDoc('odt')">ODT</button>
+                <button class="btn-export" onclick="exportDoc('docx')">DOCX</button>
+                <button class="btn-export" onclick="exportDoc('rtf')">RTF</button>
+                <button class="btn-export" onclick="exportDoc('html')">HTML</button>
+                <button class="btn-export" onclick="exportDoc('pdf')">PDF</button>
+                <button class="btn-export" onclick="exportDoc('md')">MD</button>
+            </div>
+        </div>
+
+        <div class="receipt-box" id="receiptBox"></div>
+    </aside>
+
+    <!-- Toggle Panel -->
+    <button class="panel-toggle" onclick="togglePanel()" title="Settings">
+        <i class="fas fa-cog"></i>
+    </button>
+</div>
+
+<script>
+// ============================================================================
+// CONFIGURAÇÃO E TRADUÇÕES
+// ============================================================================
+
+const LANGS = {
+    de: {flag:'🇩🇪', name:'Deutsch'},
+    en: {flag:'🇬🇧', name:'English'},
+    pt: {flag:'🇧🇷', name:'Português'},
+    es: {flag:'🇪🇸', name:'Español'},
+    fr: {flag:'🇫🇷', name:'Français'},
+    it: {flag:'🇮🇹', name:'Italiano'},
+    nl: {flag:'🇳🇱', name:'Nederlands'},
+    pl: {flag:'🇵🇱', name:'Polski'}
+};
+
+const T = {
+    de: {
+        new_doc: '+ Neues Dokument', title: 'Neues Dokument', start: 'Beginnen Sie zu schreiben...',
+        author: 'Autor', date: 'Datum', reviewer: 'Prüfer', save: 'Speichern', finalize: 'Abschließen',
+        draft: 'Entwurf', validated: 'Validiert', finalized: 'Abgeschlossen', governance: 'WINDI Governance',
+        human_only: 'Nur Mensch', principle: 'KI verarbeitet. Der Mensch entscheidet. WINDI garantiert.',
+        delete: 'Löschen', to_chat: 'Chat', confirm_delete: 'Dieses Dokument löschen?',
+        chat_context: 'Bitte dieses Dokument überarbeiten:'
+    },
+    en: {
+        new_doc: '+ New Document', title: 'New Document', start: 'Start writing...',
+        author: 'Author', date: 'Date', reviewer: 'Reviewer', save: 'Save', finalize: 'Finalize',
+        draft: 'Draft', validated: 'Validated', finalized: 'Finalized', governance: 'WINDI Governance',
+        human_only: 'Human only', principle: 'AI processes. Human decides. WINDI guarantees.',
+        delete: 'Delete', to_chat: 'Chat', confirm_delete: 'Delete this document?',
+        chat_context: 'Please revise this document:'
+    },
+    pt: {
+        new_doc: '+ Novo Documento', title: 'Novo Documento', start: 'Comece a escrever...',
+        author: 'Autor', date: 'Data', reviewer: 'Revisor', save: 'Salvar', finalize: 'Finalizar',
+        draft: 'Rascunho', validated: 'Validado', finalized: 'Finalizado', governance: 'Governança WINDI',
+        human_only: 'Somente humano', principle: 'IA processa. Humano decide. WINDI garante.',
+        delete: 'Apagar', to_chat: 'Chat', confirm_delete: 'Apagar este documento?',
+        chat_context: 'Por favor revise este documento:'
+    }
+};
+
+let currentLang = 'de';
+let docId = null;
+
+function t(key) {
+    return (T[currentLang] || T.en)[key] || (T.en)[key] || key;
+}
+
+// ============================================================================
+// TOGGLE SIDEBARS
+// ============================================================================
+
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+function togglePanel() {
+    document.getElementById('settingsPanel').classList.toggle('collapsed');
+}
+
+// ============================================================================
+// IDIOMAS
+// ============================================================================
+
+function setLang(lang) {
+    currentLang = lang;
+    document.querySelectorAll('[data-t]').forEach(el => {
+        el.textContent = t(el.dataset.t);
+    });
+    document.querySelectorAll('[data-t-placeholder]').forEach(el => {
+        el.placeholder = t(el.dataset.tPlaceholder);
+    });
+    document.querySelectorAll('.lang-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.lang === lang);
+    });
+}
+
+function initLangBar() {
+    const bar = document.getElementById('langBar');
+    bar.innerHTML = Object.entries(LANGS).map(([k, v]) => 
+        `<button class="lang-btn ${k === currentLang ? 'active' : ''}" data-lang="${k}" onclick="setLang('${k}')">${v.flag}</button>`
+    ).join('');
+}
+
+// ============================================================================
+// EDITOR
+// ============================================================================
+
+function execCmd(cmd, val = null) {
+    document.execCommand(cmd, false, val);
+    document.getElementById('editor').focus();
+}
+
+function convertUnderlinesToFields(html) {
+    return html.replace(/_{3,}/g, (match) => {
+        const width = Math.max(100, match.length * 8);
+        return `<input type="text" class="editable-field" style="width:${width}px" placeholder="..." />`;
+    });
+}
+
+function getEditorContent() {
+    const editor = document.getElementById('editor');
+    const clone = editor.cloneNode(true);
+    clone.querySelectorAll('.editable-field').forEach(input => {
+        const span = document.createElement('span');
+        span.textContent = input.value || '_____';
+        input.parentNode.replaceChild(span, input);
+    });
+    return clone.innerText;
+}
+
+function setEditorContent(text) {
+    const editor = document.getElementById('editor');
+    let html = text
+        .replace(/\\n\\n/g, '</p><p>')
+        .replace(/\\n/g, '<br>');
+    html = convertUnderlinesToFields(html);
+    if (!html.startsWith('<p>')) {
+        html = '<p>' + html + '</p>';
+    }
+    editor.innerHTML = html;
+}
+
+// ============================================================================
+// DOCUMENTOS
+// ============================================================================
+
+async function newDoc() {
+    const res = await fetch('/api/document', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({language: currentLang})
+    });
+    const doc = await res.json();
+    docId = doc.id;
+    document.getElementById('docTitle').value = doc.title;
+    document.getElementById('editor').innerHTML = '';
+    document.getElementById('fieldAuthor').value = '';
+    document.getElementById('fieldDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('fieldReviewer').value = '';
+    updateStatus('draft');
+    document.getElementById('receiptBox').classList.remove('show');
+    loadDocs();
+    toast('Created', 'success');
+}
+
+async function saveDoc() {
+    if (!docId) await newDoc();
+    const content = getEditorContent();
+    const res = await fetch(`/api/document/${docId}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            title: document.getElementById('docTitle').value,
+            content: { text: content },
+            human_fields: {
+                author: document.getElementById('fieldAuthor').value,
+                date: document.getElementById('fieldDate').value,
+                reviewer: document.getElementById('fieldReviewer').value
+            }
+        })
+    });
+    if (res.ok) {
+        updateStatus('validated');
+        toast(t('save') + ' ✓', 'success');
+        loadDocs();
+    }
+}
+
+async function finalizeDoc() {
+    if (!docId) return toast('No document', 'error');
+    await saveDoc();
+    const res = await fetch(`/api/document/${docId}/finalize`, { method: 'POST' });
+    const data = await res.json();
+    if (data.receipt) {
+        updateStatus('finalized');
+        const box = document.getElementById('receiptBox');
+        box.innerHTML = `<strong>${data.receipt.receipt_id}</strong><br>Hash: ${data.receipt.hash}<br>${data.receipt.principle}`;
+        box.classList.add('show');
+        toast('WINDI-RECEIPT ✓', 'success');
+    }
+}
+
+async function loadDoc(id) {
+    const res = await fetch(`/api/document/${id}`);
+    const doc = await res.json();
+    docId = doc.id;
+    document.getElementById('docTitle').value = doc.title;
+    setEditorContent(doc.content?.text || '');
+    document.getElementById('fieldAuthor').value = doc.human_fields?.author || '';
+    document.getElementById('fieldDate').value = doc.human_fields?.date || '';
+    document.getElementById('fieldReviewer').value = doc.human_fields?.reviewer || '';
+    updateStatus(doc.status);
+    if (doc.receipt) {
+        const box = document.getElementById('receiptBox');
+        box.innerHTML = `<strong>${doc.receipt.receipt_id}</strong><br>Hash: ${doc.receipt.hash}`;
+        box.classList.add('show');
+    } else {
+        document.getElementById('receiptBox').classList.remove('show');
+    }
+}
+
+async function deleteDoc(id, skipConfirm = false) {
+    if (!skipConfirm && !confirm(t('confirm_delete'))) return;
+    await fetch(`/api/document/${id}`, { method: 'DELETE' });
+    loadDocs();
+    if (docId === id) newDoc();
+    toast('Deleted', 'success');
+}
+
+async function deleteCurrentDoc() {
+    if (!docId) return;
+    await deleteDoc(docId);
+}
+
+async function loadDocs() {
+    const res = await fetch('/api/documents');
+    const data = await res.json();
+    const list = document.getElementById('docList');
+    list.innerHTML = data.documents.map(d => {
+        const icon = d.status === 'finalized' ? '✅' : d.status === 'validated' ? '✓' : '📝';
+        return `
+            <div class="doc-item">
+                <span class="doc-item-title" onclick="loadDoc('${d.id}')">${icon} ${d.title}</span>
+                <button class="doc-item-delete" onclick="event.stopPropagation();deleteDoc('${d.id}')">✕</button>
+            </div>
+        `;
+    }).join('');
+}
+
+function exportDoc(fmt) {
+    if (!docId) return toast('Save first', 'error');
+    window.location.href = `/api/document/${docId}/export/${fmt}`;
+}
+
+function updateStatus(status) {
+    const badge = document.getElementById('statusBadge');
+    badge.className = 'status-badge status-' + status;
+    badge.textContent = t(status);
+}
+
+// ============================================================================
+// CHAT
+// ============================================================================
+
+function sendDocToChat() {
+    if (!docId) return toast('No document', 'error');
+    const content = getEditorContent();
+    const chatBox = document.getElementById('chatMessages');
+    chatBox.innerHTML += `<div class="chat-msg chat-user">${t('chat_context')}<br><small style="opacity:0.7">(documento enviado)</small></div>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
+    window._docToRevise = content;
+    document.getElementById('chatInput').value = 'Por favor revise este documento e sugira melhorias:';
+    document.getElementById('chatInput').focus();
+    toast('Doc → Chat ✓', 'success');
+}
+
+async function sendChat() {
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    const box = document.getElementById('chatMessages');
+    box.innerHTML += `<div class="chat-msg chat-user">${msg.replace(/\\n/g, '<br>')}</div>`;
+    input.value = '';
+    box.innerHTML += `<div class="chat-msg chat-ai" id="thinking"><i class="fas fa-spinner fa-spin"></i> Pensando...</div>`;
+    box.scrollTop = box.scrollHeight;
+
+    const context = window._docToRevise || document.getElementById('editor').innerText;
+    window._docToRevise = null;
+
+    try {
+        const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                message: msg,
+                context: context,
+                dragon: 'claude'
+            })
+        });
+
+        const data = await res.json();
+        document.getElementById('thinking')?.remove();
+
+        if (data.response) {
+            const clean = data.document_content || data.response;
+            const preview = clean.substring(0, 500).replace(/\\n/g, '<br>');
+            box.innerHTML += `
+                <div class="chat-msg chat-ai">
+                    ${preview}${clean.length > 500 ? '...' : ''}
+                    <br>
+                    <button class="insert-btn" onclick="insertToEditor()">
+                        <i class="fas fa-plus"></i> Inserir no Editor
+                    </button>
+                </div>
+            `;
+            window._lastLLM = clean;
+        } else if (data.error) {
+            box.innerHTML += `<div class="chat-msg chat-ai" style="color:var(--danger)">Erro: ${data.error}</div>`;
+        }
+    } catch(e) {
+        document.getElementById('thinking')?.remove();
+        box.innerHTML += `<div class="chat-msg chat-ai" style="color:var(--danger)">Erro: ${e}</div>`;
+    }
+
+    box.scrollTop = box.scrollHeight;
+}
+
+function insertToEditor() {
+    if (window._lastLLM) {
+        setEditorContent(window._lastLLM);
+        toast('Inserido ✓', 'success');
+        window._lastLLM = null;
+    }
+}
+
+// Permitir Enter para enviar, Shift+Enter para nova linha
+document.addEventListener('DOMContentLoaded', () => {
+    const textarea = document.getElementById('chatInput');
+    textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendChat();
+        }
+    });
+});
+
+// ============================================================================
+// TOAST
+// ============================================================================
+
+function toast(msg, type) {
+    const t = document.createElement('div');
+    t.className = 'toast toast-' + type;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+}
+
+// ============================================================================
+// INIT
+// ============================================================================
+
+initLangBar();
+loadDocs();
+newDoc();
+</script>
+</body>
+</html>
+"""
+
+@app.route('/')
+def index():
+    return render_template_string(BABEL_HTML)
+
+# ============================================================================
+# MAIN
+# ============================================================================
+
+if __name__ == '__main__':
+    print("""
+    ╔═══════════════════════════════════════════════════════════════╗
+    ║  🏛️ A4 Desk BABEL v3 - Collapsible Sidebars                  ║
+    ║  WINDI Publishing House - 27 JAN 2026                        ║
+    ║  "AI processes. Human decides. WINDI guarantees."            ║
+    ╠═══════════════════════════════════════════════════════════════╣
+    ║  ✅ Sidebars colapsáveis (☰ e ⚙️)                             ║
+    ║  ✅ Chat GRANDE como protagonista                             ║
+    ║  ✅ Textarea multilinha                                       ║
+    ║  ✅ Layout responsivo                                         ║
+    ╠═══════════════════════════════════════════════════════════════╣
+    ║  URL: http://127.0.0.1:8085                                   ║
+    ║  Storage: SQLite                                              ║
+    ╚═══════════════════════════════════════════════════════════════╝
+    """)
+    app.run(host='0.0.0.0', port=CONFIG["port"], debug=False)

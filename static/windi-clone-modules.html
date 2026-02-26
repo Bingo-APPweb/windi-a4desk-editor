@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WINDI — ADD Modules</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #fafaf7;
+    --bg-card: #ffffff;
+    --bg-module: #1a1a1a;
+    --bg-module-card: #262626;
+    --bg-module-card-hover: #2d2d2d;
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b6b6b;
+    --text-light: #f5f5f0;
+    --text-light-secondary: #a0a0a0;
+    --gold: #c9a84c;
+    --gold-bright: #e0be5a;
+    --gold-dim: #a08838;
+    --green-soft: #8fbc8f;
+    --green-badge: #2d6a2d;
+    --red-accent: #c44d4d;
+    --blue-accent: #4d7cc4;
+    --purple-accent: #8b5ec4;
+    --orange-accent: #c4884d;
+    --border-light: #e8e8e2;
+    --border-dark: #333;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-gold: 0 4px 20px rgba(201,168,76,0.15);
+    --radius: 12px;
+    --radius-lg: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ──────────────────────────────── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-light);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 800;
+    font-size: 14px;
+    color: #1a1a1a;
+  }
+
+  .logo-text {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 1px;
+  }
+
+  .lang-switch {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .lang-btn {
+    padding: 4px 10px;
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    background: transparent;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+
+  .lang-btn.active {
+    background: var(--text-primary);
+    color: var(--bg-card);
+    border-color: var(--text-primary);
+  }
+
+  /* ── HERO SECTION ────────────────────────── */
+  .hero {
+    text-align: center;
+    padding: 56px 24px 40px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .hero h1 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700;
+    font-size: 32px;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+  }
+
+  .hero p {
+    font-size: 16px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* ── PERSONA GRID ────────────────────────── */
+  .persona-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 720px;
+    margin: 0 auto 20px;
+    padding: 0 24px;
+  }
+
+  .persona-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    padding: 28px 16px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .persona-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--gold);
+  }
+
+  .persona-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+    font-size: 22px;
+  }
+
+  .persona-card h3 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .persona-card span {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  .icon-entrepreneur { background: #e8f5e9; color: #2e7d32; }
+  .icon-freelancer { background: #fce4ec; color: #c62828; }
+  .icon-compliance { background: #fff3e0; color: #e65100; }
+  .icon-private { background: #e8eaf6; color: #283593; }
+  .icon-controller { background: #e0f2f1; color: #00695c; }
+  .icon-executive { background: #f3e5f5; color: #6a1b9a; }
+
+  /* ── PRINCIPLE LINE ──────────────────────── */
+  .principle {
+    text-align: center;
+    padding: 20px 24px 40px;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+  }
+
+  .principle .gold { color: var(--gold); font-weight: 600; }
+  .principle .dark { color: var(--text-primary); }
+  .principle .green { color: var(--green-badge); font-weight: 600; }
+
+  /* ── DIVIDER ─────────────────────────────── */
+  .section-divider {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+  }
+
+  .divider-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-light), var(--gold), var(--border-light), transparent);
+  }
+
+  .divider-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg-primary);
+    padding: 4px 16px;
+    border: 1px solid var(--gold);
+    border-radius: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--gold-dim);
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+
+  /* ── ADD MODULES SECTION ─────────────────── */
+  .modules-section {
+    background: var(--bg-module);
+    margin-top: 40px;
+    padding: 56px 24px 64px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .modules-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  /* Subtle grid pattern */
+  .modules-section::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .modules-header {
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .modules-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 1.5px;
+    margin-bottom: 20px;
+  }
+
+  .modules-tag .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: pulse-dot 2s infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  .modules-header h2 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--text-light);
+    margin-bottom: 10px;
+  }
+
+  .modules-header p {
+    font-size: 15px;
+    color: var(--text-light-secondary);
+    line-height: 1.6;
+  }
+
+  /* ── MODULE CARDS ────────────────────────── */
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .module-card {
+    background: var(--bg-module-card);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-lg);
+    padding: 28px 20px 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .module-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold-bright), var(--gold-dim));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .module-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold);
+    box-shadow: var(--shadow-gold);
+    background: var(--bg-module-card-hover);
+  }
+
+  .module-card:hover::before {
+    opacity: 1;
+  }
+
+  .module-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+
+  .module-card h3 {
+    font-family: 'Bricolage Grotesque', serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text-light);
+    margin-bottom: 6px;
+  }
+
+  .module-card .module-sub {
+    font-size: 12px;
+    color: var(--text-light-secondary);
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  .module-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  .status-live {
+    background: rgba(45,106,45,0.2);
+    color: #6bcf6b;
+    border: 1px solid rgba(45,106,45,0.3);
+  }
+
+  .status-live .status-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #6bcf6b;
+    animation: pulse-dot 1.5s infinite;
+  }
+
+  .status-ready {
+    background: rgba(201,168,76,0.15);
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.25);
+  }
+
+  .status-coming {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-light-secondary);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* Featured card — CommitGuard */
+  .module-card.featured {
+    border-color: var(--gold-dim);
+    background: linear-gradient(135deg, var(--bg-module-card) 0%, rgba(201,168,76,0.06) 100%);
+  }
+
+  .module-card.featured::before {
+    opacity: 1;
+  }
+
+  .module-card.featured .new-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--gold);
+    color: #1a1a1a;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+  }
+
+  .icon-commitguard { background: linear-gradient(135deg, rgba(201,168,76,0.2), rgba(201,168,76,0.08)); color: var(--gold); }
+  .icon-pixwindi { background: rgba(77,124,196,0.15); color: var(--blue-accent); }
+  .icon-twindigital { background: rgba(139,94,196,0.15); color: var(--purple-accent); }
+  .icon-pulsewatch { background: rgba(196,77,77,0.15); color: var(--red-accent); }
+  .icon-isphub { background: rgba(0,105,92,0.15); color: #26a69a; }
+  .icon-complianceai { background: rgba(196,136,77,0.15); color: var(--orange-accent); }
+
+  /* ── FOOTER ──────────────────────────────── */
+  .footer {
+    background: var(--bg-module);
+    border-top: 1px solid var(--border-dark);
+    padding: 24px;
+    text-align: center;
+  }
+
+  .footer-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-light-secondary);
+    letter-spacing: 0.5px;
+  }
+
+  .footer-text .gold { color: var(--gold); }
+
+  /* ── RESPONSIVE ──────────────────────────── */
+  @media (max-width: 640px) {
+    .persona-grid, .modules-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .hero h1 { font-size: 26px; }
+    .modules-header h2 { font-size: 24px; }
+  }
+
+  @media (max-width: 420px) {
+    .persona-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .modules-grid {
+      grid-template-columns: 1fr;
+      max-width: 340px;
+    }
+  }
+
+  /* ── ANIMATIONS ──────────────────────────── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .persona-card, .module-card {
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .persona-card:nth-child(1), .module-card:nth-child(1) { animation-delay: 0.05s; }
+  .persona-card:nth-child(2), .module-card:nth-child(2) { animation-delay: 0.1s; }
+  .persona-card:nth-child(3), .module-card:nth-child(3) { animation-delay: 0.15s; }
+  .persona-card:nth-child(4), .module-card:nth-child(4) { animation-delay: 0.2s; }
+  .persona-card:nth-child(5), .module-card:nth-child(5) { animation-delay: 0.25s; }
+  .persona-card:nth-child(6), .module-card:nth-child(6) { animation-delay: 0.3s; }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ───────────────────────────────────── -->
+<header class="header">
+  <div class="header-logo">
+    <div class="logo-circle">W</div>
+    <span class="logo-text">WINDI</span>
+  </div>
+  <div class="lang-switch">
+    <button class="lang-btn active">DE</button>
+    <button class="lang-btn">EN</button>
+    <button class="lang-btn">PT</button>
+  </div>
+</header>
+
+<!-- ── HERO ─────────────────────────────────────── -->
+<section class="hero">
+  <h1>Willkommen bei WINDI</h1>
+  <p>Laden Sie ein Dokument hoch und erfahren Sie sofort, ob es sicher, konform und fair ist.</p>
+</section>
+
+<!-- ── PERSONA GRID ────────────────────────────── -->
+<div class="persona-grid">
+  <div class="persona-card">
+    <div class="persona-icon icon-entrepreneur">🏢</div>
+    <h3>Unternehmerin</h3>
+    <span>Verträge, Lieferanten, Compliance</span>
+  </div>
+  <div class="persona-card">
+    <div class="persona-icon icon-freelancer">📋</div>
+    <h3>Freiberuflerin</h3>
+    <span>NDAs, Aufträge, AGBs</span>
+  </div>
+  <div class="persona-card">
+    <div class="persona-icon icon-compliance">⚖️</div>
+    <h3>Compliance / DPO</h3>
+    <span>DSGVO, AVV, Audits</span>
+  </div>
+  <div class="persona-card">
+    <div class="persona-icon icon-private">👤</div>
+    <h3>Privatperson</h3>
+    <span>Mietvertrag, Versicherung</span>
+  </div>
+  <div class="persona-card">
+    <div class="persona-icon icon-controller">📊</div>
+    <h3>Controller</h3>
+    <span>Risikomanagement, Reporting</span>
+  </div>
+  <div class="persona-card">
+    <div class="persona-icon icon-executive">🏛️</div>
+    <h3>Geschäftsführung</h3>
+    <span>Überblick, Entscheidungen</span>
+  </div>
+</div>
+
+<!-- ── PRINCIPLE ────────────────────────────────── -->
+<div class="principle">
+  <span class="gold">KI verarbeitet.</span>
+  <span class="dark"> Mensch entscheidet.</span>
+  <span class="green"> WINDI garantiert.</span>
+</div>
+
+<!-- ── DIVIDER ──────────────────────────────────── -->
+<div class="section-divider">
+  <div class="divider-line"></div>
+  <div class="divider-badge">ADD MODULES</div>
+</div>
+
+<!-- ── MODULES SECTION (Noir Theme) ────────────── -->
+<section class="modules-section">
+  <div class="modules-header">
+    <div class="modules-tag">
+      <span class="dot"></span>
+      ERWEITERUNGEN
+    </div>
+    <h2>Governance erweitern</h2>
+    <p>Spezialisierte Module für erweiterte Dokumenten&shy;prüfung, Forensik und Compliance-Automatisierung.</p>
+  </div>
+
+  <div class="modules-grid">
+
+    <!-- CommitGuard — FEATURED -->
+    <div class="module-card featured">
+      <span class="new-badge">NEU</span>
+      <div class="module-icon-wrap icon-commitguard">🛡️</div>
+      <h3>CommitGuard</h3>
+      <div class="module-sub">Handschriftliche Zusagen authentifizieren, Anti-Deepfake & sofortige Liquidation.</div>
+      <span class="module-status status-ready">READY</span>
+    </div>
+
+    <!-- PixWindi -->
+    <div class="module-card">
+      <div class="module-icon-wrap icon-pixwindi">🔬</div>
+      <h3>PixWindi</h3>
+      <div class="module-sub">PRNU-Sensor-DNA, Deepfake-Erkennung, forensische Bildanalyse.</div>
+      <span class="module-status status-live"><span class="status-dot"></span>LIVE</span>
+    </div>
+
+    <!-- Twin Digital -->
+    <div class="module-card">
+      <div class="module-icon-wrap icon-twindigital">🔮</div>
+      <h3>Twin Digital</h3>
+      <div class="module-sub">"Was wäre wenn?"-Simulation. Entscheidungen testen, bevor sie real werden.</div>
+      <span class="module-status status-coming">PLANNED</span>
+    </div>
+
+    <!-- PulseWatch -->
+    <div class="module-card">
+      <div class="module-icon-wrap icon-pulsewatch">💓</div>
+      <h3>PulseWatch</h3>
+      <div class="module-sub">Dokumenten-Arrhythmie erkennen. Echtzeit-Pulsrate des Governance-Flows.</div>
+      <span class="module-status status-coming">PLANNED</span>
+    </div>
+
+    <!-- ISP Hub -->
+    <div class="module-card">
+      <div class="module-icon-wrap icon-isphub">🏗️</div>
+      <h3>ISP Hub</h3>
+      <div class="module-sub">17 institutionelle Stilprofile. Deutsche Bahn, Bundesregierung & mehr.</div>
+      <span class="module-status status-live"><span class="status-dot"></span>LIVE</span>
+    </div>
+
+    <!-- Compliance Agent -->
+    <div class="module-card">
+      <div class="module-icon-wrap icon-complianceai">📜</div>
+      <h3>Compliance Agent</h3>
+      <div class="module-sub">EU AI Act, DSGVO, BSI C5 — automatisierte Compliance-Prüfung.</div>
+      <span class="module-status status-coming">PLANNED</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── FOOTER ──────────────────────────────────── -->
+<footer class="footer">
+  <div class="footer-text">
+    Three Dragons Protocol — <span class="gold">Guardian</span> · Architect · Witness — I1-I9 ACTIVE
+  </div>
+</footer>
+
+</body>
+</html>

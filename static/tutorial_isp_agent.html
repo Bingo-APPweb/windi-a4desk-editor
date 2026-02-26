@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="noir" data-lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WINDI — ISP Agent Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ═══ THEME VARIABLES ═══ */
+  [data-theme="noir"] {
+    --bg:#0a0a0a; --bg-el:#111; --surface:#141414; --card:#1a1a1a;
+    --card-hover:#1f1f1f; --border:#2a2a2a; --border-hover:#3a3a3a;
+    --border-subtle:#1e1e1e; --text:#e8e8e8; --text-sec:#b0b0b0;
+    --text-muted:#888; --text-dim:#555; --gold:#c9a84c; --gold-bright:#e0c068;
+    --gold-dim:#8a7535; --gold-bg:rgba(201,168,76,0.04);
+    --gold-border:rgba(201,168,76,0.15); --shadow:0 2px 8px rgba(0,0,0,0.4);
+    --code-bg:#111; --scrollbar-track:#0a0a0a; --scrollbar-thumb:#333;
+  }
+  [data-theme="klar"] {
+    --bg:#f5f3ef; --bg-el:#fff; --surface:#fff; --card:#fafaf8;
+    --card-hover:#f0eeea; --border:#e0ddd6; --border-hover:#ccc8be;
+    --border-subtle:#eae7e0; --text:#1a1816; --text-sec:#4a4640;
+    --text-muted:#7a756d; --text-dim:#a09a90; --gold:#9a7b2e; --gold-bright:#b8922e;
+    --gold-dim:#7a6225; --gold-bg:rgba(154,123,46,0.04);
+    --gold-border:rgba(154,123,46,0.18); --shadow:0 2px 8px rgba(0,0,0,0.06);
+    --code-bg:#f0eeea; --scrollbar-track:#f0eeea; --scrollbar-thumb:#ccc8be;
+  }
+  :root {
+    --high:#ef4444; --high-bg:rgba(239,68,68,0.07);
+    --medium:#f59e0b; --medium-bg:rgba(245,158,11,0.07);
+    --low:#22c55e; --low-bg:rgba(34,197,94,0.07);
+    --info:#3b82f6; --info-bg:rgba(59,130,246,0.07);
+    --font-d:'Bricolage Grotesque',sans-serif;
+    --font-b:'Outfit',sans-serif;
+    --font-m:'JetBrains Mono',monospace;
+  }
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-b);font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;transition:background .35s,color .35s;}
+  ::-webkit-scrollbar{width:6px;} ::-webkit-scrollbar-track{background:var(--scrollbar-track);} ::-webkit-scrollbar-thumb{background:var(--scrollbar-thumb);border-radius:3px;}
+
+  /* ═══ TOPBAR ═══ */
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 24px;background:var(--bg-el);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;transition:all .35s;}
+  .topbar-left{display:flex;align-items:center;gap:10px;}
+  .topbar-logo{font-family:var(--font-d);font-weight:700;font-size:.9rem;color:var(--gold);}
+  .topbar-sep{width:1px;height:18px;background:var(--border);}
+  .topbar-sub{font-size:.78rem;color:var(--text-muted);}
+  .topbar-right{display:flex;align-items:center;gap:6px;}
+  .tg{display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+  .tb{font-family:var(--font-m);font-size:.68rem;font-weight:500;padding:5px 10px;background:transparent;color:var(--text-dim);border:none;cursor:pointer;transition:all .2s;}
+  .tb:hover{color:var(--text-muted);background:var(--card);}
+  .tb.a{background:var(--gold);color:#0a0a0a;font-weight:600;}
+  [data-theme="klar"] .tb.a{color:#fff;}
+
+  /* ═══ LAYOUT ═══ */
+  .container{max-width:900px;margin:0 auto;padding:32px 24px 60px;}
+
+  /* ═══ NAV SIDEBAR (TOC) ═══ */
+  .toc{position:fixed;left:0;top:50px;width:240px;height:calc(100vh - 50px);overflow-y:auto;padding:20px 16px;background:var(--bg-el);border-right:1px solid var(--border);transition:all .35s;z-index:50;}
+  .toc-title{font-family:var(--font-d);font-weight:600;font-size:.78rem;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;}
+  .toc a{display:block;font-size:.78rem;color:var(--text-muted);text-decoration:none;padding:5px 8px;border-radius:4px;border-left:2px solid transparent;transition:all .15s;margin-bottom:2px;}
+  .toc a:hover{color:var(--text);background:var(--card);border-left-color:var(--gold-dim);}
+  .toc a.active{color:var(--gold);border-left-color:var(--gold);background:var(--gold-bg);}
+  .toc a .num{font-family:var(--font-m);font-size:.65rem;color:var(--text-dim);margin-right:6px;}
+  .has-toc .container{margin-left:240px;}
+
+  /* ═══ SECTIONS ═══ */
+  .section{margin-bottom:48px;scroll-margin-top:70px;}
+  .section h2{font-family:var(--font-d);font-weight:700;font-size:1.4rem;color:var(--gold);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+  .section h2 .snum{font-family:var(--font-m);font-size:.75rem;color:var(--text-dim);background:var(--card);padding:2px 8px;border-radius:4px;border:1px solid var(--border-subtle);}
+  .section h3{font-family:var(--font-d);font-weight:600;font-size:1.05rem;color:var(--text);margin:20px 0 10px;}
+  .section p{color:var(--text-sec);margin-bottom:12px;}
+
+  /* ═══ CODE BLOCKS ═══ */
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:16px;font-family:var(--font-m);font-size:.78rem;color:var(--text-muted);overflow-x:auto;margin:12px 0 16px;line-height:1.6;}
+  code{font-family:var(--font-m);font-size:.82rem;color:var(--gold);background:var(--gold-bg);padding:1px 5px;border-radius:3px;}
+  pre code{color:var(--text-muted);background:none;padding:0;}
+
+  /* ═══ TABLES ═══ */
+  .tbl{width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:12px 0 16px;box-shadow:var(--shadow);}
+  .tbl thead th{font-family:var(--font-m);font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:10px 14px;text-align:left;color:var(--text-dim);background:var(--card);border-bottom:1px solid var(--border);}
+  .tbl tbody td{padding:9px 14px;font-size:.82rem;border-bottom:1px solid var(--border-subtle);color:var(--text-sec);}
+  .tbl tbody tr:last-child td{border-bottom:none;}
+  .tbl tbody tr:hover td{background:var(--gold-bg);}
+
+  /* ═══ PILLS ═══ */
+  .pill{font-family:var(--font-m);font-size:.65rem;font-weight:600;padding:2px 7px;border-radius:3px;text-transform:uppercase;}
+  .pill-high{color:var(--high);background:var(--high-bg);}
+  .pill-med{color:var(--medium);background:var(--medium-bg);}
+  .pill-low{color:var(--low);background:var(--low-bg);}
+  .pill-info{color:var(--info);background:var(--info-bg);}
+
+  /* ═══ CALLOUTS ═══ */
+  .callout{padding:14px 18px;border-radius:8px;margin:14px 0;font-size:.85rem;display:flex;gap:10px;align-items:flex-start;line-height:1.5;}
+  .callout-i9{background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--text-muted);}
+  .callout-i9 strong{color:var(--gold);}
+  .callout-warn{background:var(--medium-bg);border:1px solid rgba(245,158,11,.2);color:var(--text-sec);}
+  .callout-ok{background:var(--low-bg);border:1px solid rgba(34,197,94,.2);color:var(--text-sec);}
+
+  /* ═══ ARCHITECTURE DIAGRAM ═══ */
+  .diagram{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;overflow-x:auto;font-family:var(--font-m);font-size:.72rem;line-height:1.5;color:var(--text-muted);white-space:pre;}
+
+  /* ═══ ROADMAP ═══ */
+  .roadmap-item{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:.85rem;}
+  .roadmap-check{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0;}
+  .roadmap-done{background:var(--low-bg);color:var(--low);border:1px solid rgba(34,197,94,.2);}
+  .roadmap-todo{background:var(--card);color:var(--text-dim);border:1px solid var(--border);}
+
+  /* ═══ FOOTER ═══ */
+  .footer{text-align:center;padding:24px;font-family:var(--font-m);font-size:.68rem;color:var(--text-dim);border-top:1px solid var(--border-subtle);margin-top:24px;}
+  .footer .p{color:var(--gold-dim);font-style:italic;margin-top:4px;}
+
+  /* ═══ RESPONSIVE ═══ */
+  @media(max-width:1024px){.toc{display:none;}.has-toc .container{margin-left:auto;}}
+  @media(max-width:600px){.topbar{flex-direction:column;gap:8px;padding:8px 16px;}.topbar-right{flex-wrap:wrap;justify-content:center;}.container{padding:20px 16px 48px;}}
+</style>
+</head>
+<body class="has-toc">
+
+<!-- ═══ TOPBAR ═══ -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-logo">🐉 WINDI</span>
+    <span class="topbar-sep"></span>
+    <span class="topbar-sub" data-i18n="topbar">ISP Agent Tutorial</span>
+  </div>
+  <div class="topbar-right">
+    <div class="tg">
+      <button class="tb a" onclick="setTheme('noir')" id="bN">NOIR</button>
+      <button class="tb" onclick="setTheme('klar')" id="bK">KLAR</button>
+    </div>
+    <div class="tg">
+      <button class="tb a" onclick="setLang('en')" id="bEN">EN</button>
+      <button class="tb" onclick="setLang('de')" id="bDE">DE</button>
+      <button class="tb" onclick="setLang('pt')" id="bPT">PT</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOC SIDEBAR ═══ -->
+<nav class="toc" id="toc">
+  <div class="toc-title" data-i18n="toc_title">Contents</div>
+  <a href="#s1"><span class="num">01</span> <span data-i18n="s1t">Overview</span></a>
+  <a href="#s2"><span class="num">02</span> <span data-i18n="s2t">3-Layer Architecture</span></a>
+  <a href="#s3"><span class="num">03</span> <span data-i18n="s3t">Where It Lives</span></a>
+  <a href="#s4"><span class="num">04</span> <span data-i18n="s4t">Data Flow (Zero-Knowledge)</span></a>
+  <a href="#s5"><span class="num">05</span> <span data-i18n="s5t">Installation</span></a>
+  <a href="#s6"><span class="num">06</span> <span data-i18n="s6t">Client Model</span></a>
+  <a href="#s7"><span class="num">07</span> <span data-i18n="s7t">Alert Codes</span></a>
+  <a href="#s8"><span class="num">08</span> <span data-i18n="s8t">Constitutional Compliance</span></a>
+  <a href="#s9"><span class="num">09</span> <span data-i18n="s9t">Roadmap</span></a>
+  <a href="#s10"><span class="num">10</span> <span data-i18n="s10t">References</span></a>
+</nav>
+
+<!-- ═══ CONTENT ═══ -->
+<div class="container">
+
+  <!-- HERO -->
+  <div style="margin-bottom:36px;">
+    <h1 style="font-family:var(--font-d);font-weight:800;font-size:1.8rem;color:var(--gold);margin-bottom:6px;">🏛️ <span data-i18n="hero_title">ISP Manager Agent</span></h1>
+    <p style="color:var(--text-muted);font-size:.9rem;" data-i18n="hero_sub">Installation & Architecture Tutorial — v1.0.0 | 08 February 2026</p>
+    <p style="font-family:var(--font-m);font-size:.75rem;color:var(--text-dim);margin-top:6px;">Three Dragons Council — Claude=Guardian, GPT=Architect, Gemini=Witness</p>
+  </div>
+
+  <div class="callout callout-i9">
+    <span>🛡️</span>
+    <span data-i18n="i9_banner"><strong>Invariante I9</strong> — The agent NEVER decides or applies changes autonomously. Human confirmation gate for ALL actions.</span>
+  </div>
+
+  <!-- §1 OVERVIEW -->
+  <div class="section" id="s1">
+    <h2><span class="snum">01</span> <span data-i18n="s1t">Overview</span></h2>
+    <p data-i18n="s1p1">The ISP Manager Agent is the first micro-agent in the WINDI ecosystem. It scans, validates, and proposes corrections for ISP (Institutional Style Profiles) — but NEVER decides or applies changes autonomously (Invariante I9).</p>
+
+    <h3 data-i18n="s1h_actions">Available Actions</h3>
+    <table class="tbl">
+      <thead><tr><th data-i18n="th_action">Action</th><th data-i18n="th_command">Command</th><th data-i18n="th_desc">Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>audit</code></td><td><code>isp_manager_agent.py audit</code></td><td data-i18n="a_audit">Full audit of all ISP profiles</td></tr>
+        <tr><td><code>validate</code></td><td><code>isp_manager_agent.py validate --isp-id &lt;id&gt;</code></td><td data-i18n="a_validate">Validate specific profile</td></tr>
+        <tr><td><code>drift_check</code></td><td><code>isp_manager_agent.py drift_check</code></td><td data-i18n="a_drift">Check governance matrix consistency</td></tr>
+        <tr><td><code>draft_patch</code></td><td><code>isp_manager_agent.py draft_patch</code></td><td data-i18n="a_patch">Generate correction proposals (never applied)</td></tr>
+        <tr><td><code>health_report</code></td><td><code>isp_manager_agent.py health_report</code></td><td data-i18n="a_health">Complete ecosystem health report</td></tr>
+        <tr><td><code>status</code></td><td><code>isp_manager_agent.py status</code></td><td data-i18n="a_status">Agent status</td></tr>
+      </tbody>
+    </table>
+
+    <h3 data-i18n="s1h_grading">Grading System</h3>
+    <table class="tbl">
+      <thead><tr><th>Grade</th><th>Score</th><th data-i18n="th_criteria">Criteria</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill pill-low">A</span></td><td>95–100</td><td data-i18n="g_a">0 Critical, 0 High violations</td></tr>
+        <tr><td><span class="pill pill-info">B</span></td><td>85–94</td><td data-i18n="g_b">Minor issues</td></tr>
+        <tr><td><span class="pill pill-med">C</span></td><td>70–84</td><td data-i18n="g_c">Attention required</td></tr>
+        <tr><td><span class="pill pill-high">D</span></td><td>50–69</td><td data-i18n="g_d">Significant problems</td></tr>
+        <tr><td><span class="pill pill-high">F</span></td><td>0–49</td><td data-i18n="g_f">Critical failures</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-ok">
+      <span>🏆</span>
+      <span data-i18n="current_grade"><strong>Current status:</strong> Grade A (100/100) — 17 profiles, 0 violations, 0 warnings. Achieved 08 Feb 2026.</span>
+    </div>
+  </div>
+
+  <!-- §2 ARCHITECTURE -->
+  <div class="section" id="s2">
+    <h2><span class="snum">02</span> <span data-i18n="s2t">3-Layer Architecture</span></h2>
+    <p data-i18n="s2p1">The ISP Manager Agent follows the canonical WINDI 3-layer architecture: Edge (L1), Mesh (L2), and Forensic Ledger (L3).</p>
+    <div class="diagram">┌─────────────────────────────────────────────────────────┐
+│                    L1 — EDGE (Client)                    │
+│                                                          │
+│  a4Desk BABEL (:8085)         master.a4desk (:8084)      │
+│  ┌──────────────────┐         ┌──────────────────┐       │
+│  │  /governance/     │         │  /agents/         │       │
+│  │  Tab: Audit  ◄────┼────┐   │  ISP Health Panel │       │
+│  │  Tab: Compliance  │    │   │  Academic View    │       │
+│  └──────────────────┘    │   └──────────────────┘       │
+│                           │                               │
+├───────────────────────────┼───────────────────────────────┤
+│                    L2 — WINDI MESH                        │
+│                           │                               │
+│  Governance API (:8080)   │   Sandbox Core                │
+│  ┌──────────────────┐    │   ┌──────────────────┐        │
+│  │  /api/agents/*    ◄───┘   │  Agent Router     │        │
+│  │  8 Endpoints LIVE │       │  Task Dispatcher  │        │
+│  └────────┬─────────┘       └──────────────────┘        │
+│           │                                               │
+├───────────┼───────────────────────────────────────────────┤
+│           ▼         L3 — FORENSIC LEDGER                 │
+│  ┌──────────────────────────────────────────────┐        │
+│  │  /opt/windi/agents/isp-manager/               │        │
+│  │  ├── isp_manager_agent.py  ◄── ENGINE CORE   │        │
+│  │  ├── manifest.json + capsule.json + policy.json│       │
+│  │  ├── receipts/    ◄── Forensic Proofs         │        │
+│  │  ├── alerts/      ◄── Structured Warnings     │        │
+│  │  └── drafts/      ◄── Correction Proposals    │        │
+│  └──────────────────────────────────────────────┘        │
+└─────────────────────────────────────────────────────────┘</div>
+  </div>
+
+  <!-- §3 WHERE IT LIVES -->
+  <div class="section" id="s3">
+    <h2><span class="snum">03</span> <span data-i18n="s3t">Where It Lives</span></h2>
+    <h3 data-i18n="s3h_backend">Backend Core (Strato Server)</h3>
+    <pre><code>Server: 87.106.29.233 | User: windi
+
+/opt/windi/
+├── agents/
+│   ├── registry.json                ← Master index
+│   └── isp-manager/
+│       ├── manifest.json            ← Identity + compatibility
+│       ├── capsule.json             ← Can-do / Cannot-do
+│       ├── policy.json              ← Read/write permissions
+│       ├── isp_manager_agent.py     ← v1.0.1 (~600 lines)
+│       ├── receipts/                ← Forensic receipts
+│       ├── alerts/                  ← Structured alerts
+│       ├── drafts/                  ← Correction proposals
+│       └── reports/                 ← Health reports
+├── isp/                             ← 17 ISP Profiles
+├── sip/                             ← Sovereign Identity Protocol
+├── engine/                          ← WINDI Engine (28 modules)
+└── data/template_registry.db        ← Template Registry</code></pre>
+
+    <h3 data-i18n="s3h_run">Running Commands</h3>
+    <pre><code>ssh windi@87.106.29.233
+python3 /opt/windi/agents/isp-manager/isp_manager_agent.py audit
+python3 /opt/windi/agents/isp-manager/isp_manager_agent.py health_report
+python3 /opt/windi/agents/isp-manager/isp_manager_agent.py validate --isp-id bafin
+python3 /opt/windi/agents/isp-manager/isp_manager_agent.py drift_check
+python3 /opt/windi/agents/isp-manager/isp_manager_agent.py draft_patch</code></pre>
+
+    <h3 data-i18n="s3h_api">API Endpoints (Live)</h3>
+    <table class="tbl">
+      <thead><tr><th>Method</th><th>Endpoint</th><th data-i18n="th_desc">Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill pill-low">GET</span></td><td><code>/api/agents/health</code></td><td data-i18n="ep_health">Health check all agents</td></tr>
+        <tr><td><span class="pill pill-low">GET</span></td><td><code>/api/agents/isp-manager/status</code></td><td data-i18n="ep_status">Agent status</td></tr>
+        <tr><td><span class="pill pill-med">POST</span></td><td><code>/api/agents/isp-manager/audit</code></td><td data-i18n="ep_audit">Run full audit</td></tr>
+        <tr><td><span class="pill pill-low">GET</span></td><td><code>/api/agents/isp-manager/alerts</code></td><td data-i18n="ep_alerts">Latest alerts</td></tr>
+        <tr><td><span class="pill pill-low">GET</span></td><td><code>/api/agents/isp-manager/report</code></td><td data-i18n="ep_report">Health report</td></tr>
+        <tr><td><span class="pill pill-med">POST</span></td><td><code>/api/agents/isp-manager/validate</code></td><td data-i18n="ep_validate">Validate ISP {isp_id}</td></tr>
+        <tr><td><span class="pill pill-low">GET</span></td><td><code>/api/agents/isp-manager/receipts</code></td><td data-i18n="ep_receipts">Forensic receipts</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- §4 DATA FLOW -->
+  <div class="section" id="s4">
+    <h2><span class="snum">04</span> <span data-i18n="s4t">Data Flow (Zero-Knowledge)</span></h2>
+    <div class="diagram">ISP Manager Agent
+    │
+    ├── READS: /opt/windi/isp/*/profile.json      (profile data)
+    ├── READS: /opt/windi/data/template_registry.db (templates)
+    ├── READS: /opt/windi/engine/governance_levels.json (config)
+    │
+    ├── GENERATES: receipts/ → hash + grade + counts + timestamp
+    ├── GENERATES: alerts/   → code + severity + message (NO sensitive data)
+    ├── GENERATES: drafts/   → correction proposals (JSON patches)
+    ├── GENERATES: reports/  → aggregated health reports
+    │
+    └── SENDS TO L3: ONLY hash + grade + metadata
+                     ZERO sensitive data
+                     Client keeps data, WINDI keeps PROOF</div>
+    <div class="callout callout-i9">
+      <span>🔒</span>
+      <span data-i18n="s4_zk"><strong>Zero-Knowledge:</strong> The agent never transmits sensitive content. Only hashes, grades, and structural metadata leave the client perimeter. Data stays with the client; WINDI stores only the proof of virtue.</span>
+    </div>
+  </div>
+
+  <!-- §5 INSTALLATION -->
+  <div class="section" id="s5">
+    <h2><span class="snum">05</span> <span data-i18n="s5t">Installation</span></h2>
+    <h3 data-i18n="s5h_req">Requirements</h3>
+    <p data-i18n="s5p_req">Python 3.8+, SSH access to Strato (windi@87.106.29.233), ISP profiles in <code>/opt/windi/isp/</code>, Template Registry DB in <code>/opt/windi/data/</code>.</p>
+
+    <h3 data-i18n="s5h_deploy">Deploy</h3>
+    <pre><code># 1. Upload package
+scp windi-isp-manager-agent-v1.0.1.tar.gz windi@87.106.29.233:/tmp/
+
+# 2. On server
+cd /tmp && mkdir -p agent-deploy && cd agent-deploy
+tar xzf /tmp/windi-isp-manager-agent-v1.0.1.tar.gz
+
+# 3. Run deploy script
+sudo bash deploy-isp-manager-agent.sh
+
+# 4. Verify
+python3 /opt/windi/agents/isp-manager/isp_manager_agent.py status</code></pre>
+
+    <h3 data-i18n="s5h_first">First Audit</h3>
+    <pre><code># Full audit (17 profiles)
+python3 /opt/windi/agents/isp-manager/isp_manager_agent.py audit
+
+# Validate specific profile
+python3 /opt/windi/agents/isp-manager/isp_manager_agent.py validate --isp-id bafin
+
+# Health report
+python3 /opt/windi/agents/isp-manager/isp_manager_agent.py health_report</code></pre>
+  </div>
+
+  <!-- §6 CLIENT MODEL -->
+  <div class="section" id="s6">
+    <h2><span class="snum">06</span> <span data-i18n="s6t">Client Model</span></h2>
+    <p data-i18n="s6p1">The agent on Strato serves as Template Master. For each new client, the agent ecosystem is cloned with a unique client_id and restricted policy.json.</p>
+    <div class="diagram">WINDI Core (Strato)                    Client "Deutsche Bahn"
+┌─────────────────────┐               ┌─────────────────────┐
+│ /opt/windi/agents/   │    CLONE     │ /client/db/agents/   │
+│ └── isp-manager/     │ ──────────► │ └── isp-manager/     │
+│     ├── manifest.json│               │     ├── manifest.json│ + client_id
+│     ├── capsule.json │               │     ├── capsule.json │
+│     ├── policy.json  │               │     ├── policy.json  │ restricted
+│     └── agent.py     │               │     └── agent.py     │
+└─────────────────────┘               └─────────────────────┘
+                                             │
+                                             ▼
+                                       Virtue Receipt → Forensic Ledger (L3)</div>
+    <div class="callout callout-i9">
+      <span>💰</span>
+      <span data-i18n="s6_biz"><strong>Business model:</strong> Client does not pay for the agent — pays for the protected decision. The agent generates the proof of virtue (Virtue Receipt). WINDI stores only hashes and metadata — zero sensitive data. Pricing: per protected decision, not storage.</span>
+    </div>
+  </div>
+
+  <!-- §7 ALERT CODES -->
+  <div class="section" id="s7">
+    <h2><span class="snum">07</span> <span data-i18n="s7t">Alert Codes</span></h2>
+
+    <h3>ISP Profile Scanner</h3>
+    <table class="tbl">
+      <thead><tr><th data-i18n="th_code">Code</th><th data-i18n="th_type">Type</th><th data-i18n="th_sev">Severity</th><th data-i18n="th_desc">Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>ISP-V001</code></td><td><span class="pill pill-high">Violation</span></td><td>CRITICAL</td><td data-i18n="isp_v001">Missing profile.json</td></tr>
+        <tr><td><code>ISP-V002</code></td><td><span class="pill pill-high">Violation</span></td><td>CRITICAL</td><td data-i18n="isp_v002">Invalid JSON</td></tr>
+        <tr><td><code>ISP-V003</code></td><td><span class="pill pill-high">Violation</span></td><td>HIGH</td><td data-i18n="isp_v003">Missing required field/section</td></tr>
+        <tr><td><code>ISP-V004</code></td><td><span class="pill pill-high">Violation</span></td><td>HIGH</td><td data-i18n="isp_v004">Invalid governance level</td></tr>
+        <tr><td><code>ISP-W001</code></td><td><span class="pill pill-med">Warning</span></td><td>MEDIUM</td><td data-i18n="isp_w001">Missing recommended field</td></tr>
+        <tr><td><code>ISP-W002</code></td><td><span class="pill pill-low">Warning</span></td><td>LOW</td><td data-i18n="isp_w002">Below minimum template count</td></tr>
+        <tr><td><code>ISP-W003</code></td><td><span class="pill pill-med">Warning</span></td><td>MEDIUM</td><td data-i18n="isp_w003">Missing identity_license (HIGH/MEDIUM)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Template Registry Scanner</h3>
+    <table class="tbl">
+      <thead><tr><th data-i18n="th_code">Code</th><th data-i18n="th_type">Type</th><th data-i18n="th_sev">Severity</th><th data-i18n="th_desc">Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>TR-W001</code></td><td><span class="pill pill-med">Warning</span></td><td>MEDIUM</td><td data-i18n="tr_w001">Templates table not found</td></tr>
+        <tr><td><code>TR-V002</code></td><td><span class="pill pill-high">Violation</span></td><td>HIGH</td><td data-i18n="tr_v002">Duplicate template_id</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Governance Matrix Scanner</h3>
+    <table class="tbl">
+      <thead><tr><th data-i18n="th_code">Code</th><th data-i18n="th_type">Type</th><th data-i18n="th_sev">Severity</th><th data-i18n="th_desc">Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>GM-W001</code></td><td><span class="pill pill-med">Warning</span></td><td>MEDIUM</td><td data-i18n="gm_w001">Governance config not found</td></tr>
+        <tr><td><code>GM-V002</code></td><td><span class="pill pill-high">Violation</span></td><td>HIGH</td><td data-i18n="gm_v002">Governance drift detected</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- §8 CONSTITUTIONAL COMPLIANCE -->
+  <div class="section" id="s8">
+    <h2><span class="snum">08</span> <span data-i18n="s8t">Constitutional Compliance</span></h2>
+    <p data-i18n="s8p1">The ISP Manager Agent enforces all 9 WINDI Invariants:</p>
+    <table class="tbl">
+      <thead><tr><th>Invariant</th><th data-i18n="th_how">How the Agent Complies</th></tr></thead>
+      <tbody>
+        <tr><td><strong>I1</strong> Sovereignty</td><td data-i18n="i1">Agent never decides — only proposes</td></tr>
+        <tr><td><strong>I2</strong> Non-Opacity</td><td data-i18n="i2">Scanner logic is deterministic and auditable</td></tr>
+        <tr><td><strong>I3</strong> Transparency</td><td data-i18n="i3">Every execution generates a receipt with full trace</td></tr>
+        <tr><td><strong>I4</strong> Jurisdiction</td><td data-i18n="i4">Operates only within paths permitted by policy.json</td></tr>
+        <tr><td><strong>I5</strong> No Fabrication</td><td data-i18n="i5">Reports only what it finds, never fabricates data</td></tr>
+        <tr><td><strong>I6</strong> Conflict Structuring</td><td data-i18n="i6">Presents conflicts as draft patches, not decisions</td></tr>
+        <tr><td><strong>I7</strong> Institutional</td><td data-i18n="i7">Validates ISP identity per institution</td></tr>
+        <tr><td><strong>I8</strong> No Depth Punishment</td><td data-i18n="i8">Does not penalize profiles for deep analyses</td></tr>
+        <tr><td><strong style="color:var(--gold);">I9</strong> No Autonomy Escalation</td><td data-i18n="i9"><strong>ZERO auto_apply. Human confirmation gate for ALL.</strong> IRREMEDIABLE.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- §9 ROADMAP -->
+  <div class="section" id="s9">
+    <h2><span class="snum">09</span> <span data-i18n="s9t">Roadmap</span></h2>
+    <h3 data-i18n="s9h_current">Phase 1 — February 2026 (Current)</h3>
+    <div class="roadmap-item"><span class="roadmap-check roadmap-done">✓</span> ISP Manager Agent v1.0.1 — deployed</div>
+    <div class="roadmap-item"><span class="roadmap-check roadmap-done">✓</span> SIP Layer 1 — sovereign identity</div>
+    <div class="roadmap-item"><span class="roadmap-check roadmap-done">✓</span> Invariante I9 — ratified & enforced</div>
+    <div class="roadmap-item"><span class="roadmap-check roadmap-done">✓</span> First audit — Grade A (100/100)</div>
+    <div class="roadmap-item"><span class="roadmap-check roadmap-done">✓</span> Agent → Command Center (8 endpoints)</div>
+    <div class="roadmap-item"><span class="roadmap-check roadmap-done">✓</span> Unified Audit Dashboard (Noir/Klar + EN/DE/PT)</div>
+
+    <h3 data-i18n="s9h_phase2">Phase 2 — March 2026</h3>
+    <div class="roadmap-item"><span class="roadmap-check roadmap-todo">○</span> Compliance Checker Agent (SGE rulesets)</div>
+    <div class="roadmap-item"><span class="roadmap-check roadmap-todo">○</span> D3.js visual dashboard for grades</div>
+    <div class="roadmap-item"><span class="roadmap-check roadmap-todo">○</span> SIP Layer 2 (GPG 4096-bit signing)</div>
+
+    <h3 data-i18n="s9h_phase3">Phase 3 — Q2 2026</h3>
+    <div class="roadmap-item"><span class="roadmap-check roadmap-todo">○</span> Diagramador ISP (visual layout agent)</div>
+    <div class="roadmap-item"><span class="roadmap-check roadmap-todo">○</span> Client onboarding with auto-clone</div>
+    <div class="roadmap-item"><span class="roadmap-check roadmap-todo">○</span> SIP Layer 3 (Dragon Challenge Protocol)</div>
+    <div class="roadmap-item"><span class="roadmap-check roadmap-todo">○</span> Agent Marketplace (Sovereign Handshake)</div>
+  </div>
+
+  <!-- §10 REFERENCES -->
+  <div class="section" id="s10">
+    <h2><span class="snum">10</span> <span data-i18n="s10t">References</span></h2>
+    <table class="tbl">
+      <thead><tr><th data-i18n="th_resource">Resource</th><th data-i18n="th_location">Location</th></tr></thead>
+      <tbody>
+        <tr><td>Agent Core</td><td><code>/opt/windi/agents/isp-manager/</code></td></tr>
+        <tr><td>ISP Profiles</td><td><code>/opt/windi/isp/</code></td></tr>
+        <tr><td>Template Registry</td><td><code>/opt/windi/data/template_registry.db</code></td></tr>
+        <tr><td>Governance API</td><td><code>:8080 → /opt/windi/engine/windi_governance_api.py</code></td></tr>
+        <tr><td>a4Desk BABEL</td><td><code>:8085 → /opt/windi/a4desk-editor/</code></td></tr>
+        <tr><td>Masterarbeit</td><td><code>:8084 → /opt/windi/masterarbeit/</code></td></tr>
+        <tr><td>SIP Protocol</td><td><code>/opt/windi/sip/</code></td></tr>
+        <tr><td>Audit Dashboard</td><td><code>/static/audit_unified.html</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div data-i18n="footer_quote">"Systems don't lose control because agents fail. Systems lose control because agents succeed so well that humans stop checking."</div>
+    <div class="p">— Invariante I9, forever. 🐉🐉🐉 OM SHANTI</div>
+  </div>
+
+</div>
+
+<script>
+// ═══ I18N ═══
+const L={
+en:{topbar:"ISP Agent Tutorial",toc_title:"Contents",s1t:"Overview",s2t:"3-Layer Architecture",s3t:"Where It Lives",s4t:"Data Flow (Zero-Knowledge)",s5t:"Installation",s6t:"Client Model",s7t:"Alert Codes",s8t:"Constitutional Compliance",s9t:"Roadmap",s10t:"References",hero_title:"ISP Manager Agent",hero_sub:"Installation & Architecture Tutorial — v1.0.0 | 08 February 2026",i9_banner:'<strong>Invariante I9</strong> — The agent NEVER decides or applies changes autonomously. Human confirmation gate for ALL actions.',s1p1:"The ISP Manager Agent is the first micro-agent in the WINDI ecosystem. It scans, validates, and proposes corrections for ISP (Institutional Style Profiles) — but NEVER decides or applies changes autonomously (Invariante I9).",current_grade:'<strong>Current status:</strong> Grade A (100/100) — 17 profiles, 0 violations, 0 warnings. Achieved 08 Feb 2026.',s4_zk:'<strong>Zero-Knowledge:</strong> The agent never transmits sensitive content. Only hashes, grades, and structural metadata leave the client perimeter.',s6_biz:'<strong>Business model:</strong> Client pays for the protected decision, not the agent. WINDI stores only hashes — zero sensitive data.',footer_quote:'"Systems don\'t lose control because agents fail. Systems lose control because agents succeed so well that humans stop checking."'},
+de:{topbar:"ISP-Agent Anleitung",toc_title:"Inhalt",s1t:"Überblick",s2t:"3-Schichten-Architektur",s3t:"Wo der Agent lebt",s4t:"Datenfluss (Zero-Knowledge)",s5t:"Installation",s6t:"Kundenmodell",s7t:"Warnungscodes",s8t:"Verfassungskonformität",s9t:"Roadmap",s10t:"Referenzen",hero_title:"ISP Manager Agent",hero_sub:"Installations- & Architekturanleitung — v1.0.0 | 08. Februar 2026",i9_banner:'<strong>Invariante I9</strong> — Der Agent entscheidet oder ändert NIEMALS autonom. Menschliche Bestätigungspflicht für ALLE Aktionen.',s1p1:"Der ISP Manager Agent ist der erste Mikro-Agent im WINDI-Ökosystem. Er scannt, validiert und schlägt Korrekturen für ISP (Institutional Style Profiles) vor — entscheidet aber NIEMALS autonom (Invariante I9).",current_grade:'<strong>Aktueller Status:</strong> Note A (100/100) — 17 Profile, 0 Verstöße, 0 Warnungen. Erreicht am 08. Feb 2026.',s4_zk:'<strong>Zero-Knowledge:</strong> Der Agent überträgt niemals sensible Inhalte. Nur Hashes, Noten und strukturelle Metadaten verlassen den Kundenperimeter.',s6_biz:'<strong>Geschäftsmodell:</strong> Kunde zahlt für die geschützte Entscheidung, nicht für den Agent. WINDI speichert nur Hashes — null sensible Daten.',footer_quote:'"Systeme verlieren nicht die Kontrolle, weil Agenten versagen. Systeme verlieren die Kontrolle, weil Agenten so erfolgreich sind, dass Menschen aufhören zu prüfen."'},
+pt:{topbar:"Tutorial do Agente ISP",toc_title:"Conteúdo",s1t:"Visão Geral",s2t:"Arquitetura de 3 Camadas",s3t:"Onde o Agent Mora",s4t:"Fluxo de Dados (Zero-Knowledge)",s5t:"Instalação",s6t:"Modelo de Clientes",s7t:"Códigos de Alerta",s8t:"Conformidade Constitucional",s9t:"Roadmap",s10t:"Referências",hero_title:"ISP Manager Agent",hero_sub:"Tutorial de Instalação & Arquitetura — v1.0.0 | 08 Fevereiro 2026",i9_banner:'<strong>Invariante I9</strong> — O agente NUNCA decide ou aplica mudanças autonomamente. Gate de confirmação humana para TODAS as ações.',s1p1:"O ISP Manager Agent é o primeiro micro-agente do ecossistema WINDI. Ele escaneia, valida e propõe correções para os ISP (Institutional Style Profiles) — mas NUNCA decide ou aplica mudanças autonomamente (Invariante I9).",current_grade:'<strong>Status atual:</strong> Nota A (100/100) — 17 perfis, 0 violações, 0 avisos. Alcançado em 08 Fev 2026.',s4_zk:'<strong>Zero-Knowledge:</strong> O agente nunca transmite conteúdo sensível. Apenas hashes, notas e metadados estruturais saem do perímetro do cliente.',s6_biz:'<strong>Modelo de negócio:</strong> Cliente paga pela decisão protegida, não pelo agente. WINDI armazena apenas hashes — zero dados sensíveis.',footer_quote:'"Sistemas não perdem controle porque agentes falham. Sistemas perdem controle porque agentes têm tanto êxito que humanos param de verificar."'}
+};
+let cl='en';
+function setTheme(t){document.documentElement.setAttribute('data-theme',t);document.getElementById('bN').classList.toggle('a',t==='noir');document.getElementById('bK').classList.toggle('a',t==='klar');try{localStorage.setItem('windi-theme',t)}catch(e){}}
+function setLang(l){cl=l;document.documentElement.setAttribute('data-lang',l);['EN','DE','PT'].forEach(x=>document.getElementById('b'+x).classList.toggle('a',l===x.toLowerCase()));document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(L[l]?.[k])el.innerHTML=L[l][k];});try{localStorage.setItem('windi-lang',l)}catch(e){}}
+
+// TOC active tracking
+const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){document.querySelectorAll('.toc a').forEach(a=>a.classList.remove('active'));const link=document.querySelector(`.toc a[href="#${e.target.id}"]`);if(link)link.classList.add('active');}});},{rootMargin:'-20% 0px -70% 0px'});
+document.querySelectorAll('.section').forEach(s=>observer.observe(s));
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const t=(() =>{try{return localStorage.getItem('windi-theme')}catch(e){return null}})() || 'noir';
+  const l=(() =>{try{return localStorage.getItem('windi-lang')}catch(e){return null}})() || 'en';
+  setTheme(t);setLang(l);
+});
+document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='k'){e.preventDefault();setTheme(document.documentElement.getAttribute('data-theme')==='noir'?'klar':'noir');}});
+</script>
+</body>
+</html>
