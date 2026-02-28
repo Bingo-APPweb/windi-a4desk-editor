@@ -1191,6 +1191,124 @@ def health_root():
 def health():
     return jsonify({"status": "healthy", "service": "A4 Desk BABEL v4.7.1-gov", "version": "4.6", "compliance": ["EU AI Act", "BSI", "DSGVO"]})
 
+
+# ═══════════════════════════════════════════════════════════════
+# A4DESK TOOL REGISTRY — Document Creation Tools
+# Phase 4: 5 Template Tools (blank, invoice, letter, report, contract)
+# ═══════════════════════════════════════════════════════════════
+
+TIER_LEVELS = {"FREE": 1, "MED": 2, "HIGH": 3}
+
+def tier_level(tier):
+    """Get numeric tier level."""
+    return TIER_LEVELS.get(tier, 1)
+
+def create_blank(data):
+    """Create a blank document."""
+    return {"type": "blank", "content": "", "title": data.get("title", "Untitled")}
+
+def create_invoice(data):
+    """Create an invoice document."""
+    return {
+        "type": "invoice",
+        "title": data.get("title", "Invoice"),
+        "recipient": data.get("recipient", ""),
+        "items": data.get("items", []),
+        "total": sum(item.get("amount", 0) for item in data.get("items", []))
+    }
+
+def create_letter(data):
+    """Create a letter document."""
+    return {
+        "type": "letter",
+        "title": data.get("title", "Letter"),
+        "recipient": data.get("recipient", ""),
+        "body": data.get("body", ""),
+        "signature": data.get("signature", "")
+    }
+
+def create_report(data):
+    """Create a report document."""
+    return {
+        "type": "report",
+        "title": data.get("title", "Report"),
+        "sections": data.get("sections", []),
+        "summary": data.get("summary", "")
+    }
+
+def create_contract(data):
+    """Create a contract document."""
+    return {
+        "type": "contract",
+        "title": data.get("title", "Contract"),
+        "parties": data.get("parties", []),
+        "terms": data.get("terms", []),
+        "effective_date": data.get("effective_date", "")
+    }
+
+TOOL_REGISTRY = {
+    "blank":    {"name": "Blank",    "tier": "FREE", "handler": create_blank,    "icon": "📄", "description": "Empty document"},
+    "invoice":  {"name": "Invoice",  "tier": "MED",  "handler": create_invoice,  "icon": "💰", "description": "Invoice template"},
+    "letter":   {"name": "Letter",   "tier": "FREE", "handler": create_letter,   "icon": "✉️", "description": "Letter template"},
+    "report":   {"name": "Report",   "tier": "MED",  "handler": create_report,   "icon": "📊", "description": "Report template"},
+    "contract": {"name": "Contract", "tier": "HIGH", "handler": create_contract, "icon": "📜", "description": "Contract template"}
+}
+
+@app.route('/api/tools', methods=['GET'])
+def api_list_tools():
+    """List available tools filtered by tier."""
+    tier = request.args.get('tier', 'FREE')
+    user_level = tier_level(tier)
+
+    available_tools = []
+    for tool_id, tool in TOOL_REGISTRY.items():
+        tool_info = {
+            "id": tool_id,
+            "name": tool["name"],
+            "tier": tool["tier"],
+            "icon": tool["icon"],
+            "description": tool["description"],
+            "available": user_level >= tier_level(tool["tier"])
+        }
+        available_tools.append(tool_info)
+
+    return jsonify({
+        "tools": available_tools,
+        "user_tier": tier,
+        "total": len(available_tools)
+    })
+
+@app.route('/api/tools/<tool_id>/execute', methods=['POST'])
+def api_execute_tool(tool_id):
+    """Execute a tool to create a document."""
+    if tool_id not in TOOL_REGISTRY:
+        return jsonify({"error": "Tool not found", "tool_id": tool_id}), 404
+
+    tool = TOOL_REGISTRY[tool_id]
+    user_tier = request.args.get('tier', 'FREE')
+
+    # Check tier access
+    if tier_level(user_tier) < tier_level(tool["tier"]):
+        return jsonify({
+            "error": "Tier insufficient",
+            "required_tier": tool["tier"],
+            "user_tier": user_tier
+        }), 403
+
+    try:
+        data = request.get_json() or {}
+        result = tool["handler"](data)
+
+        return jsonify({
+            "success": True,
+            "tool_id": tool_id,
+            "result": result,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
+    except Exception as e:
+        return jsonify({"error": str(e), "tool_id": tool_id}), 500
+
+
 # ═══════════════════════════════════════════════════════════════
 # WSG - WINDI Surface Guard v0.1.1
 # Frontend Constitutional Security Layer
