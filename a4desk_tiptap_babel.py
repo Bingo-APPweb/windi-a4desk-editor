@@ -99,7 +99,15 @@ except ImportError as e:
 
 from flask_cors import CORS
 import requests
-from weasyprint import HTML as WeasyHTML
+
+# WeasyPrint is optional — only needed for PDF export
+try:
+    from weasyprint import HTML as WeasyHTML
+    WEASY_AVAILABLE = True
+except ImportError:
+    WeasyHTML = None
+    WEASY_AVAILABLE = False
+    print("⚠️ WeasyPrint not available: PDF export disabled")
 
 sys.path.insert(0, '/opt/windi/isp')
 sys.path.insert(0, '/opt/windi/templates')
@@ -403,21 +411,36 @@ def api_v2_seal_document(doc_id):
     conn.commit()
     conn.close()
 
+    # ─── LEDGER INTEGRATION (Phase 2 W-FUNIL-FECHADO-001) ───────────────
+    # Register in Forensic Ledger for constitutional verification
+    ledger_result = None
     try:
-        requests.post('http://localhost:8080/api/submissions', json={
-            'document_id': doc_id,
-            'hash': seal_hash,
-            'action': 'SEAL',
-            'timestamp': now
-        }, timeout=3)
-    except:
-        pass
+        from ledger_bridge import register_in_ledger
+        ledger_result = register_in_ledger(
+            doc_id=doc_id,
+            doc_name=doc['title'] or f"Document {doc_id}",
+            doc_type="doc",
+            content_hash=seal_hash,
+            governance_level=data.get('risk_level', 'LOW').upper(),
+            sge_score=data.get('sge_score', 0.5),
+            human_approved=True
+        )
+        if ledger_result.get('success'):
+            virtue_receipt['ledger_receipt_id'] = ledger_result['receipt'].get('entry_id')
+            print(f"[A4DESK] ◆ Sealed in Ledger: {virtue_receipt['ledger_receipt_id']}")
+        else:
+            print(f"[A4DESK] ⚠ Ledger registration failed: {ledger_result.get('error')}")
+            virtue_receipt['ledger_error'] = ledger_result.get('error')
+    except Exception as e:
+        print(f"[A4DESK] ⚠ Ledger bridge error: {e}")
+        virtue_receipt['ledger_error'] = str(e)
 
     return jsonify({
         'sealed': True,
         'seal_hash': seal_hash,
         'sealed_at': now,
         'virtue_receipt': virtue_receipt,
+        'ledger_receipt_id': virtue_receipt.get('ledger_receipt_id'),
         'message': 'Document sealed and protected'
     })
 
@@ -2278,6 +2301,8 @@ def export_document(doc_id, fmt):
             return send_file(html_path, as_attachment=True, download_name=f"{title}.html")
         output_path = html_path.replace('.html', f'.{fmt}')
         if fmt == 'pdf':
+            if not WEASY_AVAILABLE:
+                return jsonify({"error": "PDF export not available - WeasyPrint not installed"}), 503
             WeasyHTML(filename=html_path, encoding='utf-8').write_pdf(output_path)
         else:
             subprocess.run(['pandoc', '-f', 'html', '-t', 'markdown' if fmt == 'md' else fmt, '-o', output_path, html_path], capture_output=True)
