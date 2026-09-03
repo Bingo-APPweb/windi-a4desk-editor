@@ -933,7 +933,7 @@ CONFIG = {
     "actor": "a4desk-babel-tiptap",
     "domain": "document-production",
     "trust_bus": "http://127.0.0.1:8081",
-    "gateway": "http://127.0.0.1:8082",
+    "gateway": "http://127.0.0.1:8108",  # Dragon Hub (A4DESK-CHAT-ROUTE-001)
     "db_path": "/opt/windi/data/babel_documents.db",
     "session_timeout_minutes": 10,
     "session_max_hours": 8,
@@ -2723,13 +2723,22 @@ def chat():
         print(f"[WINDI] Constitutional Router handled locally: skill={local_response.get('skill')}", flush=True)
         return jsonify(local_response)
     # ═══ END CONSTITUTIONAL ROUTER ═══
+    # A4DESK-CHAT-ROUTE-001: Dragon Hub adapter (message → response)
     try:
         payload = {"message": message, "context": context, "dragon": dragon, "lang": data.get("lang", "de")}
         if isp_profile:
             payload["institutional_profile"] = isp_profile
-        resp = requests.post(f"{CONFIG['gateway']}/api/chat", json=payload, timeout=60)
-        return jsonify(resp.json())
-    except:
+        resp = requests.post(f"{CONFIG['gateway']}/api/dragon/chat", json=payload, timeout=60)
+        hub = resp.json()
+        # Adapt Dragon Hub response to frontend contract
+        return jsonify({
+            "response": hub.get("message", ""),
+            "dragon": hub.get("dragon"),
+            "source": hub.get("source"),
+            "tier": hub.get("tier")
+        })
+    except Exception as e:
+        print(f"[A4DESK] Chat error: {e}", flush=True)
         return jsonify({"error": "Gateway error"}), 503
 
 # ═══════════════════════════════════════════════════════════════════════════════
