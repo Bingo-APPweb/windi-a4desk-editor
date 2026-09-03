@@ -62,7 +62,7 @@ def register_in_ledger(
     # DID-aware parameters (Phase 2)
     user_did: Optional[str] = None,
     user_wallet: Optional[str] = None,
-    human_approved: bool = True
+    human_approved: Optional[bool] = None
 ) -> Dict[str, Any]:
     """
     Register a document export in the Forensic Ledger.
@@ -81,7 +81,8 @@ def register_in_ledger(
         export_format: Export format (pdf, docx, etc.)
         user_did: DID from Berçário (Art. 50 — proof of human contribution)
         user_wallet: User's wallet ID
-        human_approved: I9 gate (must be True for seal)
+        human_approved: presente apenas quando existe ato humano de aprovação
+            observado; ausente caso contrário. Não é default.
 
     Returns:
         {"success": True, "receipt": {...}} on success
@@ -127,9 +128,12 @@ def register_in_ledger(
         "governance_level": governance_level,
         "sge_score": float(sge_score) if sge_score else 0.0,
         "declaration": "operator",
-        "human_approved": human_approved,
         "tags": ["a4desk", "babel", "document"],
     }
+
+    # human_approved only included when explicitly observed (not None)
+    if human_approved is not None:
+        payload["human_approved"] = human_approved
 
     # Optional fields
     if template_id:
