@@ -4562,34 +4562,42 @@ function onIspSelect(ispId){
 
     let html='<div style="margin-top:15px;">';
 
-    // Forms section
+    // Forms section — CAP2: Truthful Availability (source === 'file' = implemented)
     if(profile.forms&&profile.forms.length>0){
         html+='<div style="margin-bottom:15px;"><label style="font-weight:600;color:#1a365d;display:block;margin-bottom:10px;"><i class="fas fa-file-alt"></i> Formulare:</label>';
         html+='<div class="template-grid">';
         profile.forms.forEach(f=>{
             const fId=(typeof f==='string')?f:(f.id||'');
             const formTitle=(typeof f==='string')?f.replace(/-/g,' ').replace(/\b\w/g,l=>l.toUpperCase()):(f.name||f.id||'');
-            html+='<div class="template-card" data-type="form" data-id="'+fId+'" onclick="selectISPTemplate(this,\'form\',\''+fId+'\')">';
-            html+='<div class="template-card-header" style="background:linear-gradient(135deg,'+profile.primary_color+',#2c5282)"></div>';
+            const isImplemented=(typeof f==='object'&&f.source==='file');
+            const disabledClass=isImplemented?'':'template-card-disabled';
+            const clickHandler=isImplemented?'onclick="selectISPTemplate(this,\'form\',\''+fId+'\')"':'';
+            const tooltip=isImplemented?'':'title="Metadata available · template not implemented"';
+            html+='<div class="template-card '+disabledClass+'" data-type="form" data-id="'+fId+'" '+clickHandler+' '+tooltip+'>';
+            html+='<div class="template-card-header" style="background:linear-gradient(135deg,'+(isImplemented?profile.primary_color:'#a0aec0')+','+(isImplemented?'#2c5282':'#718096')+')"></div>';
             html+='<div class="template-card-name">'+formTitle+'</div>';
-            html+='<div class="template-card-desc">'+profile.short_name+' Formular</div>';
+            html+='<div class="template-card-desc">'+profile.short_name+' Formular'+(isImplemented?'':' <span style="color:#e53e3e;font-size:10px;">⚠</span>')+'</div>';
             html+='<div class="template-card-langs"><span class="template-card-lang">'+profile.governance_level+'</span></div>';
             html+='</div>';
         });
         html+='</div></div>';
     }
 
-    // Templates section
+    // Templates section — CAP2: Truthful Availability (source === 'file' = implemented)
     if(profile.templates&&profile.templates.length>0){
         html+='<div><label style="font-weight:600;color:#1a365d;display:block;margin-bottom:10px;"><i class="fas fa-file-invoice"></i> Templates:</label>';
         html+='<div class="template-grid">';
         profile.templates.forEach(t=>{
             const tId=(typeof t==='string')?t:(t.id||'');
             const tplTitle=(typeof t==='string')?t.replace(/-/g,' ').replace(/\b\w/g,l=>l.toUpperCase()):(t.name||t.id||'');
-            html+='<div class="template-card" data-type="template" data-id="'+tId+'" onclick="selectISPTemplate(this,\'template\',\''+tId+'\')">';
-            html+='<div class="template-card-header" style="background:linear-gradient(135deg,'+profile.primary_color+',#4a5568)"></div>';
+            const isImplemented=(typeof t==='object'&&t.source==='file');
+            const disabledClass=isImplemented?'':'template-card-disabled';
+            const clickHandler=isImplemented?'onclick="selectISPTemplate(this,\'template\',\''+tId+'\')"':'';
+            const tooltip=isImplemented?'':'title="Metadata available · template not implemented"';
+            html+='<div class="template-card '+disabledClass+'" data-type="template" data-id="'+tId+'" '+clickHandler+' '+tooltip+'>';
+            html+='<div class="template-card-header" style="background:linear-gradient(135deg,'+(isImplemented?profile.primary_color:'#a0aec0')+','+(isImplemented?'#4a5568':'#718096')+')"></div>';
             html+='<div class="template-card-name">'+tplTitle+'</div>';
-            html+='<div class="template-card-desc">'+profile.short_name+' Template</div>';
+            html+='<div class="template-card-desc">'+profile.short_name+' Template'+(isImplemented?'':' <span style="color:#e53e3e;font-size:10px;">⚠</span>')+'</div>';
             html+='<div class="template-card-langs"><span class="template-card-lang">'+profile.governance_level+'</span></div>';
             html+='</div>';
         });

@@ -1187,6 +1187,18 @@ body {
   background: var(--gold-glow);
 }
 
+/* CAP2: Truthful Availability - disabled state for metadata-only items */
+.template-card-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.template-card-disabled:hover {
+  transform: none;
+  border-color: var(--border);
+}
+
 .template-card-header {
   height: 40px;
   border-radius: 6px;
