@@ -4142,6 +4142,7 @@ async function newDoc(){clearWitnessFields();
     document.getElementById('fieldWitnessRelation').value='';
     updateStatus('draft');
     document.getElementById('receiptBox').classList.remove('show');
+    clearLedgerReceipt();
     loadDocs();
     toast('Erstellt','success');
 }
@@ -4187,6 +4188,7 @@ async function loadDoc(id){
     document.getElementById('fieldWitnessName').value=doc.human_fields?doc.human_fields.witness_name||'':'';
     document.getElementById('fieldWitnessId').value=doc.human_fields?doc.human_fields.witness_id||'':'';
     updateStatus(doc.status);if(doc.witness){var w=doc.witness;var wn=document.getElementById('fieldWitnessName');if(wn)wn.value=w.name||'';var wi=document.getElementById('fieldWitnessId');if(wi)wi.value=w.employee_id||w.id||'';var wp=document.getElementById('fieldWitnessPosition');if(wp)wp.value=w.position||'';}else{clearWitnessFields()}if(doc.witness){var w=doc.witness;var wn=document.getElementById('fieldWitnessName');if(wn)wn.value=w.name||'';var wi=document.getElementById('fieldWitnessId');if(wi)wi.value=w.employee_id||w.id||'';var wp=document.getElementById('fieldWitnessPosition');if(wp)wp.value=w.position||'';}else{clearWitnessFields()}
+    clearLedgerReceipt();
     if(doc.receipt){const box=document.getElementById('receiptBox');box.innerHTML='<strong>'+doc.receipt.receipt_id+'</strong><br>Hash: '+doc.receipt.hash;box.classList.add('show')}
     else{document.getElementById('receiptBox').classList.remove('show')}
 }
@@ -4229,6 +4231,7 @@ async function exportDoc(fmt){
             lastReceipt={id:receiptId,contentHash:contentHash,bundleHash:bundleHash};
             showReceiptToast(receiptId,contentHash,bundleHash,fmt);
             updateSealStatus(receiptId);
+            showLedgerReceipt(receiptId,contentHash);
         }
         const blob=await res.blob();
         const contentDisposition=res.headers.get('Content-Disposition');
@@ -4429,6 +4432,59 @@ function updateSealStatus(receiptId){
     var idSpan=el.querySelector('.seal-id');
     if(idSpan)idSpan.textContent=receiptId?receiptId.substring(0,16)+'...':'Sealed';
     el.title=receiptId||'Document sealed with Virtue Receipt';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// A4DESK-RECEIPT-VISIBLE-001 CAP2: Ledger receipt visibility
+// ═══════════════════════════════════════════════════════════════════════════
+
+function copyToClipboard(text){
+    if(!text)return;
+    navigator.clipboard.writeText(text).then(function(){
+        toast(t('copied')||'Copied to clipboard','success');
+    }).catch(function(err){
+        console.error('Copy failed:',err);
+        toast(t('copy_failed')||'Copy failed','error');
+    });
+}
+
+function openVerifyPublic(receiptId){
+    if(!receiptId)return;
+    var url='https://windi-domain.com/verify-public/?id='+encodeURIComponent(receiptId);
+    window.open(url,'_blank','noopener');
+}
+
+function showLedgerReceipt(receiptId,contentHash){
+    var box=document.getElementById('receiptBox');
+    if(!box)return;
+    var existing=box.querySelector('.ledger-receipt-section');
+    if(existing)existing.remove();
+    var section=document.createElement('div');
+    section.className='ledger-receipt-section';
+    section.innerHTML='<div class="ledger-receipt-title"><i class="fas fa-shield-alt"></i> WINDI Verification Receipt</div>'+
+        '<div class="ledger-receipt-row"><span class="ledger-receipt-label">Receipt ID</span><span class="ledger-receipt-value ledger-receipt-id">'+receiptId+'</span></div>'+
+        '<div class="ledger-receipt-row"><span class="ledger-receipt-label">Content Hash</span><span class="ledger-receipt-value ledger-receipt-hash">'+contentHash+'</span></div>'+
+        '<div class="ledger-receipt-actions">'+
+        '<button class="ledger-receipt-btn" onclick="copyToClipboard(\''+receiptId+'\')"><i class="fas fa-copy"></i> Copy Receipt ID</button>'+
+        '<button class="ledger-receipt-btn ledger-receipt-btn-verify" onclick="openVerifyPublic(\''+receiptId+'\')"><i class="fas fa-external-link-alt"></i> Verify publicly</button>'+
+        '</div>';
+    box.appendChild(section);
+    box.classList.add('show');
+}
+
+function clearLedgerReceipt(){
+    var box=document.getElementById('receiptBox');
+    if(!box)return;
+    var section=box.querySelector('.ledger-receipt-section');
+    if(section)section.remove();
+    var seal=document.getElementById('sealStatus');
+    if(seal){
+        seal.style.display='none';
+        seal.classList.remove('sealed');
+        var idSpan=seal.querySelector('.seal-id');
+        if(idSpan)idSpan.textContent='-';
+    }
+    lastReceipt={id:null,contentHash:null,bundleHash:null};
 }
 
 document.addEventListener('DOMContentLoaded',function(){

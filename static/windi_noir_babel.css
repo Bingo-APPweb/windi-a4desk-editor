@@ -930,6 +930,96 @@ body {
   display: block;
 }
 
+/* ═══════════ LEDGER RECEIPT (A4DESK-RECEIPT-VISIBLE-001 CAP2) ═══════════ */
+.ledger-receipt-section {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid var(--surface-3);
+}
+
+.ledger-receipt-title {
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--gold);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ledger-receipt-title i {
+  color: var(--success);
+}
+
+.ledger-receipt-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+}
+
+.ledger-receipt-label {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ledger-receipt-value {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.ledger-receipt-id {
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.ledger-receipt-hash {
+  color: var(--text-secondary);
+}
+
+.ledger-receipt-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ledger-receipt-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--surface-3);
+  border-radius: 6px;
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ledger-receipt-btn:hover {
+  background: var(--surface-2);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.ledger-receipt-btn-verify {
+  background: rgba(56, 161, 105, 0.15);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.ledger-receipt-btn-verify:hover {
+  background: rgba(56, 161, 105, 0.25);
+}
+
 /* ═══════════ MODALS ═══════════ */
 .reauth-overlay,
 .profile-overlay,
