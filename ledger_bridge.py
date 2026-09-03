@@ -105,8 +105,9 @@ def register_in_ledger(
         identity_mode = "user_did"
     else:
         # SCAFFOLD: Fallback to service identity with explicit declaration
+        # CAP3 FIX (2026-09-03): wallet_id must be valid DID for Ledger acceptance
         actor = SERVICE_DID
-        wallet_id = SERVICE_WALLET
+        wallet_id = SERVICE_DID  # Changed from SERVICE_WALLET per CAP3 compatibility
         identity_mode = "service_fallback"
 
     # Ensure content_hash has sha256: prefix
